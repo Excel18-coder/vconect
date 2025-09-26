@@ -37,14 +37,22 @@ const Header = () => {
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
-            <div className="relative w-full">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const query = formData.get('search') as string;
+              if (query.trim()) {
+                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+              }
+            }} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
+                name="search"
                 type="text"
                 placeholder="Search products, services, properties..."
                 className="w-full pl-10 pr-4"
               />
-            </div>
+            </form>
           </div>
 
           {/* Action Buttons */}
@@ -111,14 +119,22 @@ const Header = () => {
 
         {/* Mobile Search */}
         <div className="md:hidden pb-4">
-          <div className="relative">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const query = formData.get('search') as string;
+            if (query.trim()) {
+              window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
+          }} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
+              name="search"
               type="text"
               placeholder="Search anything..."
               className="w-full pl-10 pr-4"
             />
-          </div>
+          </form>
         </div>
       </div>
     </header>

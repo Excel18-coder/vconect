@@ -163,6 +163,7 @@ const CategoryGrid = () => {
                   <Button 
                     variant="ghost" 
                     className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
+                    onClick={() => window.location.href = `/${category.id}`}
                   >
                     Explore {category.title}
                     <ArrowRight className="ml-2 h-4 w-4" />

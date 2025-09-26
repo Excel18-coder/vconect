@@ -22,11 +22,19 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-primary to-pink-500 hover:from-primary/90 hover:to-pink-500/90 text-white"
+                onClick={() => window.location.href = '/market'}
+              >
                 Start Exploring
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => window.location.href = '/post-ad'}
+              >
                 Become a Seller
               </Button>
             </div>
