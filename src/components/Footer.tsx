@@ -18,11 +18,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
-              </div>
-              <span className="text-xl font-bold text-primary">MarketHub</span>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/images/logo.png" 
+                alt="V-MARKET Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <span className="text-xl font-bold text-blue-600">V-MARKET</span>
             </div>
             <p className="text-muted-foreground">
               Kenya's leading digital marketplace connecting communities through technology, commerce, and innovation.
@@ -73,7 +75,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>hello@markethub.co.ke</span>
+                <span>info@vmarket.co.ke</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
@@ -81,7 +83,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>Nairobi, Kenya</span>
+                <span>Kirinyaga, Kenya</span>
               </div>
             </div>
             
@@ -98,8 +100,9 @@ const Footer = () => {
         <Separator className="my-8" />
 
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-muted-foreground">
-            © 2024 MarketHub. All rights reserved.
+          <div className="flex flex-col space-y-1 text-sm text-muted-foreground">
+            <div>© 2025 V-MARKET. All rights reserved.</div>
+            <div className="text-xs">Powered by CIPHER</div>
           </div>
           <div className="flex space-x-6 text-sm">
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>

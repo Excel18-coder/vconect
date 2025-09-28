@@ -27,11 +27,13 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
-              </div>
-              <span className="text-xl font-bold text-primary">MarketHub</span>
+            <Link to="/" className="flex items-center space-x-3">
+              <img 
+                src="/images/logo.png" 
+                alt="V-MARKET Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <span className="text-xl font-bold text-blue-600">V-MARKET</span>
             </Link>
           </div>
 

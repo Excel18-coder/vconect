@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# V-MARKET - Kenya's Digital Marketplace
 
 ## Project info
 

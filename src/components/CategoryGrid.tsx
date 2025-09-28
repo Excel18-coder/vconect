@@ -13,13 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 
-import houseImage from "@/assets/house-section.jpg";
-import transportImage from "@/assets/transport-section.jpg";
-import marketImage from "@/assets/market-section.jpg";
-import healthImage from "@/assets/health-section.jpg";
-import jobsImage from "@/assets/jobs-section.jpg";
-import educationImage from "@/assets/education-section.jpg";
-import entertainmentImage from "@/assets/entertainment-section.jpg";
+// Images are now loaded from public/images folder
 
 const categories = [
   {
@@ -27,7 +21,7 @@ const categories = [
     title: "House",
     description: "Find your perfect home. Rent or buy properties across Kenya.",
     icon: Home,
-    image: houseImage,
+    image: "/images/house.jpg",
     color: "from-blue-500 to-blue-600",
     features: ["Property Listings", "Virtual Tours", "Map Integration"]
   },
@@ -36,7 +30,7 @@ const categories = [
     title: "Transport",
     description: "Book tickets and track your journey in real-time.",
     icon: Car,
-    image: transportImage,
+    image: "/images/transport.jpg",
     color: "from-green-500 to-green-600",
     features: ["Bus Tickets", "GPS Tracking", "Real-time Updates"]
   },
@@ -45,8 +39,8 @@ const categories = [
     title: "Market",
     description: "Shop from thousands of vendors across multiple categories.",
     icon: ShoppingBag,
-    image: marketImage,
-    color: "from-orange-500 to-orange-600",
+    image: "/images/market2.jpg",
+    color: "from-red-500 to-red-600",
     features: ["Multi-vendor", "Reviews & Ratings", "Secure Checkout"]
   },
   {
@@ -54,8 +48,8 @@ const categories = [
     title: "Health",
     description: "Connect with doctors and access healthcare services remotely.",
     icon: Heart,
-    image: healthImage,
-    color: "from-red-500 to-red-600",
+    image: "/images/health.jpg",
+    color: "from-blue-600 to-blue-700",
     features: ["Telemedicine", "Online Pharmacy", "Emergency Services"]
   },
   {
@@ -63,8 +57,8 @@ const categories = [
     title: "Jobs",
     description: "Find career opportunities or hire talented professionals.",
     icon: Briefcase,
-    image: jobsImage,
-    color: "from-purple-500 to-purple-600",
+    image: "/images/jobs.jpg",
+    color: "from-green-600 to-green-700",
     features: ["Job Listings", "CV Builder", "Direct Hiring"]
   },
   {
@@ -72,8 +66,8 @@ const categories = [
     title: "Education",
     description: "Learn new skills with courses from basic to professional levels.",
     icon: GraduationCap,
-    image: educationImage,
-    color: "from-indigo-500 to-indigo-600",
+    image: "/images/education.jpg",
+    color: "from-red-600 to-red-700",
     features: ["Online Courses", "Certificates", "Live Classes"]
   },
   {
@@ -81,8 +75,8 @@ const categories = [
     title: "Entertainment",
     description: "Create, share, and discover amazing content with the community.",
     icon: PlayCircle,
-    image: entertainmentImage,
-    color: "from-pink-500 to-pink-600",
+    image: "/images/entertainment.jpg",
+    color: "from-blue-700 to-blue-800",
     features: ["Content Creation", "Live Streaming", "Monetization"]
   },
   {
@@ -90,8 +84,8 @@ const categories = [
     title: "Revenue",
     description: "Track your earnings and optimize your income streams.",
     icon: DollarSign,
-    image: null,
-    color: "from-yellow-500 to-yellow-600",
+    image: "/images/revenue.jpg",
+    color: "from-green-700 to-green-800",
     features: ["Earnings Dashboard", "Analytics", "Payment Tracking"]
   },
   {
@@ -99,8 +93,8 @@ const categories = [
     title: "AI Insights",
     description: "Get personalized recommendations powered by advanced AI.",
     icon: Brain,
-    image: null,
-    color: "from-cyan-500 to-cyan-600",
+    image: "/images/ai_insights.jpg",
+    color: "from-red-700 to-red-800",
     features: ["Smart Recommendations", "Predictive Analytics", "User Insights"]
   }
 ];
@@ -111,7 +105,7 @@ const CategoryGrid = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Explore Our <span className="text-primary">Marketplace</span>
+            Explore Our <span className="text-blue-600">Marketplace</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Nine powerful sections designed to meet all your digital needs in one unified platform
@@ -140,7 +134,7 @@ const CategoryGrid = () => {
                   
                   <div className="absolute top-4 left-4">
                     <div className="p-2 bg-white/90 rounded-lg shadow-lg">
-                      <category.icon className="h-6 w-6 text-primary" />
+                      <category.icon className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
@@ -154,7 +148,7 @@ const CategoryGrid = () => {
                   <div className="space-y-2 mb-6">
                     {category.features.map((feature, index) => (
                       <div key={index} className="flex items-center text-sm text-muted-foreground">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></div>
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></div>
                         {feature}
                       </div>
                     ))}
@@ -162,7 +156,7 @@ const CategoryGrid = () => {
 
                   <Button 
                     variant="ghost" 
-                    className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
+                    className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors"
                     onClick={() => window.location.href = `/${category.id}`}
                   >
                     Explore {category.title}
