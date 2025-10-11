@@ -1,4 +1,34 @@
-require('dotenv').config();
+// Safe dotenv loading - only load if module exists and .env file exists
+let dotenvLoaded = false;
+try {
+  const fs = require('fs');
+  const path = require('path');
+
+  // Check if .env file exists in the current directory
+  const envPath = path.join(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    require('dotenv').config();
+    dotenvLoaded = true;
+    console.log('✅ Environment variables loaded from .env file');
+  } else {
+    console.log('ℹ️  No .env file found, using environment variables from host');
+  }
+} catch (error) {
+  console.log('ℹ️  dotenv not available, using environment variables from host');
+}
+
+// Validate critical environment variables
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingVars.join(', '));
+  console.error('Please ensure these variables are set in your environment or .env file');
+  process.exit(1);
+}
+
+console.log('✅ All required environment variables are present');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
