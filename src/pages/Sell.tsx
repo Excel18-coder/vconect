@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
@@ -15,12 +15,103 @@ import {
   Package,
   ArrowRight,
   Star,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  Edit,
+  Trash2
 } from "lucide-react";
+
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  condition: string;
+  location: string;
+  images: string[];
+  status: string;
+  views: number;
+  created_at: string;
+  category: string;
+}
 
 const Sell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeListings: 0,
+    totalRevenue: 0,
+    totalViews: 0,
+    conversionRate: 0
+  });
+
+  // Fetch seller's products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('http://localhost:5000/api/products/seller/my-products', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data.data.products || []);
+          
+          // Calculate stats from products
+          const active = data.data.products.filter((p: Product) => p.status === 'active').length;
+          const totalViews = data.data.products.reduce((sum: number, p: Product) => sum + (p.views || 0), 0);
+          
+          setStats({
+            activeListings: active,
+            totalRevenue: 0, // We'll calculate this when orders are implemented
+            totalViews: totalViews,
+            conversionRate: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [user]);
+
+  const deleteProduct = async (productId: number) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setProducts(products.filter(p => p.id !== productId));
+        alert('Product deleted successfully!');
+      } else {
+        alert('Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Error deleting product');
+    }
+  };
 
   if (!user) {
     return (
@@ -37,17 +128,11 @@ const Sell = () => {
     );
   }
 
-  const stats = [
-    { label: "Active Listings", value: "12", change: "+3 this month" },
-    { label: "Total Revenue", value: "KSh 45,600", change: "+15% this month" },
-    { label: "Total Views", value: "1,234", change: "+8% this month" },
-    { label: "Conversion Rate", value: "3.2%", change: "+0.5% this month" }
-  ];
-
-  const recentListings = [
-    { title: "Modern Apartment in Westlands", views: 89, inquiries: 5, status: "Active" },
-    { title: "Toyota Corolla 2019", views: 156, inquiries: 12, status: "Sold" },
-    { title: "MacBook Pro 2021", views: 67, inquiries: 3, status: "Active" }
+  const statsDisplay = [
+    { label: "Active Listings", value: stats.activeListings.toString(), change: "+3 this month" },
+    { label: "Total Revenue", value: `KSh ${stats.totalRevenue.toLocaleString()}`, change: "+15% this month" },
+    { label: "Total Views", value: stats.totalViews.toLocaleString(), change: "+8% this month" },
+    { label: "Conversion Rate", value: `${stats.conversionRate}%`, change: "+0.5% this month" }
   ];
 
   return (
@@ -77,7 +162,7 @@ const Sell = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {statsDisplay.map((stat, index) => (
             <Card key={index}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -159,33 +244,89 @@ const Sell = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Listings */}
+            {/* My Products */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Listings</CardTitle>
+                <CardTitle>My Products</CardTitle>
                 <CardDescription>
-                  Your latest posted ads and their performance
+                  {loading ? 'Loading your products...' : `${products.length} products found`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentListings.map((listing, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-semibold">{listing.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {listing.views} views • {listing.inquiries} inquiries
-                        </p>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Loading your products...</p>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">No products yet</p>
+                    <Button onClick={() => navigate('/post-ad')}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Post Your First Ad
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {products.map((product) => (
+                      <div key={product.id} className="flex items-start justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                        <div className="flex gap-4 flex-1">
+                          {product.images && product.images.length > 0 ? (
+                            <img 
+                              src={product.images[0]} 
+                              alt={product.title}
+                              className="w-20 h-20 object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
+                              <Package className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{product.title}</h4>
+                            <p className="text-sm text-muted-foreground line-clamp-1">
+                              {product.description}
+                            </p>
+                            <div className="flex items-center gap-4 mt-2 text-sm">
+                              <span className="font-bold text-primary">
+                                KSh {product.price.toLocaleString()}
+                              </span>
+                              <span className="flex items-center gap-1 text-muted-foreground">
+                                <Eye className="h-3 w-3" />
+                                {product.views || 0} views
+                              </span>
+                              <span className="text-muted-foreground">
+                                {product.location}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={product.status === 'active' ? 'default' : 'secondary'}
+                            className={product.status === 'active' ? 'bg-green-500' : ''}
+                          >
+                            {product.status}
+                          </Badge>
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => navigate(`/edit-product/${product.id}`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={() => deleteProduct(product.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
                       </div>
-                      <Badge 
-                        variant={listing.status === 'Sold' ? 'default' : 'secondary'}
-                        className={listing.status === 'Sold' ? 'bg-green-500' : ''}
-                      >
-                        {listing.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

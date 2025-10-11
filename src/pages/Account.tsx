@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
-import { User, Settings, ShoppingBag, Heart, MapPin, Briefcase, GraduationCap, Stethoscope, Home, Car, DollarSign, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Settings, ShoppingBag, Heart, MapPin, Briefcase, GraduationCap, Stethoscope, Home, Car, DollarSign, TrendingUp, Package } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ProductManager from '@/components/ProductManager';
 
 const Account = () => {
   const { user, profile, updateProfile, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   const [formData, setFormData] = useState({
     display_name: '',
     bio: '',
@@ -24,6 +28,14 @@ const Account = () => {
     location: '',
     user_type: 'buyer'
   });
+
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['overview', 'settings', 'activity', 'favorites', 'products', 'earnings', 'analytics'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -40,11 +52,11 @@ const Account = () => {
   // Initialize form data when profile is loaded
   if (profile && !isEditing && !formData.display_name) {
     setFormData({
-      display_name: profile.display_name || '',
+      display_name: profile.displayName || '',
       bio: profile.bio || '',
-      phone_number: profile.phone_number || '',
+      phone_number: profile.phoneNumber || '',
       location: profile.location || '',
-      user_type: profile.user_type || 'buyer'
+      user_type: profile.userType || 'buyer'
     });
   }
 
@@ -97,20 +109,20 @@ const Account = () => {
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile?.avatar_url} alt={profile?.display_name || 'User'} />
+                  <AvatarImage src={profile?.avatarUrl} alt={profile?.displayName || 'User'} />
                   <AvatarFallback className="text-xl">
-                    {getInitials(profile?.display_name || user.email || 'User')}
+                    {getInitials(profile?.displayName || user.email || 'User')}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 text-center md:text-left">
                   <h1 className="text-3xl font-bold text-primary mb-2">
-                    {profile?.display_name || user.email}
+                    {profile?.displayName || user.email}
                   </h1>
                   <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
-                    <Badge className={`${getUserTypeColor(profile?.user_type)} text-white`}>
-                      {getUserTypeIcon(profile?.user_type)}
-                      <span className="ml-2 capitalize">{profile?.user_type || 'buyer'}</span>
+                    <Badge className={`${getUserTypeColor(profile?.userType)} text-white`}>
+                      {getUserTypeIcon(profile?.userType)}
+                      <span className="ml-2 capitalize">{profile?.userType || 'buyer'}</span>
                     </Badge>
                     {profile?.location && (
                       <Badge variant="outline">
@@ -136,13 +148,42 @@ const Account = () => {
             </CardContent>
           </Card>
 
+          {/* Seller Welcome Message */}
+          {(profile?.userType === 'seller' || profile?.userType === 'landlord' || profile?.userType === 'employer') && (
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 to-pink-500/10 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <Package className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-1">Welcome to Your Seller Dashboard!</h3>
+                    <p className="text-muted-foreground">
+                      Ready to start selling? Click on the "Products" tab to upload your first product and start earning!
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setActiveTab('products')}
+                    className="bg-gradient-to-r from-primary to-pink-500"
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Manage Products
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Account Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
+              {(profile?.userType === 'seller' || profile?.userType === 'landlord' || profile?.userType === 'employer') && (
+                <TabsTrigger value="products" className="hidden lg:flex">Products</TabsTrigger>
+              )}
               <TabsTrigger value="earnings" className="hidden lg:flex">Earnings</TabsTrigger>
               <TabsTrigger value="analytics" className="hidden lg:flex">Analytics</TabsTrigger>
             </TabsList>
@@ -152,10 +193,10 @@ const Account = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Account Type</CardTitle>
-                    {getUserTypeIcon(profile?.user_type)}
+                    {getUserTypeIcon(profile?.userType)}
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold capitalize">{profile?.user_type || 'Buyer'}</div>
+                    <div className="text-2xl font-bold capitalize">{profile?.userType || 'Buyer'}</div>
                     <p className="text-xs text-muted-foreground">Your marketplace role</p>
                   </CardContent>
                 </Card>
@@ -167,7 +208,7 @@ const Account = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {new Date(profile?.created_at).toLocaleDateString('en-US', { 
+                      {new Date(profile?.createdAt).toLocaleDateString('en-US', { 
                         month: 'short', 
                         year: 'numeric' 
                       })}
@@ -194,19 +235,35 @@ const Account = () => {
                   <CardDescription>Common tasks for your account type</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto flex-col gap-2 p-4"
+                    onClick={() => navigate('/search')}
+                  >
                     <ShoppingBag className="h-6 w-6" />
                     <span>Browse Products</span>
                   </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto flex-col gap-2 p-4"
+                    onClick={() => console.log('TODO: Implement favorites page')}
+                  >
                     <Heart className="h-6 w-6" />
                     <span>View Favorites</span>
                   </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto flex-col gap-2 p-4"
+                    onClick={() => navigate('/category/jobs')}
+                  >
                     <Briefcase className="h-6 w-6" />
                     <span>Find Jobs</span>
                   </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto flex-col gap-2 p-4"
+                    onClick={() => navigate('/category/transport')}
+                  >
                     <Car className="h-6 w-6" />
                     <span>Book Transport</span>
                   </Button>
@@ -293,7 +350,7 @@ const Account = () => {
                         </div>
                         <div>
                           <Label className="text-sm font-medium">Phone</Label>
-                          <p className="text-sm text-muted-foreground">{profile?.phone_number || 'Not provided'}</p>
+                          <p className="text-sm text-muted-foreground">{profile?.phoneNumber || 'Not provided'}</p>
                         </div>
                       </div>
                       <Button onClick={() => setIsEditing(true)} variant="outline">
@@ -328,6 +385,12 @@ const Account = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {(profile?.userType === 'seller' || profile?.userType === 'landlord' || profile?.userType === 'employer') && (
+              <TabsContent value="products" className="space-y-6">
+                <ProductManager />
+              </TabsContent>
+            )}
 
             <TabsContent value="earnings" className="space-y-6">
               <Card>

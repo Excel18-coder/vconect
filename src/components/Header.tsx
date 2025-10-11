@@ -44,7 +44,7 @@ const Header = () => {
               const formData = new FormData(e.currentTarget);
               const query = formData.get('search') as string;
               if (query.trim()) {
-                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                navigate(`/search?q=${encodeURIComponent(query)}`);
               }
             }} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -59,10 +59,20 @@ const Header = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden sm:flex"
+              onClick={() => console.log('TODO: Implement notifications')}
+            >
               <Bell className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden sm:flex"
+              onClick={() => console.log('TODO: Implement cart')}
+            >
               <ShoppingCart className="h-5 w-5" />
             </Button>
             
@@ -73,9 +83,9 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile?.avatar_url} alt={profile?.display_name || 'User'} />
+                      <AvatarImage src={profile?.avatarUrl} alt={profile?.displayName || 'User'} />
                       <AvatarFallback>
-                        {getInitials(profile?.display_name || user.email || 'User')}
+                        {getInitials(profile?.displayName || user.email || 'User')}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -84,7 +94,7 @@ const Header = () => {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {profile?.display_name || 'User'}
+                        {profile?.displayName || 'User'}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
@@ -126,7 +136,7 @@ const Header = () => {
             const formData = new FormData(e.currentTarget);
             const query = formData.get('search') as string;
             if (query.trim()) {
-              window.location.href = `/search?q=${encodeURIComponent(query)}`;
+              navigate(`/search?q=${encodeURIComponent(query)}`);
             }
           }} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />

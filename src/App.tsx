@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import CategoryPage from "./pages/CategoryPage";
 import PostAd from "./pages/PostAd";
+import ProductDetail from "./pages/ProductDetail";
 import Sell from "./pages/Sell";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
@@ -27,8 +28,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/account" element={<Account />} />
             <Route path="/post-ad" element={<PostAd />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/sell" element={<Sell />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/category/:categoryId" element={<CategoryPage />} />
             <Route path="/house" element={<CategoryPage />} />
             <Route path="/transport" element={<CategoryPage />} />
             <Route path="/market" element={<CategoryPage />} />

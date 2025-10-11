@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -16,27 +16,31 @@ import {
   Grid,
   List,
   Heart,
-  Share2
+  Share2,
+  Package
 } from "lucide-react";
+
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  condition: string;
+  location: string;
+  images: string[];
+  category: string;
+  subcategory: string;
+  seller_name: string;
+  seller_email: string;
+  views: number;
+}
 
 const CategoryPage = () => {
   const { category } = useParams<{ category: string }>();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Mock data - replace with real data fetching
-  const items = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    title: `Sample ${category} Item ${i + 1}`,
-    price: Math.floor(Math.random() * 100000) + 5000,
-    location: ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru'][Math.floor(Math.random() * 4)],
-    rating: 4 + Math.random(),
-    reviews: Math.floor(Math.random() * 100) + 10,
-    image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=300&h=200&fit=crop`,
-    featured: Math.random() > 0.7,
-    seller: `Seller ${i + 1}`,
-    description: `High quality ${category} item with excellent features and competitive pricing.`
-  }));
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const categoryTitles: { [key: string]: string } = {
     house: "Real Estate & Properties",
@@ -49,6 +53,33 @@ const CategoryPage = () => {
     revenue: "Revenue & Analytics",
     "ai-insights": "AI Insights & Analytics"
   };
+
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/products/browse?category=${category || ''}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data.data.products || []);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [category]);
+
+  // Filter products based on search query
+  const filteredProducts = products.filter(product =>
+    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,79 +165,96 @@ const CategoryPage = () => {
         </div>
 
         {/* Results */}
-        <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-            : 'grid-cols-1'
-        }`}>
-          {items.map((item) => (
-            <Card key={item.id} className="group hover:shadow-lg transition-all duration-300">
-              <div className="relative">
-                {item.featured && (
-                  <Badge className="absolute top-2 left-2 z-10 bg-gradient-to-r from-primary to-pink-500">
-                    Featured
-                  </Badge>
-                )}
-                <div className="absolute top-2 right-2 z-10 flex gap-1">
-                  <Button size="icon" variant="secondary" className="h-8 w-8">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="secondary" className="h-8 w-8">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center">
-                    <span className="text-muted-foreground">{item.title}</span>
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading products...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No products found</h3>
+            <p className="text-muted-foreground">
+              {searchQuery ? 'Try adjusting your search terms' : 'No products available in this category yet'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className={`grid gap-6 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                : 'grid-cols-1'
+            }`}>
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300">
+                  <div className="relative">
+                    <div className="absolute top-2 right-2 z-10 flex gap-1">
+                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                        <Heart className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
+                      {product.images && product.images.length > 0 ? (
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center">
+                          <Package className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                  {item.title}
-                </CardTitle>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{item.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span>{item.rating.toFixed(1)}</span>
-                    <span>({item.reviews})</span>
-                  </div>
-                </div>
-              </CardHeader>
+                  
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                      {product.title}
+                    </CardTitle>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{product.location}</span>
+                      </div>
+                      <Badge variant="outline">{product.condition}</Badge>
+                    </div>
+                  </CardHeader>
 
-              <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                  {item.description}
+                  <CardContent className="pt-0">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-primary">
+                          KSh {product.price.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          by {product.seller_name || 'Seller'}
+                        </div>
+                      </div>
+                      <Button size="sm" className="bg-gradient-to-r from-primary to-pink-500">
+                        View Details
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Load More */}
+            {filteredProducts.length > 0 && (
+              <div className="text-center mt-12">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Showing {filteredProducts.length} products
                 </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">
-                      KSh {item.price.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      by {item.seller}
-                    </div>
-                  </div>
-                  <Button size="sm" className="bg-gradient-to-r from-primary to-pink-500">
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Load More */}
-        <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
-            Load More Results
-          </Button>
-        </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <Footer />

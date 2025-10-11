@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { 
   Home, 
   Car, 
@@ -100,6 +101,8 @@ const categories = [
 ];
 
 const CategoryGrid = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="py-16 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -157,7 +160,7 @@ const CategoryGrid = () => {
                   <Button 
                     variant="ghost" 
                     className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors"
-                    onClick={() => window.location.href = `/${category.id}`}
+                    onClick={() => navigate(`/category/${category.id}`)}
                   >
                     Explore {category.title}
                     <ArrowRight className="ml-2 h-4 w-4" />

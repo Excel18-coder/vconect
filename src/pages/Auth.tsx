@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,10 +30,11 @@ const Auth = () => {
   const navigate = useNavigate();
 
   // Redirect if already logged in
-  if (user) {
-    navigate('/account');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
   const validateForm = (isSignUp = false) => {
     try {
@@ -64,9 +65,16 @@ const Auth = () => {
     
     setIsLoading(true);
     const { error } = await signIn(formData.email, formData.password);
-    
-    if (!error) {
-      navigate('/account');
+
+    if (!error && user) {
+      // Redirect based on user type
+      const userMetadata = (user as any)?.user_metadata;
+      if (userMetadata?.user_type === 'seller' || 
+          userMetadata?.userType === 'seller') {
+        navigate('/account?tab=products'); // Direct sellers to product management
+      } else {
+        navigate('/account');
+      }
     }
     setIsLoading(false);
   };
@@ -76,10 +84,15 @@ const Auth = () => {
     if (!validateForm(true)) return;
     
     setIsLoading(true);
-    const { error } = await signUp(formData.email, formData.password, formData.displayName);
+    const { error } = await signUp(formData.email, formData.password, formData.displayName, formData.userType);
     
     if (!error) {
-      navigate('/account');
+      // Redirect based on user type
+      if (formData.userType === 'seller') {
+        navigate('/account?tab=products'); // Direct sellers to product management
+      } else {
+        navigate('/account');
+      }
     }
     setIsLoading(false);
   };

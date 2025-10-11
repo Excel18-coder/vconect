@@ -1,184 +1,252 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { authAPI, profileAPI, isAuthenticated, clearAuth } from '@/services/api';
 import { useToast } from './use-toast';
+
+interface User {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: string;
+}
+
+interface Profile {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  userType: string | null;
+  phoneNumber: string | null;
+  location: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, displayName?: string, userType?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  profile: any;
   updateProfile: (updates: any) => Promise<{ error: any }>;
   refetchProfile: () => Promise<void>;
+  sendMagicLink: (email: string) => Promise<{ error: any }>;
+  checkNeonSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
   const { toast } = useToast();
 
+  // Check authentication status on mount
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Defer profile fetch to avoid auth deadlock
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
+    const checkAuth = async () => {
+      // First try to check Neon Auth session
+      try {
+        const neonSession = await authAPI.getNeonSession();
+        if (neonSession.data?.user) {
+          setUser(neonSession.data.user);
+          setProfile(neonSession.data.user); // Neon session includes profile data
+          setLoading(false);
+          return;
         }
-        
-        setLoading(false);
+      } catch (neonError) {
+        console.log('No Neon Auth session found, checking JWT auth');
       }
-    );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-        }, 0);
+      // Fallback to JWT auth check
+      if (isAuthenticated()) {
+        try {
+          const userData = await authAPI.getMe();
+          setUser(userData.data.user);
+          setProfile(userData.data.profile);
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          clearAuth();
+        }
       }
-      
       setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, userType?: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const response = await authAPI.register(email, password, displayName, userType);
       
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-      
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const signUp = async (email: string, password: string, displayName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: displayName
+      if (response.data?.user) {
+        setUser(response.data.user);
+        
+        // Fetch profile after registration
+        try {
+          const profileData = await profileAPI.getProfile();
+          setProfile(profileData.data.profile);
+        } catch (profileError) {
+          console.error('Failed to fetch profile after registration:', profileError);
         }
       }
-    });
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+      
       toast({
         title: "Success",
-        description: "Account created successfully! Check your email to confirm your account.",
+        description: response.message || "Account created successfully!",
       });
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Registration failed",
+        variant: "destructive",
+      });
+      return { error };
     }
-    
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
+    try {
+      const response = await authAPI.login(email, password);
+      
+      if (response.data?.user) {
+        setUser(response.data.user);
+        
+        // Fetch profile after login
+        try {
+          const profileData = await profileAPI.getProfile();
+          setProfile(profileData.data.profile);
+        } catch (profileError) {
+          console.error('Failed to fetch profile after login:', profileError);
+        }
+      }
+      
+      toast({
+        title: "Success",
+        description: "Login successful!",
+      });
+      
+      return { error: null };
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Login failed",
         variant: "destructive",
       });
+      return { error };
     }
-    
-    return { error };
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      // Try Neon Auth signout first
+      try {
+        await authAPI.neonSignOut();
+      } catch (neonError) {
+        console.log('No Neon session to sign out from');
+      }
+
+      // Then try JWT logout
+      try {
+        await authAPI.logout();
+      } catch (jwtError) {
+        console.log('No JWT session to log out from');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setProfile(null);
+      clearAuth();
+      
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+        title: "Success",
+        description: "Logged out successfully",
       });
     }
   };
 
   const updateProfile = async (updates: any) => {
-    if (!user) return { error: new Error('No user logged in') };
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('user_id', user.id);
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+    try {
+      const response = await profileAPI.updateProfile(updates);
+      
+      if (response.data?.profile) {
+        setProfile(response.data.profile);
+      }
+      
       toast({
         title: "Success",
         description: "Profile updated successfully!",
       });
-      await refetchProfile();
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Profile update failed",
+        variant: "destructive",
+      });
+      return { error };
     }
-    
-    return { error };
   };
 
   const refetchProfile = async () => {
     if (user) {
-      await fetchProfile(user.id);
+      try {
+        const profileData = await profileAPI.getProfile();
+        setProfile(profileData.data.profile);
+      } catch (error) {
+        console.error('Failed to refetch profile:', error);
+      }
+    }
+  };
+
+  const sendMagicLink = async (email: string) => {
+    try {
+      const response = await authAPI.sendMagicLink(email);
+      
+      toast({
+        title: "Success",
+        description: "Magic link sent! Check your email.",
+      });
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send magic link",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const checkNeonSession = async () => {
+    try {
+      const sessionData = await authAPI.verifyNeonSession();
+      if (sessionData.data?.user) {
+        setUser(sessionData.data.user);
+        setProfile(sessionData.data.user); // Neon session includes profile data
+      }
+    } catch (error) {
+      console.error('Neon session check failed:', error);
     }
   };
 
   const value = {
     user,
-    session,
+    profile,
     loading,
     signUp,
     signIn,
     signOut,
-    profile,
     updateProfile,
     refetchProfile,
+    sendMagicLink,
+    checkNeonSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

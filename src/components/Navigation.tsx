@@ -24,18 +24,18 @@ const Navigation = () => {
   const location = useLocation();
   
   const mainCategories = [
-    { name: "House", icon: Home, path: "/house" },
-    { name: "Transport", icon: Car, path: "/transport" },
-    { name: "Market", icon: ShoppingBag, path: "/market" },
-    { name: "Health", icon: Heart, path: "/health" },
-    { name: "Jobs", icon: Briefcase, path: "/jobs" },
+    { name: "House", icon: Home, path: "/category/house" },
+    { name: "Transport", icon: Car, path: "/category/transport" },
+    { name: "Market", icon: ShoppingBag, path: "/category/market" },
+    { name: "Health", icon: Heart, path: "/category/health" },
+    { name: "Jobs", icon: Briefcase, path: "/category/jobs" },
   ];
 
   const moreCategories = [
-    { name: "Education", icon: GraduationCap, path: "/education" },
-    { name: "Entertainment", icon: PlayCircle, path: "/entertainment" },
-    { name: "Revenue", icon: DollarSign, path: "/revenue" },
-    { name: "AI Insights", icon: Brain, path: "/ai-insights" },
+    { name: "Education", icon: GraduationCap, path: "/category/education" },
+    { name: "Entertainment", icon: PlayCircle, path: "/category/entertainment" },
+    { name: "Revenue", icon: DollarSign, path: "/category/revenue" },
+    { name: "AI Insights", icon: Brain, path: "/category/algorithm" },
   ];
 
   return (
