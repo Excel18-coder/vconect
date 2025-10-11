@@ -143,7 +143,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`🚀 V-Market API Server running on port ${PORT}`);
   logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🌐 CORS enabled for: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
@@ -154,7 +154,7 @@ app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received: closing HTTP server');
-  app.close(() => {
+  server.close(() => {
     logger.info('HTTP server closed');
     process.exit(0);
   });
