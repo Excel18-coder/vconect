@@ -1,0 +1,59 @@
+services:
+  # Backend API Service
+  - type: web
+    name: v-market-backend
+    runtime: node
+    env: node
+    region: oregon # or your preferred region
+    plan: free # Change to 'starter' or higher for production
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    
+    envVars:
+      - key: NODE_ENV
+        value: production
+      
+      - key: PORT
+        value: 5000
+      
+      # Database - Add your Neon database URL
+      - key: DATABASE_URL
+        sync: false # Set in Render dashboard
+      
+      # JWT Configuration
+      - key: JWT_SECRET
+        generateValue: true # Render will auto-generate
+      
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      
+      # Cloudinary Configuration
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false # Set in Render dashboard
+      
+      - key: CLOUDINARY_API_KEY
+        sync: false # Set in Render dashboard
+      
+      - key: CLOUDINARY_API_SECRET
+        sync: false # Set in Render dashboard
+      
+      # CORS Origins - Update with your frontend URLs
+      - key: CORS_ORIGINS
+        value: https://your-frontend.onrender.com,http://localhost:5173
+      
+      # Rate Limiting
+      - key: RATE_LIMIT_MAX
+        value: 100
+      
+      # File Upload
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      
+      # Session (optional, if using sessions)
+      - key: SESSION_SECRET
+        generateValue: true
