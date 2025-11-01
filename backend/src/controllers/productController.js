@@ -55,6 +55,29 @@ const createProduct = asyncHandler(async (req, res) => {
     return sendError(res, 'Title, description, price, and category are required', null, 400);
   }
 
+  // Validate and normalize condition field - match database constraint exactly
+  // Database allows: 'new', 'like_new', 'good', 'fair', 'poor'
+  const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
+  let normalizedCondition = 'good'; // Default value
+  
+  if (condition) {
+    const lowerCondition = condition.toLowerCase().trim().replace(/\s+/g, '_');
+    // Map common variations to database values
+    if (validConditions.includes(lowerCondition)) {
+      normalizedCondition = lowerCondition;
+    } else if (lowerCondition === 'brand_new' || lowerCondition === 'brandnew') {
+      normalizedCondition = 'new';
+    } else if (lowerCondition === 'excellent' || lowerCondition === 'likenew') {
+      normalizedCondition = 'like_new';
+    } else if (lowerCondition === 'used' || lowerCondition === 'okay' || lowerCondition === 'average') {
+      normalizedCondition = 'good';
+    } else if (lowerCondition === 'worn' || lowerCondition === 'damaged') {
+      normalizedCondition = 'fair';
+    } else {
+      normalizedCondition = 'good'; // Default for unrecognized values
+    }
+  }
+
   // Handle uploaded files
   let imageUrls = [];
   if (req.files && req.files.length > 0) {
@@ -98,13 +121,14 @@ const createProduct = asyncHandler(async (req, res) => {
   
   const category_id = categoryResult[0].id;
 
-  // Check if user is a seller
+  // Check if user can create listings (sellers, landlords, employers, doctors, tutors)
   const userProfile = await sql`
     SELECT user_type FROM profiles WHERE user_id = ${userId}
   `;
   
-  if (userProfile.length === 0 || !['seller', 'admin', 'landlord', 'employer'].includes(userProfile[0].user_type)) {
-    return sendError(res, 'Only sellers can create product listings', null, 403);
+  const allowedUserTypes = ['seller', 'admin', 'landlord', 'employer', 'doctor', 'tutor'];
+  if (userProfile.length === 0 || !allowedUserTypes.includes(userProfile[0].user_type)) {
+    return sendError(res, 'Only service providers (sellers, landlords, employers, doctors, tutors) can create listings', null, 403);
   }
 
   // Process tags - combine tags input with subcategory
@@ -126,7 +150,7 @@ const createProduct = asyncHandler(async (req, res) => {
       shipping_included, shipping_cost, return_policy, is_digital, download_url,
       images, contact_phone, contact_email, negotiable, status
     ) VALUES (
-      ${userId}, ${title}, ${description}, ${price}, ${currency}, ${condition}, ${category_id}, ${location},
+      ${userId}, ${title}, ${description}, ${price}, ${currency}, ${normalizedCondition}, ${category_id}, ${location},
       ${product_code}, ${brand}, ${model}, ${color}, ${size}, ${weight}, ${dimensions}, ${material},
       ${warranty_period}, ${warranty_type}, ${stock_quantity}, ${min_order_quantity}, ${max_order_quantity},
       ${discount_percentage}, ${discount_end_date}, ${tagsArray}, ${seo_title}, ${seo_description},
@@ -178,8 +202,12 @@ const getSellerProducts = asyncHandler(async (req, res) => {
             l.created_at,
             l.updated_at,
             l.discount_percentage,
-            l.category_id
+            l.category_id,
+            l.contact_phone,
+            COALESCE(c.name, 'Other') as category,
+            COALESCE(c.slug, 'general') as subcategory
           FROM listings l
+          LEFT JOIN categories c ON l.category_id = c.id
           WHERE l.user_id = ${userId}
           ORDER BY l.created_at DESC
           LIMIT ${limit} OFFSET ${offset}
@@ -207,8 +235,12 @@ const getSellerProducts = asyncHandler(async (req, res) => {
             l.created_at,
             l.updated_at,
             l.discount_percentage,
-            l.category_id
+            l.category_id,
+            l.contact_phone,
+            COALESCE(c.name, 'Other') as category,
+            COALESCE(c.slug, 'general') as subcategory
           FROM listings l
+          LEFT JOIN categories c ON l.category_id = c.id
           WHERE l.user_id = ${userId} AND l.status = ${status}
           ORDER BY l.created_at DESC
           LIMIT ${limit} OFFSET ${offset}
@@ -225,7 +257,21 @@ const getSellerProducts = asyncHandler(async (req, res) => {
 
     return sendSuccess(res, 'Products retrieved successfully', {
       products: products.map(product => ({
-        ...product,
+        id: product.id,
+        title: product.title,
+        description: product.description,
+        price: parseFloat(product.price || 0),
+        condition: product.condition,
+        location: product.location,
+        images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
+        tags: product.tags || [],
+        status: product.status,
+        views: product.views || 0,
+        createdAt: product.created_at,
+        updatedAt: product.updated_at,
+        category: product.category,
+        subcategory: product.subcategory,
+        contactPhone: product.contact_phone || null,
         final_price: parseFloat(product.price || 0) * (1 - parseFloat(product.discount_percentage || 0) / 100)
       })),
       pagination: {
@@ -251,6 +297,7 @@ const getProduct = asyncHandler(async (req, res) => {
   const products = await sql`
     SELECT 
       l.id,
+      l.user_id,
       l.title,
       l.description,
       l.price,
@@ -271,11 +318,13 @@ const getProduct = asyncHandler(async (req, res) => {
       l.warranty_type,
       l.return_policy,
       l.negotiable,
+      l.contact_phone,
       c.name as category_name,
       c.slug as category_slug,
       p.display_name as seller_name,
       p.avatar_url as seller_avatar,
       p.location as seller_location,
+      p.phone_number as seller_phone,
       u.email as seller_email
     FROM listings l
     LEFT JOIN categories c ON l.category_id = c.id
@@ -300,6 +349,16 @@ const getProduct = asyncHandler(async (req, res) => {
   return sendSuccess(res, 'Product retrieved successfully', {
     product: {
       ...product,
+      images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
+      contactPhone: product.contact_phone || null,
+      seller: {
+        id: product.user_id,
+        name: product.seller_name,
+        email: product.seller_email,
+        phone: product.seller_phone || product.contact_phone,
+        avatar: product.seller_avatar,
+        location: product.seller_location
+      },
       final_price: parseFloat(product.price) * (1 - parseFloat(product.discount_percentage || 0) / 100)
     }
   });
@@ -311,11 +370,10 @@ const getProduct = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
-  const updateData = req.body;
 
   // Check if product exists and belongs to user
   const existingProducts = await sql`
-    SELECT id FROM listings 
+    SELECT * FROM listings 
     WHERE id = ${id} AND user_id = ${userId}
   `;
 
@@ -323,56 +381,98 @@ const updateProduct = asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Product not found or unauthorized');
   }
 
-  // For now, we'll implement a simple update for the most common fields
-  const { title, description, price, condition, location } = req.body;
-  
-  if (!title && !description && !price && !condition && !location) {
-    return sendError(res, 'At least one field is required for update', null, 400);
+  const existingProduct = existingProducts[0];
+
+  // Extract and validate update fields
+  const { 
+    title, 
+    description, 
+    price, 
+    condition, 
+    location,
+    category_id,
+    subcategory,
+    tags,
+    status,
+    discount_percentage,
+    stock_quantity
+  } = req.body;
+
+  // Handle image uploads if files are provided
+  let imageUrls = existingProduct.images || [];
+  if (req.files && req.files.length > 0) {
+    const uploadPromises = req.files.map(file => 
+      uploadService.uploadImage(file, 'products')
+    );
+    const uploadResults = await Promise.all(uploadPromises);
+    const newImageUrls = uploadResults.map(result => result.url);
+    
+    // Append new images to existing ones (max 8 total)
+    imageUrls = [...imageUrls, ...newImageUrls].slice(0, 8);
   }
 
-  // Build update query manually for safety
-  let updateQuery = 'UPDATE listings SET updated_at = CURRENT_TIMESTAMP';
-  const params = [];
-  
-  if (title) {
-    updateQuery += `, title = $${params.length + 1}`;
-    params.push(title);
-  }
-  if (description) {
-    updateQuery += `, description = $${params.length + 1}`;
-    params.push(description);
-  }
-  if (price) {
-    updateQuery += `, price = $${params.length + 1}`;
-    params.push(parseFloat(price));
-  }
+  // Normalize condition if provided
+  let normalizedCondition = existingProduct.condition;
   if (condition) {
-    updateQuery += `, condition = $${params.length + 1}`;
-    params.push(condition);
+    const validConditions = ['new', 'like_new', 'good', 'fair', 'poor'];
+    const lowerCondition = condition.toLowerCase().trim().replace(/\s+/g, '_');
+    
+    if (validConditions.includes(lowerCondition)) {
+      normalizedCondition = lowerCondition;
+    } else if (lowerCondition === 'brand_new' || lowerCondition === 'brandnew') {
+      normalizedCondition = 'new';
+    } else if (lowerCondition === 'excellent' || lowerCondition === 'likenew') {
+      normalizedCondition = 'like_new';
+    } else if (lowerCondition === 'used' || lowerCondition === 'okay' || lowerCondition === 'average') {
+      normalizedCondition = 'good';
+    } else if (lowerCondition === 'worn' || lowerCondition === 'damaged') {
+      normalizedCondition = 'fair';
+    }
   }
-  if (location) {
-    updateQuery += `, location = $${params.length + 1}`;
-    params.push(location);
-  }
-  
-  updateQuery += ` WHERE id = $${params.length + 1} AND user_id = $${params.length + 2} RETURNING *`;
-  params.push(id, userId);
 
-  // Execute update with template literal
+  // Parse tags if provided
+  let parsedTags = existingProduct.tags;
+  if (tags) {
+    parsedTags = typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : tags;
+  }
+
+  // Update the product
   const updatedProducts = await sql`
     UPDATE listings 
-    SET title = COALESCE(${title}, title),
-        description = COALESCE(${description}, description),
-        price = COALESCE(${price ? parseFloat(price) : null}, price),
-        condition = COALESCE(${condition}, condition),
-        location = COALESCE(${location}, location),
-        updated_at = CURRENT_TIMESTAMP
+    SET 
+      title = COALESCE(${title}, title),
+      description = COALESCE(${description}, description),
+      price = COALESCE(${price ? parseFloat(price) : null}, price),
+      condition = ${normalizedCondition},
+      location = COALESCE(${location}, location),
+      category_id = COALESCE(${category_id}, category_id),
+      subcategory = COALESCE(${subcategory}, subcategory),
+      tags = COALESCE(${parsedTags}, tags),
+      status = COALESCE(${status}, status),
+      images = ${imageUrls},
+      discount_percentage = COALESCE(${discount_percentage ? parseFloat(discount_percentage) : null}, discount_percentage),
+      stock_quantity = COALESCE(${stock_quantity ? parseInt(stock_quantity) : null}, stock_quantity),
+      updated_at = CURRENT_TIMESTAMP
     WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `;
 
+  console.log('✅ Product updated successfully:', id);
+
   return sendSuccess(res, 'Product updated successfully', {
-    product: updatedProducts[0]
+    product: {
+      id: updatedProducts[0].id,
+      title: updatedProducts[0].title,
+      description: updatedProducts[0].description,
+      price: parseFloat(updatedProducts[0].price),
+      condition: updatedProducts[0].condition,
+      location: updatedProducts[0].location,
+      images: updatedProducts[0].images || [],
+      tags: updatedProducts[0].tags || [],
+      status: updatedProducts[0].status,
+      createdAt: updatedProducts[0].created_at,
+      updatedAt: updatedProducts[0].updated_at
+    }
   });
 });
 
@@ -382,6 +482,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
+  const { permanent = false } = req.query;
 
   // Check if product exists and belongs to user
   const products = await sql`
@@ -393,14 +494,27 @@ const deleteProduct = asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Product not found or unauthorized');
   }
 
-  // Soft delete by changing status
-  await sql`
-    UPDATE listings 
-    SET status = 'inactive', updated_at = CURRENT_TIMESTAMP
-    WHERE id = ${id} AND user_id = ${userId}
-  `;
-
-  return sendSuccess(res, 'Product deleted successfully');
+  if (permanent === 'true') {
+    // Permanent delete - actually remove from database
+    // Note: In production, you might want to keep records for analytics
+    await sql`
+      DELETE FROM listings 
+      WHERE id = ${id} AND user_id = ${userId}
+    `;
+    
+    console.log('✅ Product permanently deleted:', id);
+    return sendSuccess(res, 'Product permanently deleted');
+  } else {
+    // Soft delete - change status to inactive
+    await sql`
+      UPDATE listings 
+      SET status = 'inactive', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id} AND user_id = ${userId}
+    `;
+    
+    console.log('✅ Product soft deleted (status set to inactive):', id);
+    return sendSuccess(res, 'Product deleted successfully');
+  }
 });
 
 /**
@@ -442,10 +556,12 @@ const browseProducts = asyncHandler(async (req, res) => {
         l.created_at,
         l.updated_at,
         l.discount_percentage,
+        l.contact_phone,
         c.name as category,
         c.slug as subcategory,
         p.display_name as seller_name,
         p.location as seller_location,
+        p.phone_number as seller_phone,
         u.email as seller_email
       FROM listings l
       LEFT JOIN categories c ON l.category_id = c.id
@@ -460,7 +576,16 @@ const browseProducts = asyncHandler(async (req, res) => {
     // Calculate final prices
     const enrichedProducts = products.map(product => ({
       ...product,
+      images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []),
       seller_name: product.seller_name || 'Seller',
+      contactPhone: product.contact_phone || null,
+      seller: {
+        id: product.user_id,
+        name: product.seller_name,
+        phone: product.seller_phone || product.contact_phone,
+        email: product.seller_email,
+        location: product.seller_location
+      },
       final_price: parseFloat(product.price) * (1 - parseFloat(product.discount_percentage || 0) / 100)
     }));
 

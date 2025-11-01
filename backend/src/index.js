@@ -50,6 +50,7 @@ const tutorRoutes = require('./routes/tutors');
 const doctorRoutes = require('./routes/doctors');
 const employerRoutes = require('./routes/employers');
 const uploadRoutes = require('./routes/upload');
+const uploadsRoutes = require('./routes/uploads');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -117,6 +118,7 @@ app.use('/api/tutors', tutorRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/employers', employerRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/uploads', uploadsRoutes); // New dedicated uploads route for all service providers
 
 // Root endpoint
 app.get('/', (req, res) => {

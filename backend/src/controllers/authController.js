@@ -30,7 +30,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const result = await authService.login(email, password);
+  const result = await authService.login({ email, password });
   return sendSuccess(res, 'Login successful', result);
 });
 

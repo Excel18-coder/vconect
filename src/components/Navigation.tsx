@@ -34,8 +34,8 @@ const Navigation = () => {
   const moreCategories = [
     { name: "Education", icon: GraduationCap, path: "/category/education" },
     { name: "Entertainment", icon: PlayCircle, path: "/category/entertainment" },
-    { name: "Revenue", icon: DollarSign, path: "/category/revenue" },
-    { name: "AI Insights", icon: Brain, path: "/category/algorithm" },
+    { name: "Revenue", icon: DollarSign, path: "/revenue" },
+    { name: "AI Insights", icon: Brain, path: "/ai-insights" },
   ];
 
   return (

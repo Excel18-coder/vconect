@@ -19,8 +19,10 @@ import {
   Package, 
   Upload,
   X,
-  ImagePlus
+  ImagePlus,
+  ExternalLink
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -53,6 +55,7 @@ interface ProductFormData {
 
 const ProductManager = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -100,7 +103,8 @@ const ProductManager = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setProducts(data.products || []);
+        console.log('Fetched products:', data.data?.products); // Debug log
+        setProducts(data.data?.products || []);
       } else {
         toast.error('Failed to fetch products');
       }
@@ -144,6 +148,15 @@ const ProductManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.title || !formData.description || !formData.price || 
+        !formData.category || !formData.subcategory || !formData.condition || 
+        !formData.location) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -160,10 +173,12 @@ const ProductManager = () => {
       formDataToSend.append('location', formData.location);
       formDataToSend.append('tags', formData.tags);
 
-      // Add images
-      formData.images.forEach((image, index) => {
-        formDataToSend.append('images', image);
-      });
+      // Add new images if any
+      if (formData.images.length > 0) {
+        formData.images.forEach((image) => {
+          formDataToSend.append('images', image);
+        });
+      }
 
       const url = editingProduct 
         ? `${apiUrl}/products/${editingProduct.id}`
@@ -175,31 +190,43 @@ const ProductManager = () => {
         method,
         headers: {
           'Authorization': `Bearer ${token}`
+          // Don't set Content-Type, browser will set it with boundary for FormData
         },
         body: formDataToSend
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        toast.success(editingProduct ? 'Product updated successfully!' : 'Product created successfully!');
+        toast.success(
+          editingProduct 
+            ? 'Product updated successfully! Changes are now live.' 
+            : 'Product created successfully! It\'s now visible to buyers.'
+        );
         setIsDialogOpen(false);
         resetForm();
-        fetchProducts();
+        // Refresh the product list to show updates
+        await fetchProducts();
       } else {
-        const error = await response.json();
-        toast.error(error.message || 'Failed to save product');
+        toast.error(result.message || 'Failed to save product');
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      toast.error('Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const deleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this product? This action cannot be undone.'
+    );
+    
+    if (!confirmed) return;
 
     try {
+      setLoading(true);
       const token = localStorage.getItem('accessToken');
       const response = await fetch(`${apiUrl}/products/${productId}`, {
         method: 'DELETE',
@@ -211,13 +238,17 @@ const ProductManager = () => {
 
       if (response.ok) {
         toast.success('Product deleted successfully!');
-        fetchProducts();
+        // Refresh the product list
+        await fetchProducts();
       } else {
-        toast.error('Failed to delete product');
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to delete product');
       }
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Failed to delete product');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -231,8 +262,8 @@ const ProductManager = () => {
       subcategory: product.subcategory,
       condition: product.condition,
       location: product.location,
-      tags: product.tags.join(', '),
-      images: []
+      tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
+      images: [] // Start with empty, user can add new images
     });
     setIsDialogOpen(true);
   };
@@ -350,10 +381,10 @@ const ProductManager = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="new">Brand New</SelectItem>
-                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="like_new">Like New</SelectItem>
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="fair">Fair</SelectItem>
-                      <SelectItem value="used">Used</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -387,12 +418,36 @@ const ProductManager = () => {
 
               <div className="space-y-2">
                 <Label>Images (max 8)</Label>
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  {/* Show existing images when editing */}
+                  {editingProduct && editingProduct.images && editingProduct.images.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Current Images:</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {editingProduct.images.map((imageUrl, index) => (
+                          <div key={`existing-${index}`} className="relative">
+                            <img
+                              src={imageUrl}
+                              alt={`Existing ${index + 1}`}
+                              className="w-full h-20 object-cover rounded border"
+                            />
+                            <Badge className="absolute bottom-1 right-1 text-xs" variant="secondary">
+                              Current
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Uploading new images will add to existing ones
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center gap-2">
                     <Label htmlFor="images" className="cursor-pointer">
                       <div className="flex items-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-accent">
                         <ImagePlus className="h-4 w-4" />
-                        Choose Images
+                        {editingProduct ? 'Add More Images' : 'Choose Images'}
                       </div>
                     </Label>
                     <Input
@@ -406,25 +461,28 @@ const ProductManager = () => {
                   </div>
                   
                   {formData.images.length > 0 && (
-                    <div className="grid grid-cols-4 gap-2">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={URL.createObjectURL(image)}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-20 object-cover rounded border"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                            onClick={() => removeImage(index)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">New Images to Upload:</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {formData.images.map((image, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-20 object-cover rounded border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                              onClick={() => removeImage(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -530,11 +588,24 @@ const ProductManager = () => {
                   </div>
                   
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      View Detail
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => editProduct(product)}>
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => deleteProduct(product.id)}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => deleteProduct(product.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Delete
                     </Button>

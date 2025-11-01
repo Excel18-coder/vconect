@@ -21,6 +21,8 @@ const landlordRoutes = require('./routes/landlords');
 const employerRoutes = require('./routes/employers');
 const doctorRoutes = require('./routes/doctors');
 const buyerRoutes = require('./routes/buyers');
+const analyticsRoutes = require('./routes/analytics');
+const revenueRoutes = require('./routes/revenue');
 // const neonAuthRoutes = require('./routes/neonAuth');
 
 // Import config
@@ -48,26 +50,36 @@ app.use(helmet({
   },
 }));
 
-// CORS configuration - More permissive for development
+// CORS configuration - Flexible for development and production
+const allowedOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+  : [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:8080',
+      'https://v-market.onrender.com',
+      'https://v-market-frontend.onrender.com'
+    ];
+
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+    
     // In development, allow all localhost origins
     if (process.env.NODE_ENV === 'development') {
-      if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-        callback(null, true);
-        return;
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true);
       }
     }
     
-    const allowedOrigins = [
-      process.env.CORS_ORIGIN,
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://localhost:8080'
-    ].filter(Boolean);
+    // Allow all origins in production if CORS_ORIGINS is '*'
+    if (process.env.CORS_ORIGINS === '*') {
+      return callback(null, true);
+    }
     
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('CORS Error: Origin not allowed:', origin);
@@ -143,6 +155,8 @@ app.use('/api/landlords', landlordRoutes);
 app.use('/api/employers', employerRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/buyers', buyerRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/revenue', revenueRoutes);
 
 // API info endpoint
 app.get('/api', (req, res) => {
@@ -159,7 +173,9 @@ app.get('/api', (req, res) => {
       landlords: '/api/landlords',
       employers: '/api/employers',
       doctors: '/api/doctors',
-      buyers: '/api/buyers'
+      buyers: '/api/buyers',
+      analytics: '/api/analytics',
+      revenue: '/api/revenue'
     },
     documentation: 'https://github.com/Excel18-coder/-Vmarket',
     timestamp: new Date().toISOString()

@@ -256,6 +256,79 @@ export const uploadAPI = {
   },
 };
 
+// Messaging API
+export const messageAPI = {
+  // Send message to seller/user
+  sendMessage: async (receiverId, subject, messageBody, attachmentUrl = null) => {
+    const response = await authFetch('/buyers/messages', {
+      method: 'POST',
+      body: JSON.stringify({
+        receiver_id: receiverId,
+        subject,
+        message_body: messageBody,
+        attachment_url: attachmentUrl,
+      }),
+    });
+    
+    return handleResponse(response);
+  },
+
+  // Get user messages
+  getMessages: async (conversationWith = null, page = 1, limit = 20) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(conversationWith && { conversation_with: conversationWith }),
+    });
+    
+    const response = await authFetch(`/buyers/messages?${params}`);
+    return handleResponse(response);
+  },
+
+  // Get conversations list
+  getConversations: async () => {
+    const response = await authFetch('/buyers/messages/conversations');
+    return handleResponse(response);
+  },
+
+  // Get single message
+  getMessage: async (messageId) => {
+    const response = await authFetch(`/buyers/messages/${messageId}`);
+    return handleResponse(response);
+  },
+
+  // Mark message as read
+  markAsRead: async (messageId) => {
+    const response = await authFetch(`/buyers/messages/${messageId}/read`, {
+      method: 'PATCH',
+    });
+    
+    return handleResponse(response);
+  },
+
+  // Delete message
+  deleteMessage: async (messageId) => {
+    const response = await authFetch(`/buyers/messages/${messageId}`, {
+      method: 'DELETE',
+    });
+    
+    return handleResponse(response);
+  },
+
+  // Reply to message
+  replyToMessage: async (messageId, messageBody, attachmentUrl = null) => {
+    const response = await authFetch(`/buyers/messages/${messageId}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({
+        message_body: messageBody,
+        attachment_url: attachmentUrl,
+      }),
+    });
+    
+    return handleResponse(response);
+  },
+};
+
 // Utility function to check if user is authenticated
 export const isAuthenticated = () => {
   return !!localStorage.getItem('accessToken');

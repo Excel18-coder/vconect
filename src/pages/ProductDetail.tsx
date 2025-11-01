@@ -5,13 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { messageAPI } from '@/services/api';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   ArrowLeft,
@@ -66,12 +71,27 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageForm, setMessageForm] = useState({
+    subject: '',
+    message: '',
+  });
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
+
+  // Set default message subject when product loads
+  useEffect(() => {
+    if (product) {
+      setMessageForm(prev => ({
+        ...prev,
+        subject: `Inquiry about: ${product.title}`,
+      }));
+    }
+  }, [product]);
 
   const fetchProduct = async () => {
     try {
@@ -95,6 +115,39 @@ const ProductDetail = () => {
       return;
     }
     setShowContactDialog(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageForm.subject || !messageForm.message) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (!product?.seller?.id) {
+      toast.error('Seller information not available');
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      await messageAPI.sendMessage(
+        product.seller.id,
+        messageForm.subject,
+        messageForm.message
+      );
+      
+      toast.success('Message sent successfully!');
+      setShowContactDialog(false);
+      setMessageForm({
+        subject: `Inquiry about: ${product.title}`,
+        message: '',
+      });
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error(error.message || 'Failed to send message');
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   const handleAddToFavorites = async () => {
@@ -133,6 +186,25 @@ const ProductDetail = () => {
       return product.price * (1 - product.discount_percentage / 100);
     }
     return product.price;
+  };
+
+  // Format phone number for WhatsApp (basic cleaning + small Kenya-friendly heuristic)
+  const getWhatsAppUrl = (phone: string | undefined, text: string) => {
+    if (!phone) return null;
+    let digits = phone.replace(/\D/g, '');
+    if (!digits) return null;
+
+    // If number starts with 0, assume local Kenyan number and prefix 254
+    if (/^0+/.test(digits)) {
+      digits = '254' + digits.replace(/^0+/, '');
+    }
+
+    // If number had a leading + then digits already include country code
+    // Ensure it's not too short
+    if (digits.length < 8) return null;
+
+    const encoded = encodeURIComponent(text || 'Hello, I am interested in your listing');
+    return `https://wa.me/${digits}?text=${encoded}`;
   };
 
   if (loading) {
@@ -359,46 +431,105 @@ const ProductDetail = () => {
 
       {/* Contact Seller Dialog */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Contact Seller</DialogTitle>
             <DialogDescription>
-              Get in touch with {product.seller.display_name}
+              Send a message to {product.seller.display_name}
             </DialogDescription>
           </DialogHeader>
+          
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <a
-                href={`mailto:${product.seller.email}`}
-                className="text-sm hover:underline"
-              >
-                {product.seller.email}
-              </a>
-            </div>
-            {product.seller.phone_number && (
+            {/* Seller Contact Info */}
+            <div className="bg-muted/50 p-3 rounded-lg space-y-2">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
+                <Mail className="h-4 w-4 text-muted-foreground" />
                 <a
-                  href={`tel:${product.seller.phone_number}`}
+                  href={`mailto:${product.seller.email}`}
                   className="text-sm hover:underline"
                 >
-                  {product.seller.phone_number}
+                  {product.seller.email}
                 </a>
               </div>
-            )}
-            <Button
-              onClick={() => {
-                // TODO: Implement messaging system
-                console.log('Send message to seller:', product.seller.id);
-                setShowContactDialog(false);
-              }}
-              className="w-full"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Send Message
-            </Button>
+              {product.seller.phone_number && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <a
+                      href={`tel:${product.seller.phone_number}`}
+                      className="text-sm hover:underline"
+                    >
+                      {product.seller.phone_number}
+                    </a>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                    onClick={() => {
+                      const phone = product.seller.phone_number?.replace(/\D/g, '');
+                      const message = encodeURIComponent(`Hi, I'm interested in your product: ${product.title}`);
+                      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Contact via WhatsApp
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Message Form */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="subject">Subject</Label>
+                <Input
+                  id="subject"
+                  value={messageForm.subject}
+                  onChange={(e) => setMessageForm(prev => ({ ...prev, subject: e.target.value }))}
+                  placeholder="Enter subject"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  value={messageForm.message}
+                  onChange={(e) => setMessageForm(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="Write your message here..."
+                  rows={5}
+                />
+              </div>
+            </div>
           </div>
+
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowContactDialog(false)}
+              disabled={sendingMessage}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendMessage}
+              disabled={sendingMessage || !messageForm.subject || !messageForm.message}
+            >
+              {sendingMessage ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Send Message
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

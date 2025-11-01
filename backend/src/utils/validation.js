@@ -10,16 +10,19 @@ const validateRegister = [
     .withMessage('Please provide a valid email address'),
   
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
   
   body('displayName')
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('Display name must be between 2 and 50 characters')
+    .withMessage('Display name must be between 2 and 50 characters'),
+  
+  body('userType')
+    .optional()
+    .isIn(['buyer', 'seller', 'landlord', 'employer', 'doctor', 'tutor'])
+    .withMessage('Invalid user type')
 ];
 
 /**
@@ -95,7 +98,7 @@ const validateListing = [
   body('condition')
     .optional()
     .isIn(['new', 'like_new', 'good', 'fair', 'poor'])
-    .withMessage('Invalid condition'),
+    .withMessage('Condition must be one of: new, like_new, good, fair, poor'),
   
   body('location')
     .optional()
@@ -134,10 +137,8 @@ const validatePasswordReset = [
     .withMessage('Reset token is required'),
   
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
 ];
 
 /**
@@ -183,8 +184,12 @@ const validateProductCreation = [
   
   body('condition')
     .optional()
-    .isIn(['new', 'like_new', 'good', 'fair', 'poor', 'excellent', 'used'])
-    .withMessage('Condition must be one of: new, like_new, excellent, good, fair, poor, used'),
+    .customSanitizer(value => {
+      if (!value) return 'good';
+      return value.toLowerCase().replace(/\s+/g, '_');
+    })
+    .isIn(['new', 'like_new', 'good', 'fair', 'poor'])
+    .withMessage('Condition must be one of: new, like_new, good, fair, poor'),
   
   body('stock_quantity')
     .optional()

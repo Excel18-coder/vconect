@@ -12,6 +12,8 @@ import PostAd from "./pages/PostAd";
 import ProductDetail from "./pages/ProductDetail";
 import Sell from "./pages/Sell";
 import Search from "./pages/Search";
+import AIInsights from "./pages/AIInsights";
+import Revenue from "./pages/Revenue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,8 +41,10 @@ const App = () => (
             <Route path="/jobs" element={<CategoryPage />} />
             <Route path="/education" element={<CategoryPage />} />
             <Route path="/entertainment" element={<CategoryPage />} />
-            <Route path="/revenue" element={<CategoryPage />} />
-            <Route path="/ai-insights" element={<CategoryPage />} />
+            <Route path="/revenue" element={<Revenue />} />
+            <Route path="/ai-insights" element={<AIInsights />} />
+            <Route path="/category/revenue" element={<Revenue />} />
+            <Route path="/category/algorithm" element={<AIInsights />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

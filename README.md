@@ -214,6 +214,61 @@ Health check: `curl http://localhost:5000/health`
 npm run test
 ```
 
+## 🚀 Deployment
+
+### Deploy to Render (Recommended)
+
+The easiest way to deploy V-Market to production:
+
+```bash
+# Quick deploy
+./deploy.sh
+
+# Or manually
+git add .
+git commit -m "Deploy to Render"
+git push origin main
+```
+
+Render will automatically:
+1. Build and deploy backend API
+2. Build and deploy frontend static site
+3. Configure SSL certificates
+4. Setup automatic deployments on git push
+
+**Deployment Guide**: See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for detailed instructions.
+
+**Environment Variables**: See [ENV_VARIABLES.md](ENV_VARIABLES.md) for complete list.
+
+### Live URLs (After Deployment)
+
+- **Frontend**: https://v-market.onrender.com
+- **Backend API**: https://v-market-backend.onrender.com/api
+- **Health Check**: https://v-market-backend.onrender.com/health
+
+### Deploy to Other Platforms
+
+<details>
+<summary>Vercel / Netlify (Frontend only)</summary>
+
+1. Connect your GitHub repository
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Add environment variable: `VITE_API_BASE_URL=https://your-backend-url.com/api`
+5. Deploy!
+
+</details>
+
+<details>
+<summary>Railway / Heroku (Backend)</summary>
+
+1. Connect your GitHub repository
+2. Set root directory: `backend`
+3. Add environment variables from `.env.render.example`
+4. Deploy!
+
+</details>
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -230,10 +285,25 @@ MIT License - see LICENSE file for details.
 
 ## 🆘 Support
 
-- Create an issue for bug reports
-- Join our Discord for community support
-- Check documentation in `backend/README.md`
+- 🐛 [Create an issue](https://github.com/Excel18-coder/-Vmarket/issues) for bug reports
+- 📖 Check [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for deployment help
+- 💬 Join our Discord for community support
+- 📚 Check documentation in `backend/README.md`
+
+## 📊 Project Status
+
+- ✅ Backend API with JWT authentication
+- ✅ Frontend with React + TypeScript
+- ✅ Product management (CRUD)
+- ✅ Image uploads with Cloudinary
+- ✅ AI Insights & Analytics
+- ✅ Revenue tracking
+- ✅ Multi-category support
+- ✅ WhatsApp integration
+- ✅ Production-ready deployment
 
 ---
 
-Built with ❤️ for Kenya's digital marketplace needs.
+**Built with ❤️ for Kenya's digital marketplace needs.**
+
+**🌟 Star this repo if you find it helpful!**

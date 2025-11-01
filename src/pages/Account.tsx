@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { User, Settings, ShoppingBag, Heart, MapPin, Briefcase, GraduationCap, Stethoscope, Home, Car, DollarSign, TrendingUp, Package } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -50,18 +51,45 @@ const Account = () => {
   }
 
   // Initialize form data when profile is loaded
-  if (profile && !isEditing && !formData.display_name) {
-    setFormData({
-      display_name: profile.displayName || '',
-      bio: profile.bio || '',
-      phone_number: profile.phoneNumber || '',
-      location: profile.location || '',
-      user_type: profile.userType || 'buyer'
-    });
-  }
+  useEffect(() => {
+    if (profile && !isEditing) {
+      setFormData({
+        display_name: profile.displayName || '',
+        bio: profile.bio || '',
+        phone_number: profile.phoneNumber || '',
+        location: profile.location || '',
+        user_type: profile.userType || 'buyer'
+      });
+    }
+  }, [profile, isEditing]);
 
   const handleUpdateProfile = async () => {
-    const { error } = await updateProfile(formData);
+    // Prepare update data - only send fields that are not empty
+    const updateData: any = {
+      display_name: formData.display_name.trim(),
+      user_type: formData.user_type
+    };
+
+    // Only add optional fields if they have values
+    if (formData.bio && formData.bio.trim()) {
+      updateData.bio = formData.bio.trim();
+    }
+    
+    if (formData.phone_number && formData.phone_number.trim()) {
+      updateData.phone_number = formData.phone_number.trim();
+    }
+    
+    if (formData.location && formData.location.trim()) {
+      updateData.location = formData.location.trim();
+    }
+
+    // Validate required fields
+    if (!updateData.display_name) {
+      toast.error('Display name is required');
+      return;
+    }
+
+    const { error } = await updateProfile(updateData);
     if (!error) {
       setIsEditing(false);
     }
@@ -282,34 +310,52 @@ const Account = () => {
                     <div className="space-y-4">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="display_name">Display Name</Label>
+                          <Label htmlFor="display_name">
+                            Display Name <span className="text-destructive">*</span>
+                          </Label>
                           <Input
                             id="display_name"
                             value={formData.display_name}
                             onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                            placeholder="Enter your display name"
+                            required
                           />
+                          <p className="text-xs text-muted-foreground">
+                            This name will be visible to other users
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="phone_number">Phone Number</Label>
+                          <Label htmlFor="phone_number">Phone Number (Optional)</Label>
                           <Input
                             id="phone_number"
                             value={formData.phone_number}
                             onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                            placeholder="+254712345678"
+                            type="tel"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Buyers can contact you via this number
+                          </p>
                         </div>
                       </div>
                       
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="location">Location</Label>
+                          <Label htmlFor="location">Location (Optional)</Label>
                           <Input
                             id="location"
                             value={formData.location}
                             onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                            placeholder="e.g., Nairobi, Westlands"
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Your general location
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="user_type">Account Type</Label>
+                          <Label htmlFor="user_type">
+                            Account Type <span className="text-destructive">*</span>
+                          </Label>
                           <Select value={formData.user_type} onValueChange={(value) => setFormData(prev => ({ ...prev, user_type: value }))}>
                             <SelectTrigger>
                               <SelectValue />
@@ -323,22 +369,34 @@ const Account = () => {
                               <SelectItem value="tutor">Tutor</SelectItem>
                             </SelectContent>
                           </Select>
+                          <p className="text-xs text-muted-foreground">
+                            Your role in the marketplace
+                          </p>
                         </div>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
+                        <Label htmlFor="bio">Bio (Optional)</Label>
                         <Textarea
                           id="bio"
                           value={formData.bio}
                           onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                          placeholder="Tell us about yourself..."
                           rows={3}
+                          maxLength={500}
                         />
+                        <p className="text-xs text-muted-foreground">
+                          {formData.bio.length}/500 characters
+                        </p>
                       </div>
                       
                       <div className="flex gap-2">
-                        <Button onClick={handleUpdateProfile}>Save Changes</Button>
-                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        <Button onClick={handleUpdateProfile} disabled={loading}>
+                          {loading ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                        <Button variant="outline" onClick={() => setIsEditing(false)} disabled={loading}>
+                          Cancel
+                        </Button>
                       </div>
                     </div>
                   ) : (

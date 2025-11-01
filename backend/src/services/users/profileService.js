@@ -37,7 +37,7 @@ class ProfileService {
    * Update user profile
    */
   async updateProfile(userId, updateData) {
-    logger.debug('Updating user profile', { userId });
+    logger.debug('Updating user profile', { userId, updateData });
 
     // Validate update data
     const allowedFields = [
@@ -50,13 +50,29 @@ class ProfileService {
 
     const updates = {};
     for (const [key, value] of Object.entries(updateData)) {
-      if (allowedFields.includes(key) && value !== undefined) {
-        updates[key] = value;
+      if (allowedFields.includes(key)) {
+        // Allow empty strings for optional fields to clear them
+        // But require display_name and user_type to have values
+        if (key === 'display_name' || key === 'user_type') {
+          if (value !== undefined && value !== null && value !== '') {
+            updates[key] = value;
+          }
+        } else {
+          // For optional fields, allow empty strings or null to clear them
+          if (value !== undefined) {
+            updates[key] = value === '' ? null : value;
+          }
+        }
       }
     }
 
     if (Object.keys(updates).length === 0) {
       throw new ValidationError('No valid fields to update');
+    }
+
+    // Validate required fields if they're being updated
+    if ('display_name' in updates && (!updates.display_name || updates.display_name.trim().length < 2)) {
+      throw new ValidationError('Display name must be at least 2 characters long');
     }
 
     // Check if profile exists
@@ -68,7 +84,7 @@ class ProfileService {
     // Update profile
     const updatedProfile = await profileRepository.update(userId, updates);
 
-    logger.info('Profile updated successfully', { userId });
+    logger.info('Profile updated successfully', { userId, updatedFields: Object.keys(updates) });
 
     return {
       id: updatedProfile.id,

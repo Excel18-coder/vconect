@@ -5,14 +5,12 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install --prefix backend
-    startCommand: npm start --prefix backend
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NODE_OPTIONS
-        value: --max-old-space-size=460 --optimize-for-size
       - key: PORT
         value: 10000
       - key: DATABASE_URL
@@ -26,13 +24,17 @@ services:
       - key: REFRESH_TOKEN_EXPIRES_IN
         value: 30d
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: dxwavfvqu
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: "423728775953721"
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: G9gvzNmzCfJ0m1dKdWJgKkb8XOA
+      - key: CORS_ORIGINS
+        value: "*"
       - key: CLIENT_URL
         value: https://v-market.onrender.com
+      - key: BCRYPT_SALT_ROUNDS
+        value: "12"
       - key: ALLOWED_FILE_TYPES
         value: image/jpeg,image/png,image/webp,application/pdf
       - key: MAX_FILE_SIZE
