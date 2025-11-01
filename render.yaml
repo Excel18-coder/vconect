@@ -30,9 +30,9 @@ services:
       - key: CLOUDINARY_API_SECRET
         value: G9gvzNmzCfJ0m1dKdWJgKkb8XOA
       - key: CORS_ORIGINS
-        value: "*"
+        value: "https://vconect.vercel.app,*"
       - key: CLIENT_URL
-        value: https://v-market.onrender.com
+        value: https://vconect.vercel.app
       - key: BCRYPT_SALT_ROUNDS
         value: "12"
       - key: ALLOWED_FILE_TYPES

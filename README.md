@@ -242,7 +242,7 @@ Render will automatically:
 
 ### Live URLs (After Deployment)
 
-- **Frontend**: https://v-market.onrender.com
+- **Frontend**: https://vconect.vercel.app
 - **Backend API**: https://v-market-backend.onrender.com/api
 - **Health Check**: https://v-market-backend.onrender.com/health
 
