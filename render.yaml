@@ -30,9 +30,9 @@ services:
       - key: CLOUDINARY_API_SECRET
         value: G9gvzNmzCfJ0m1dKdWJgKkb8XOA
       - key: CORS_ORIGINS
-        value: "https://vconect.vercel.app,*"
+        value: "https://vconect.vercel.app,https://vconect.onrender.com,*"
       - key: CLIENT_URL
-        value: https://vconect.vercel.app
+        value: https://vconect.onrender.com
       - key: BCRYPT_SALT_ROUNDS
         value: "12"
       - key: ALLOWED_FILE_TYPES
@@ -65,4 +65,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://v-market-backend.onrender.com/api
+        value: https://vconect.onrender.com/api
