@@ -50,7 +50,7 @@
 
 3. **`.env.production`** (Exists)
    - Frontend production configuration
-   - API URL: `https://v-market-backend.onrender.com/api`
+   - API URL: `https://vconect.onrender.com/api`
 
 4. **`.env.example`** (Frontend - Exists)
    - Template for frontend environment variables
@@ -123,7 +123,7 @@ CORS_ORIGINS=*
 ### Frontend Environment Variables (Required)
 
 ```bash
-VITE_API_BASE_URL=https://v-market-backend.onrender.com/api
+VITE_API_BASE_URL=https://vconect.onrender.com/api
 ```
 
 ## 📦 Files Structure
@@ -186,7 +186,7 @@ v-market/
 6. Wait 10-15 minutes for deployment
 
 ### After Deployment:
-1. Test backend: `curl https://v-market-backend.onrender.com/health`
+1. Test backend: `curl https://vconect.onrender.com/health`
 2. Visit frontend: `https://v-market.onrender.com`
 3. Test all features (see DEPLOYMENT_CHECKLIST.md)
 4. Update `CORS_ORIGINS` from `*` to specific URL
@@ -236,7 +236,7 @@ DATABASE_URL=postgresql://neondb_owner:npg_Zcqetwui1T0S@ep-dark-hat-ad5h8dd0-poo
 
 ### API URLs:
 - **Development**: `http://localhost:5000/api`
-- **Production**: `https://v-market-backend.onrender.com/api`
+- **Production**: `https://vconect.onrender.com/api`
 
 ## 🎉 Success Indicators
 

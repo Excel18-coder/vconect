@@ -3,15 +3,15 @@
 ## Live URLs
 
 - **Frontend (Vercel)**: https://vconect.vercel.app
-- **Backend (Render)**: https://v-market-backend.onrender.com
-- **API Endpoint**: https://v-market-backend.onrender.com/api
+- **Backend (Render)**: https://vconect.onrender.com
+- **API Endpoint**: https://vconect.onrender.com/api
 
 ## Frontend Environment Variables (Vercel)
 
 Set these in your Vercel project settings:
 
 ```bash
-VITE_API_BASE_URL=https://v-market-backend.onrender.com/api
+VITE_API_BASE_URL=https://vconect.onrender.com/api
 ```
 
 ## Backend CORS Configuration
@@ -26,7 +26,7 @@ The backend is already configured to accept requests from:
 
 ### Backend (Already Configured)
 
-The backend at `https://v-market-backend.onrender.com` is configured with:
+The backend at `https://vconect.onrender.com` is configured with:
 - CORS_ORIGINS includes `https://vconect.vercel.app`
 - CLIENT_URL set to `https://vconect.vercel.app`
 
@@ -45,7 +45,7 @@ The backend at `https://v-market-backend.onrender.com` is configured with:
 
 3. **Add Environment Variables**
    ```bash
-   VITE_API_BASE_URL=https://v-market-backend.onrender.com/api
+   VITE_API_BASE_URL=https://vconect.onrender.com/api
    ```
 
 4. **Deploy**
@@ -60,7 +60,7 @@ The backend at `https://v-market-backend.onrender.com` is configured with:
 curl -H "Origin: https://vconect.vercel.app" \
      -H "Access-Control-Request-Method: GET" \
      -X OPTIONS \
-     https://v-market-backend.onrender.com/health
+     https://vconect.onrender.com/health
 ```
 
 ### Check Frontend
@@ -72,7 +72,7 @@ curl -H "Origin: https://vconect.vercel.app" \
 ### Check API Connection
 ```bash
 # From browser console at https://vconect.vercel.app
-fetch('https://v-market-backend.onrender.com/api/products/browse')
+fetch('https://vconect.onrender.com/api/products/browse')
   .then(r => r.json())
   .then(console.log)
 ```
@@ -86,7 +86,7 @@ If you see CORS errors:
 3. Restart backend service on Render
 
 ### API Not Responding
-1. Check backend is running: `https://v-market-backend.onrender.com/health`
+1. Check backend is running: `https://vconect.onrender.com/health`
 2. Check frontend env var: `VITE_API_BASE_URL`
 3. Redeploy frontend if env var changed
 
@@ -129,11 +129,11 @@ Vercel automatically provides:
 
 - **Vercel Analytics**: Automatically enabled
 - **Vercel Logs**: Real-time deployment logs
-- **Backend Health**: https://v-market-backend.onrender.com/health
+- **Backend Health**: https://vconect.onrender.com/health
 
 ---
 
 **Everything is configured and ready!** 🚀
 
 Frontend: https://vconect.vercel.app
-Backend: https://v-market-backend.onrender.com
+Backend: https://vconect.onrender.com

@@ -67,7 +67,7 @@ fi
 if [ ! -f ".env.production" ]; then
     echo -e "${YELLOW}⚠️  Warning: .env.production not found${NC}"
     echo "Creating .env.production..."
-    echo "VITE_API_BASE_URL=https://v-market-backend.onrender.com/api" > .env.production
+    echo "VITE_API_BASE_URL=https://vconect.onrender.com/api" > .env.production
     echo -e "${GREEN}✅ Created .env.production${NC}"
 fi
 
@@ -93,12 +93,12 @@ if [ $? -eq 0 ]; then
     echo ""
     echo -e "${BLUE}Your app will be live at:${NC}"
     echo "  Frontend: https://v-market.onrender.com"
-    echo "  Backend:  https://v-market-backend.onrender.com"
+    echo "  Backend:  https://vconect.onrender.com"
     echo ""
     echo -e "${YELLOW}⏱️  Deployment takes approximately 10-15 minutes${NC}"
     echo ""
     echo -e "${BLUE}Health check commands:${NC}"
-    echo "  curl https://v-market-backend.onrender.com/health"
+    echo "  curl https://vconect.onrender.com/health"
     echo "  curl https://v-market.onrender.com"
     echo ""
     echo -e "${GREEN}🚀 Deployment initiated successfully!${NC}"
