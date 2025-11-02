@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
@@ -37,6 +37,7 @@ interface Product {
 
 const CategoryPage = () => {
   const { category } = useParams<{ category: string }>();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -236,7 +237,11 @@ const CategoryPage = () => {
                           by {product.seller_name || 'Seller'}
                         </div>
                       </div>
-                      <Button size="sm" className="bg-gradient-to-r from-primary to-pink-500">
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-primary to-pink-500"
+                        onClick={() => navigate(`/product/${product.id}`)}
+                      >
                         View Details
                       </Button>
                     </div>

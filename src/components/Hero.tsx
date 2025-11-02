@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Shield, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  
   return (
     <section className="relative min-h-[600px] bg-gradient-to-br from-blue-50 via-background to-green-50 overflow-hidden">
       <div className="container mx-auto px-4 py-16">
@@ -24,7 +27,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-red-500 hover:from-blue-700 hover:to-red-600 text-white"
-                onClick={() => window.location.href = '/market'}
+                onClick={() => navigate('/market')}
               >
                 Start Exploring
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -32,7 +35,7 @@ const Hero = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => window.location.href = '/post-ad'}
+                onClick={() => navigate('/post-ad')}
               >
                 Become a Seller
               </Button>
