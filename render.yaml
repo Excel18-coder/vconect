@@ -24,11 +24,11 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 30d
       - key: CLOUDINARY_CLOUD_NAME
-        value: dxwavfvqu
+        value: dpkcyztid
       - key: CLOUDINARY_API_KEY
-        value: "423728775953721"
+        value: "988194444899629"
       - key: CLOUDINARY_API_SECRET
-        value: G9gvzNmzCfJ0m1dKdWJgKkb8XOA
+        value: TCQ4JAJUQu5gOdoB4udEXhxrTzU
       - key: CORS_ORIGINS
         value: "https://vconect.vercel.app,https://vconect.onrender.com,https://www.vconect.co.ke,https://vconect.co.ke,*"
       - key: CLIENT_URL

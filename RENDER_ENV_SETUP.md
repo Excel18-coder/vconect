@@ -71,9 +71,9 @@ Make sure you have ALL of these set:
 ✅ REFRESH_TOKEN_SECRET          <-- MUST BE THERE!
 ✅ JWT_EXPIRES_IN = 7d
 ✅ JWT_REFRESH_EXPIRES_IN = 30d
-✅ CLOUDINARY_CLOUD_NAME = dxwavfvqu
-✅ CLOUDINARY_API_KEY = 423728775953721
-✅ CLOUDINARY_API_SECRET = G9gvzNmzCfJ0m1dKdWJgKkb8XOA
+✅ CLOUDINARY_CLOUD_NAME = dpkcyztid
+✅ CLOUDINARY_API_KEY = 988194444899629
+✅ CLOUDINARY_API_SECRET = TCQ4JAJUQu5gOdoB4udEXhxrTzU
 ✅ NODE_ENV = production
 ✅ PORT = 10000
 ✅ CORS_ORIGINS = https://vconect.vercel.app,https://vconect.onrender.com,*
