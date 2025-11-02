@@ -19,9 +19,9 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: REFRESH_TOKEN_SECRET
+      - key: JWT_REFRESH_SECRET
         generateValue: true
-      - key: REFRESH_TOKEN_EXPIRES_IN
+      - key: JWT_REFRESH_EXPIRES_IN
         value: 30d
       - key: CLOUDINARY_CLOUD_NAME
         value: dxwavfvqu

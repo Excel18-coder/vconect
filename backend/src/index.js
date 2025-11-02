@@ -18,16 +18,57 @@ try {
 }
 
 // Validate critical environment variables
-const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'CLOUDINARY_CLOUD_NAME'];
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+console.log('🔍 Validating environment variables...');
 
+const requiredEnvVars = {
+  'DATABASE_URL': 'PostgreSQL database connection string',
+  'JWT_SECRET': 'Secret key for signing JWT access tokens (min 32 characters)',
+  'JWT_REFRESH_SECRET': 'Secret key for signing JWT refresh tokens (min 32 characters)',
+  'CLOUDINARY_CLOUD_NAME': 'Cloudinary cloud name for image uploads',
+  'CLOUDINARY_API_KEY': 'Cloudinary API key',
+  'CLOUDINARY_API_SECRET': 'Cloudinary API secret'
+};
+
+const missingVars = [];
+const warnings = [];
+
+// Check each required variable
+Object.entries(requiredEnvVars).forEach(([varName, description]) => {
+  const value = process.env[varName];
+  
+  if (!value) {
+    missingVars.push(`  ❌ ${varName} - ${description}`);
+  } else {
+    // Validate JWT secrets length
+    if ((varName === 'JWT_SECRET' || varName === 'JWT_REFRESH_SECRET') && value.length < 32) {
+      warnings.push(`  ⚠️  ${varName} is too short (${value.length} chars). Recommended: 64+ characters for security.`);
+    }
+    console.log(`  ✅ ${varName} is set`);
+  }
+});
+
+// Log warnings
+if (warnings.length > 0) {
+  console.log('\n⚠️  WARNINGS:');
+  warnings.forEach(warning => console.log(warning));
+}
+
+// Exit if critical variables are missing
 if (missingVars.length > 0) {
-  console.error('❌ Missing required environment variables:', missingVars.join(', '));
-  console.error('Please ensure these variables are set in your environment or .env file');
+  console.error('\n❌ CRITICAL ERROR: Missing required environment variables:\n');
+  missingVars.forEach(msg => console.error(msg));
+  console.error('\n📋 TO FIX THIS ON RENDER:');
+  console.error('   1. Go to: https://dashboard.render.com/');
+  console.error('   2. Select your backend service');
+  console.error('   3. Click "Environment" in left sidebar');
+  console.error('   4. Add the missing variables listed above');
+  console.error('   5. Click "Save Changes"');
+  console.error('   6. Wait for automatic redeploy\n');
+  console.error('💡 TIP: Use backend/.env.render.example as a template\n');
   process.exit(1);
 }
 
-console.log('✅ All required environment variables are present');
+console.log('\n✅ All required environment variables are present and valid\n');
 
 const express = require('express');
 const cors = require('cors');
