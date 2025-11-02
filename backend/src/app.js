@@ -59,6 +59,8 @@ const allowedOrigins = process.env.CORS_ORIGINS
       'http://localhost:8080',
       'https://vconect.vercel.app',
       'https://vconect.onrender.com',
+      'https://www.vconect.co.ke',
+      'https://vconect.co.ke',
       'https://v-market.onrender.com',
       'https://v-market-frontend.onrender.com'
     ];

@@ -30,9 +30,9 @@ services:
       - key: CLOUDINARY_API_SECRET
         value: G9gvzNmzCfJ0m1dKdWJgKkb8XOA
       - key: CORS_ORIGINS
-        value: "https://vconect.vercel.app,https://vconect.onrender.com,*"
+        value: "https://vconect.vercel.app,https://vconect.onrender.com,https://www.vconect.co.ke,https://vconect.co.ke,*"
       - key: CLIENT_URL
-        value: https://vconect.onrender.com
+        value: https://www.vconect.co.ke
       - key: BCRYPT_SALT_ROUNDS
         value: "12"
       - key: ALLOWED_FILE_TYPES

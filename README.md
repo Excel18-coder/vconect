@@ -242,7 +242,7 @@ Render will automatically:
 
 ### Live URLs (After Deployment)
 
-- **Frontend**: https://vconect.onrender.com
+- **Frontend**: https://www.vconect.co.ke
 - **Backend API**: https://vconect.onrender.com/api
 - **Health Check**: https://vconect.onrender.com/health
 
