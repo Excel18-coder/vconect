@@ -1,8 +1,8 @@
-# V-MARKET - Kenya's Digital Marketplace
+# VCONECT - Kenya's Digital Marketplace
 
 ## Project info
 
-**V-Market** is a modern digital marketplace built for Kenya, connecting buyers and sellers across various categories including education, entertainment, health, jobs, transport, and more.
+**Vconect** is a modern digital marketplace built for Kenya, connecting buyers and sellers across various categories including education, entertainment, health, jobs, transport, and more.
 
 ## 🏗️ Architecture
 

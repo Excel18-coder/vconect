@@ -30,10 +30,10 @@ const Header = () => {
             <Link to="/" className="flex items-center space-x-3">
               <img 
                 src="/images/logo.png" 
-                alt="V-MARKET Logo" 
+                alt="VCONECT Logo" 
                 className="w-12 h-12 object-contain"
               />
-              <span className="text-xl font-bold text-blue-600">V-MARKET</span>
+              <span className="text-xl font-bold text-blue-600">VCONECT</span>
             </Link>
           </div>
 

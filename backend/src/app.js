@@ -165,9 +165,9 @@ app.use('/api/revenue', revenueRoutes);
 // API info endpoint
 app.get('/api', (req, res) => {
   res.json({
-    name: 'V-Market API',
+    name: 'Vconect API',
     version: '1.0.0',
-    description: 'Backend API for V-Market - Kenya\'s Digital Marketplace',
+    description: 'Backend API for Vconect - Kenya\'s Digital Marketplace',
     endpoints: {
       auth: '/api/auth',
       profile: '/api/profile',
@@ -189,7 +189,7 @@ app.get('/api', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to V-Market API',
+    message: 'Welcome to Vconect API',
     version: '1.0.0',
     status: 'running',
     timestamp: new Date().toISOString()

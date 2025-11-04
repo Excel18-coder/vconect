@@ -1,7 +1,7 @@
 {
-  "name": "v-market-backend",
+  "name": "vconect-backend",
   "version": "1.0.0",
-  "description": "Backend API for V-Market - Kenya's Digital Marketplace",
+  "description": "Backend API for Vconect - Kenya's Digital Marketplace",
   "main": "src/index.js",
   "scripts": {
     "start": "node --max-old-space-size=460 src/index.js",
@@ -18,7 +18,7 @@
     "neon",
     "cloudinary"
   ],
-  "author": "V-Market Team",
+  "author": "Vconect Team",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",

@@ -239,7 +239,7 @@ const PostAd = () => {
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Post Your Ad</h1>
             <p className="text-muted-foreground">
-              Fill in the details below to list your product on V-Market
+              Fill in the details below to list your product on Vconect
             </p>
           </div>
 
