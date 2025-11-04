@@ -494,16 +494,43 @@ const deleteProduct = asyncHandler(async (req, res) => {
     return sendNotFound(res, 'Product not found or unauthorized');
   }
 
+  const product = products[0];
+
+  // Delete images from Cloudinary if they exist
+  if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    console.log(`🗑️ Deleting ${product.images.length} images from Cloudinary for product ${id}`);
+    
+    for (const imageUrl of product.images) {
+      try {
+        // Extract public_id from Cloudinary URL
+        // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+        const urlParts = imageUrl.split('/');
+        const uploadIndex = urlParts.indexOf('upload');
+        if (uploadIndex !== -1 && uploadIndex < urlParts.length - 1) {
+          // Get everything after 'upload/' as the public_id (including folders)
+          const publicIdWithExt = urlParts.slice(uploadIndex + 2).join('/'); // Skip version number
+          const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ''); // Remove file extension
+          
+          // Delete from Cloudinary
+          await cloudinary.uploader.destroy(publicId);
+          console.log(`✅ Deleted image from Cloudinary: ${publicId}`);
+        }
+      } catch (error) {
+        console.error(`⚠️ Failed to delete image from Cloudinary: ${imageUrl}`, error);
+        // Continue with deletion even if Cloudinary delete fails
+      }
+    }
+  }
+
   if (permanent === 'true') {
     // Permanent delete - actually remove from database
-    // Note: In production, you might want to keep records for analytics
     await sql`
       DELETE FROM listings 
       WHERE id = ${id} AND user_id = ${userId}
     `;
     
-    console.log('✅ Product permanently deleted:', id);
-    return sendSuccess(res, 'Product permanently deleted');
+    console.log('✅ Product permanently deleted from database:', id);
+    return sendSuccess(res, 'Product and all images permanently deleted');
   } else {
     // Soft delete - change status to inactive
     await sql`
@@ -513,7 +540,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     `;
     
     console.log('✅ Product soft deleted (status set to inactive):', id);
-    return sendSuccess(res, 'Product deleted successfully');
+    return sendSuccess(res, 'Product deleted successfully. Images removed from Cloudinary.');
   }
 });
 

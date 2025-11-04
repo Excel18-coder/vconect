@@ -218,9 +218,15 @@ const ProductManager = () => {
     }
   };
 
-  const deleteProduct = async (productId: string) => {
+  const deleteProduct = async (productId: string, productTitle: string, hasImages: boolean) => {
+    const imageText = hasImages ? ' All associated images will also be removed from storage.' : '';
     const confirmed = window.confirm(
-      'Are you sure you want to delete this product? This action cannot be undone.'
+      `Are you sure you want to delete "${productTitle}"?\n\n` +
+      `This will:\n` +
+      `• Remove the product from your listings\n` +
+      `• Hide it from all buyers\n` +
+      `• Delete all product images from Cloudinary${imageText}\n\n` +
+      `This action cannot be undone.`
     );
     
     if (!confirmed) return;
@@ -237,7 +243,9 @@ const ProductManager = () => {
       });
 
       if (response.ok) {
-        toast.success('Product deleted successfully!');
+        toast.success('Product and all images deleted successfully!', {
+          description: 'The product has been removed from your listings and storage.'
+        });
         // Refresh the product list
         await fetchProducts();
       } else {
@@ -603,7 +611,7 @@ const ProductManager = () => {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => deleteProduct(product.id)}
+                      onClick={() => deleteProduct(product.id, product.title, product.images && product.images.length > 0)}
                       className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
