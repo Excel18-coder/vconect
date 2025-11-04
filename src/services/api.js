@@ -265,7 +265,7 @@ export const messageAPI = {
       body: JSON.stringify({
         receiver_id: receiverId,
         subject,
-        message_body: messageBody,
+        message: messageBody,  // Changed from message_body to message
         attachment_url: attachmentUrl,
       }),
     });

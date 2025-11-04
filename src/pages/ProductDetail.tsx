@@ -65,8 +65,10 @@ interface Product {
   negotiable?: boolean;
   contact_phone?: string;
   contactPhone?: string;
+  seller_id?: string;
   seller: {
-    id: number;
+    id?: number;
+    user_id?: string;
     display_name?: string;
     name?: string;
     seller_name?: string;
@@ -156,15 +158,19 @@ const ProductDetail = () => {
       return;
     }
 
-    if (!product?.seller?.id) {
+    // Get seller ID with multiple fallbacks
+    const sellerId = product?.seller_id || product?.seller?.user_id || product?.seller?.id;
+    
+    if (!sellerId) {
       toast.error('Seller information not available');
+      console.error('Product data:', product);
       return;
     }
 
     try {
       setSendingMessage(true);
       await messageAPI.sendMessage(
-        product.seller.id,
+        sellerId,
         messageForm.subject,
         messageForm.message
       );

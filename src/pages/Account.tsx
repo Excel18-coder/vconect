@@ -11,10 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { User, Settings, ShoppingBag, Heart, MapPin, Briefcase, GraduationCap, Stethoscope, Home, Car, DollarSign, TrendingUp, Package } from 'lucide-react';
+import { User, Settings, ShoppingBag, Heart, MapPin, Briefcase, GraduationCap, Stethoscope, Home, Car, DollarSign, TrendingUp, Package, MessageCircle, Mail, Phone } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductManager from '@/components/ProductManager';
+import MessagesView from '@/components/MessagesView';
 
 const Account = () => {
   const { user, profile, updateProfile, signOut, loading } = useAuth();
@@ -207,9 +208,13 @@ const Account = () => {
 
           {/* Account Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-8">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="messages">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Messages
+              </TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
               {(profile?.userType === 'seller' || profile?.userType === 'landlord' || profile?.userType === 'employer') && (
@@ -419,6 +424,18 @@ const Account = () => {
                       </Button>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="messages" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Messages</CardTitle>
+                  <CardDescription>View and manage your conversations with buyers and sellers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MessagesView />
                 </CardContent>
               </Card>
             </TabsContent>
