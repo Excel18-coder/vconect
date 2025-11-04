@@ -32,7 +32,8 @@ const Header = () => {
               <img 
                 src={logoImage} 
                 alt="VCONECT Logo" 
-                className="w-12 h-12 object-contain"
+                className="w-12 h-12 object-contain rounded-lg bg-transparent"
+                style={{ mixBlendMode: 'multiply' }}
               />
               <span className="text-xl font-bold text-blue-600">VCONECT</span>
             </Link>
