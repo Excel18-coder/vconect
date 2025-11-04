@@ -163,7 +163,10 @@ const Account = () => {
                     <p className="text-muted-foreground mb-4">{profile.bio}</p>
                   )}
                   <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                    <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                    <Button onClick={() => {
+                      setIsEditing(true);
+                      setActiveTab('settings');
+                    }} variant="outline" size="sm">
                       <Settings className="h-4 w-4 mr-2" />
                       Edit Profile
                     </Button>
