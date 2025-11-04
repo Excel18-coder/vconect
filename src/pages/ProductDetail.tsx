@@ -40,26 +40,49 @@ interface Product {
   title: string;
   description: string;
   price: number;
-  category: string;
+  category?: string;
+  category_name?: string;
+  category_slug?: string;
   subcategory?: string;
   condition: string;
   location: string;
-  stock_quantity: number;
+  stock_quantity?: number;
   discount_percentage?: number;
   weight?: number;
-  shipping_cost: number;
-  views: number;
+  shipping_cost?: number;
+  views?: number;
+  views_count?: number;
   status: string;
-  tags: string[];
-  images: Array<{ url: string }>;
+  tags?: string[];
+  images: Array<{ url: string } | string>;
+  brand?: string;
+  model?: string;
+  color?: string;
+  size?: string;
+  warranty_period?: string;
+  warranty_type?: string;
+  return_policy?: string;
+  negotiable?: boolean;
+  contact_phone?: string;
+  contactPhone?: string;
   seller: {
     id: number;
-    display_name: string;
+    display_name?: string;
+    name?: string;
+    seller_name?: string;
     email: string;
+    seller_email?: string;
+    phone?: string;
     phone_number?: string;
+    seller_phone?: string;
+    avatar?: string;
     avatar_url?: string;
+    seller_avatar?: string;
+    location?: string;
+    seller_location?: string;
   };
   created_at: string;
+  final_price?: number;
 }
 
 const ProductDetail = () => {
@@ -98,8 +121,18 @@ const ProductDetail = () => {
       setLoading(true);
       const response = await fetch(`${apiUrl}/products/${id}`);
       if (!response.ok) throw new Error('Failed to fetch product');
-      const data = await response.json();
-      setProduct(data);
+      const result = await response.json();
+      // Backend returns {success: true, data: {product: {...}}}
+      const productData = result.data?.product || result.product || result;
+      
+      // Normalize images format - backend returns array of strings, frontend expects objects with url
+      if (productData.images && Array.isArray(productData.images)) {
+        productData.images = productData.images.map((img: string | { url: string }) => 
+          typeof img === 'string' ? { url: img } : img
+        );
+      }
+      
+      setProduct(productData);
     } catch (error) {
       console.error('Error fetching product:', error);
       toast.error('Failed to load product');
@@ -246,7 +279,11 @@ const ProductDetail = () => {
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
             {product.images && product.images.length > 0 ? (
               <img
-                src={product.images[selectedImage]?.url}
+                src={
+                  typeof product.images[selectedImage] === 'string' 
+                    ? product.images[selectedImage] as string
+                    : (product.images[selectedImage] as { url: string })?.url
+                }
                 alt={product.title}
                 className="w-full h-full object-cover"
               />
@@ -273,7 +310,7 @@ const ProductDetail = () => {
                   }`}
                 >
                   <img
-                    src={image.url}
+                    src={typeof image === 'string' ? image : image.url}
                     alt={`${product.title} ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -307,7 +344,7 @@ const ProductDetail = () => {
             <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
-                <span>{product.views} views</span>
+                <span>{product.views || product.views_count || 0} views</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -327,7 +364,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-2 flex-wrap mb-4">
-              <Badge variant="secondary">{product.category}</Badge>
+              <Badge variant="secondary">{product.category_name || product.category || 'General'}</Badge>
               {product.subcategory && (
                 <Badge variant="outline">{product.subcategory}</Badge>
               )}
@@ -349,10 +386,12 @@ const ProductDetail = () => {
               <span>{product.location}</span>
             </div>
             
-            <div className="flex items-center gap-2 text-sm">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <span>{product.stock_quantity} units available</span>
-            </div>
+            {product.stock_quantity && (
+              <div className="flex items-center gap-2 text-sm">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span>{product.stock_quantity} units available</span>
+              </div>
+            )}
 
             {product.weight && (
               <div className="flex items-center gap-2 text-sm">
@@ -361,10 +400,12 @@ const ProductDetail = () => {
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-sm">
-              <Truck className="h-4 w-4 text-muted-foreground" />
-              <span>Shipping: KES {product.shipping_cost}</span>
-            </div>
+            {product.shipping_cost !== undefined && (
+              <div className="flex items-center gap-2 text-sm">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <span>Shipping: KES {product.shipping_cost}</span>
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -403,21 +444,21 @@ const ProductDetail = () => {
               <h3 className="font-semibold mb-4">Seller Information</h3>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  {product.seller.avatar_url ? (
+                  {(product.seller.avatar_url || product.seller.avatar || product.seller.seller_avatar) ? (
                     <img
-                      src={product.seller.avatar_url}
-                      alt={product.seller.display_name}
+                      src={product.seller.avatar_url || product.seller.avatar || product.seller.seller_avatar}
+                      alt={product.seller.display_name || product.seller.name || product.seller.seller_name || 'Seller'}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-lg font-bold">
-                      {product.seller.display_name.charAt(0).toUpperCase()}
+                      {(product.seller.display_name || product.seller.name || product.seller.seller_name || 'S').charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold">{product.seller.display_name}</p>
-                  <p className="text-sm text-muted-foreground">Verified Seller</p>
+                  <p className="font-semibold">{product.seller.display_name || product.seller.name || product.seller.seller_name || 'Seller'}</p>
+                  <p className="text-sm text-muted-foreground">{product.seller.location || product.seller.seller_location || 'Verified Seller'}</p>
                 </div>
               </div>
               <Button className="w-full" onClick={handleContactSeller}>
@@ -435,7 +476,7 @@ const ProductDetail = () => {
           <DialogHeader>
             <DialogTitle>Contact Seller</DialogTitle>
             <DialogDescription>
-              Send a message to {product.seller.display_name}
+              Send a message to {product.seller.display_name || product.seller.name || product.seller.seller_name || 'the seller'}
             </DialogDescription>
           </DialogHeader>
           
@@ -445,28 +486,28 @@ const ProductDetail = () => {
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
                 <a
-                  href={`mailto:${product.seller.email}`}
+                  href={`mailto:${product.seller.email || product.seller.seller_email}`}
                   className="text-sm hover:underline"
                 >
-                  {product.seller.email}
+                  {product.seller.email || product.seller.seller_email}
                 </a>
               </div>
-              {product.seller.phone_number && (
+              {(product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone) && (
                 <>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <a
-                      href={`tel:${product.seller.phone_number}`}
+                      href={`tel:${product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone}`}
                       className="text-sm hover:underline"
                     >
-                      {product.seller.phone_number}
+                      {product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone}
                     </a>
                   </div>
                   <Button
                     variant="outline"
                     className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                     onClick={() => {
-                      const phone = product.seller.phone_number?.replace(/\D/g, '');
+                      const phone = (product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone)?.replace(/\D/g, '');
                       const message = encodeURIComponent(`Hi, I'm interested in your product: ${product.title}`);
                       window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
                     }}
