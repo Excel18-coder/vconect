@@ -34,6 +34,11 @@ class MessageRepository {
       logger.debug('Message created in database', { messageId: result[0]?.id });
       return result[0];
     } catch (error) {
+      // Check if error is because table doesn't exist
+      if (error.message && error.message.includes('does not exist')) {
+        logger.error('Messages table does not exist. Please run database migration.', error);
+        throw new Error('Messaging system is not yet set up. Please contact support.');
+      }
       logger.error('Failed to create message', error, messageData);
       throw error;
     }
@@ -108,6 +113,11 @@ class MessageRepository {
       
       return result;
     } catch (error) {
+      // Check if error is because table doesn't exist
+      if (error.message && error.message.includes('does not exist')) {
+        logger.warn('Messages table does not exist, returning empty array', { userId });
+        return [];
+      }
       logger.error('Failed to find messages by user', error, { userId });
       throw error;
     }
@@ -130,15 +140,25 @@ class MessageRepository {
         FROM messages m
         JOIN profiles sender_prof ON m.sender_id = sender_prof.user_id
         JOIN profiles receiver_prof ON m.receiver_id = receiver_prof.user_id
-        WHERE ((m.sender_id = ${userId1} AND m.receiver_id = ${userId2})
-           OR (m.sender_id = ${userId2} AND m.receiver_id = ${userId1}))
-          AND (m.deleted_by_sender != ${userId1} AND m.deleted_by_receiver != ${userId1})
+        WHERE (
+          (m.sender_id = ${userId1} AND m.receiver_id = ${userId2}) OR 
+          (m.sender_id = ${userId2} AND m.receiver_id = ${userId1})
+        )
+        AND (
+          (m.sender_id = ${userId1} AND m.deleted_by_sender != ${userId1}) OR
+          (m.receiver_id = ${userId1} AND m.deleted_by_receiver != ${userId1})
+        )
         ORDER BY m.created_at ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       
       return result;
     } catch (error) {
+      // Check if error is because table doesn't exist
+      if (error.message && error.message.includes('does not exist')) {
+        logger.warn('Messages table does not exist, returning empty array', { userId1, userId2 });
+        return [];
+      }
       logger.error('Failed to get conversation', error, { userId1, userId2 });
       throw error;
     }
