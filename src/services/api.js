@@ -260,14 +260,18 @@ export const uploadAPI = {
 export const messageAPI = {
   // Send message to seller/user
   sendMessage: async (receiverId, subject, messageBody, attachmentUrl = null) => {
+    const payload = {
+      receiver_id: receiverId,
+      subject,
+      message: messageBody,
+      attachment_url: attachmentUrl,
+    };
+    
+    console.log('messageAPI.sendMessage payload:', payload);
+    
     const response = await authFetch('/buyers/messages', {
       method: 'POST',
-      body: JSON.stringify({
-        receiver_id: receiverId,
-        subject,
-        message: messageBody,  // Changed from message_body to message
-        attachment_url: attachmentUrl,
-      }),
+      body: JSON.stringify(payload),
     });
     
     return handleResponse(response);

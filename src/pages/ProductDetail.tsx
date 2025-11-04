@@ -37,6 +37,7 @@ import {
 
 interface Product {
   id: number;
+  user_id?: string;
   title: string;
   description: string;
   price: number;
@@ -67,7 +68,7 @@ interface Product {
   contactPhone?: string;
   seller_id?: string;
   seller: {
-    id?: number;
+    id?: number | string;
     user_id?: string;
     display_name?: string;
     name?: string;
@@ -159,7 +160,16 @@ const ProductDetail = () => {
     }
 
     // Get seller ID with multiple fallbacks
-    const sellerId = product?.seller_id || product?.seller?.user_id || product?.seller?.id;
+    const sellerId = product?.user_id || product?.seller_id || product?.seller?.user_id || product?.seller?.id;
+    
+    console.log('Attempting to send message to seller:', {
+      product_user_id: product?.user_id,
+      product_seller_id: product?.seller_id,
+      seller_user_id: product?.seller?.user_id,
+      seller_id: product?.seller?.id,
+      resolved_seller_id: sellerId,
+      full_product: product
+    });
     
     if (!sellerId) {
       toast.error('Seller information not available');
@@ -169,6 +179,12 @@ const ProductDetail = () => {
 
     try {
       setSendingMessage(true);
+      console.log('Sending message with:', {
+        receiverId: sellerId,
+        subject: messageForm.subject,
+        message: messageForm.message
+      });
+      
       await messageAPI.sendMessage(
         sellerId,
         messageForm.subject,
