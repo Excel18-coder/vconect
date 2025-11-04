@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import logoImage from "@/assets/logo.jpeg";
 
 const Header = () => {
   const { user, profile, signOut, loading } = useAuth();
@@ -29,7 +30,7 @@ const Header = () => {
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-3">
               <img 
-                src="/images/logo.png" 
+                src={logoImage} 
                 alt="VCONECT Logo" 
                 className="w-12 h-12 object-contain"
               />

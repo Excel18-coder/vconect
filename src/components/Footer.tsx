@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import logoImage from "@/assets/logo.jpeg";
 import { 
   Facebook, 
   Twitter, 
@@ -20,11 +21,11 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <img 
-                src="/images/logo.png" 
-                alt="V-MARKET Logo" 
+                src={logoImage} 
+                alt="VCONECT Logo" 
                 className="w-12 h-12 object-contain"
               />
-              <span className="text-xl font-bold text-blue-600">V-MARKET</span>
+              <span className="text-xl font-bold text-blue-600">VCONECT</span>
             </div>
             <p className="text-muted-foreground">
               Kenya's leading digital marketplace connecting communities through technology, commerce, and innovation.
