@@ -57,20 +57,60 @@ class ProfileRepository {
    */
   async update(userId, updateData) {
     try {
-      const result = await sql`
+      // Build the SET clause parts
+      const setClauses = [];
+      const params = [];
+      let paramIndex = 1;
+      
+      if ('display_name' in updateData) {
+        setClauses.push(`display_name = $${paramIndex++}`);
+        params.push(updateData.display_name);
+      }
+      if ('bio' in updateData) {
+        setClauses.push(`bio = $${paramIndex++}`);
+        params.push(updateData.bio);
+      }
+      if ('user_type' in updateData) {
+        setClauses.push(`user_type = $${paramIndex++}`);
+        params.push(updateData.user_type);
+      }
+      if ('phone_number' in updateData) {
+        setClauses.push(`phone_number = $${paramIndex++}`);
+        params.push(updateData.phone_number);
+      }
+      if ('location' in updateData) {
+        setClauses.push(`location = $${paramIndex++}`);
+        params.push(updateData.location);
+      }
+      if ('avatar_url' in updateData) {
+        setClauses.push(`avatar_url = $${paramIndex++}`);
+        params.push(updateData.avatar_url);
+      }
+      
+      if (setClauses.length === 0) {
+        throw new Error('No valid fields to update');
+      }
+      
+      // Add userId as the last parameter
+      params.push(userId);
+      
+      // Build and execute the query
+      const query = `
         UPDATE profiles 
-        SET ${sql(updateData)}, updated_at = NOW()
-        WHERE user_id = ${userId}
+        SET ${setClauses.join(', ')}, updated_at = NOW()
+        WHERE user_id = $${paramIndex}
         RETURNING 
           id, user_id, display_name, avatar_url, bio, user_type,
           phone_number, location, created_at, updated_at
       `;
       
+      const result = await sql(query, params);
+      
       if (result.length === 0) {
         throw new NotFoundError('Profile', userId);
       }
       
-      logger.debug('Profile updated in database', { userId });
+      logger.debug('Profile updated in database', { userId, fields: Object.keys(updateData) });
       return result[0];
     } catch (error) {
       logger.error('Failed to update profile', error, { userId });
