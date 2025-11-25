@@ -48,7 +48,7 @@ const Search = () => {
     try {
       setLoading(true);
 
-      const filters = {
+      const filters: any = {
         search: query,
         sortBy: sortBy,
         limit: 50,
@@ -334,30 +334,14 @@ const Search = () => {
             <SearchIcon className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Start Your Search</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Enter keywords above to find products, services, properties, jobs
-              and more across Kenya
+              Enter keywords above to find products, services, properties and
+              more across Kenya
             </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-              {[
-                "Houses in Nairobi",
-                "Used Cars",
-                "Electronics",
-                "Remote Jobs",
-              ].map((suggestion) => (
-                <Button
-                  key={suggestion}
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery(suggestion);
-                    window.location.href = `/search?q=${encodeURIComponent(
-                      suggestion
-                    )}`;
-                  }}>
-                  {suggestion}
-                </Button>
-              ))}
-            </div>
+            <Button
+              onClick={() => navigate("/category/market")}
+              className="bg-gradient-to-r from-primary to-pink-500">
+              Browse All Categories
+            </Button>
           </div>
         )}
       </div>

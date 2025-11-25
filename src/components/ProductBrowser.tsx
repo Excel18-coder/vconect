@@ -1,32 +1,49 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/useAuth';
-import { messageAPI } from '@/services/api';
-import { toast } from 'sonner';
-import { 
-  Search, 
-  Filter, 
-  Heart, 
-  Eye, 
-  DollarSign, 
-  MapPin,
-  Package,
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
+import { messageAPI } from "@/services/api";
+import {
+  DollarSign,
+  Eye,
   Grid3X3,
+  Heart,
   List,
   Mail,
+  MapPin,
+  MessageCircle,
+  Package,
   Phone,
-  MessageCircle
-} from 'lucide-react';
+  Search,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Product {
   id: string | number;
@@ -39,7 +56,7 @@ interface Product {
   location: string;
   images: string[];
   tags: string[];
-  status: 'active' | 'sold' | 'inactive';
+  status: "active" | "sold" | "inactive";
   views: number;
   seller?: {
     id: string;
@@ -62,49 +79,48 @@ const ProductBrowser = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState('newest');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState("newest");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageForm, setMessageForm] = useState({
-    subject: '',
-    message: '',
+    subject: "",
+    message: "",
   });
 
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const apiUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
   const getWhatsAppUrl = (phone: string | undefined, text: string) => {
     if (!phone) return null;
-    let digits = phone.replace(/\D/g, '');
+    let digits = phone.replace(/\D/g, "");
     if (!digits) return null;
 
     if (/^0+/.test(digits)) {
-      digits = '254' + digits.replace(/^0+/, '');
+      digits = "254" + digits.replace(/^0+/, "");
     }
 
     if (digits.length < 8) return null;
-    const encoded = encodeURIComponent(text || 'Hello, I am interested in your listing');
+    const encoded = encodeURIComponent(
+      text || "Hello, I am interested in your listing"
+    );
     return `https://wa.me/${digits}?text=${encoded}`;
   };
 
   const categories = [
-    { value: 'house', label: 'Real Estate' },
-    { value: 'transport', label: 'Transportation' },
-    { value: 'market', label: 'Marketplace' },
-    { value: 'health', label: 'Healthcare' },
-    { value: 'jobs', label: 'Jobs' },
-    { value: 'education', label: 'Education' },
-    { value: 'entertainment', label: 'Entertainment' }
+    { value: "house", label: "Real Estate" },
+    { value: "transport", label: "Transportation" },
+    { value: "market", label: "Marketplace" },
+    { value: "education", label: "Education" },
+    { value: "entertainment", label: "Entertainment" },
   ];
 
-  const locations = [
-    'nairobi', 'mombasa', 'kisumu', 'nakuru', 'eldoret'
-  ];
+  const locations = ["nairobi", "mombasa", "kisumu", "nakuru", "eldoret"];
 
   useEffect(() => {
     fetchProducts();
@@ -114,25 +130,29 @@ const ProductBrowser = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedCategory && selectedCategory !== 'all') params.append('category', selectedCategory);
-      if (selectedLocation && selectedLocation !== 'all') params.append('location', selectedLocation);
-      if (priceRange.min) params.append('minPrice', priceRange.min);
-      if (priceRange.max) params.append('maxPrice', priceRange.max);
-      if (searchTerm) params.append('search', searchTerm);
-      params.append('sortBy', sortBy);
+      if (selectedCategory && selectedCategory !== "all")
+        params.append("category", selectedCategory);
+      if (selectedLocation && selectedLocation !== "all")
+        params.append("location", selectedLocation);
+      if (priceRange.min) params.append("minPrice", priceRange.min);
+      if (priceRange.max) params.append("maxPrice", priceRange.max);
+      if (searchTerm) params.append("search", searchTerm);
+      params.append("sortBy", sortBy);
 
-      const response = await fetch(`${apiUrl}/products/browse?${params.toString()}`);
+      const response = await fetch(
+        `${apiUrl}/products/browse?${params.toString()}`
+      );
 
       if (response.ok) {
         const data = await response.json();
         // API returns data in data.data.products structure
         setProducts(data.data?.products || data.products || []);
       } else {
-        toast.error('Failed to fetch products');
+        toast.error("Failed to fetch products");
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to fetch products');
+      console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -144,61 +164,61 @@ const ProductBrowser = () => {
 
   const addToFavorites = async (productId: string) => {
     if (!user) {
-      toast.error('Please sign in to save favorites');
+      toast.error("Please sign in to save favorites");
       return;
     }
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       const response = await fetch(`${apiUrl}/products/${productId}/favorite`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.ok) {
-        toast.success('Added to favorites');
+        toast.success("Added to favorites");
       } else {
-        toast.error('Failed to add to favorites');
+        toast.error("Failed to add to favorites");
       }
     } catch (error) {
-      console.error('Error adding to favorites:', error);
-      toast.error('Failed to add to favorites');
+      console.error("Error adding to favorites:", error);
+      toast.error("Failed to add to favorites");
     }
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('all');
-    setSelectedLocation('all');
-    setPriceRange({ min: '', max: '' });
-    setSortBy('newest');
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setSelectedLocation("all");
+    setPriceRange({ min: "", max: "" });
+    setSortBy("newest");
   };
 
   const handleContactSeller = (product: Product) => {
     if (!user) {
-      toast.error('Please sign in to contact seller');
-      navigate('/auth');
+      toast.error("Please sign in to contact seller");
+      navigate("/auth");
       return;
     }
     setSelectedProduct(product);
     setMessageForm({
       subject: `Inquiry about: ${product.title}`,
-      message: '',
+      message: "",
     });
     setShowContactDialog(true);
   };
 
   const handleSendMessage = async () => {
     if (!messageForm.subject || !messageForm.message) {
-      toast.error('Please fill in all fields');
+      toast.error("Please fill in all fields");
       return;
     }
 
     if (!selectedProduct?.seller?.id) {
-      toast.error('Seller information not available');
+      toast.error("Seller information not available");
       return;
     }
 
@@ -209,14 +229,14 @@ const ProductBrowser = () => {
         messageForm.subject,
         messageForm.message
       );
-      
-      toast.success('Message sent successfully!');
+
+      toast.success("Message sent successfully!");
       setShowContactDialog(false);
       setSelectedProduct(null);
-      setMessageForm({ subject: '', message: '' });
+      setMessageForm({ subject: "", message: "" });
     } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast.error(error.message || 'Failed to send message');
+      console.error("Error sending message:", error);
+      toast.error(error.message || "Failed to send message");
     } finally {
       setSendingMessage(false);
     }
@@ -239,7 +259,7 @@ const ProductBrowser = () => {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
             <Button onClick={handleSearch}>
@@ -249,7 +269,9 @@ const ProductBrowser = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -263,7 +285,9 @@ const ProductBrowser = () => {
               </SelectContent>
             </Select>
 
-            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <Select
+              value={selectedLocation}
+              onValueChange={setSelectedLocation}>
               <SelectTrigger>
                 <SelectValue placeholder="All Locations" />
               </SelectTrigger>
@@ -282,13 +306,17 @@ const ProductBrowser = () => {
                 placeholder="Min Price"
                 type="number"
                 value={priceRange.min}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                onChange={(e) =>
+                  setPriceRange((prev) => ({ ...prev, min: e.target.value }))
+                }
               />
               <Input
                 placeholder="Max Price"
                 type="number"
                 value={priceRange.max}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                onChange={(e) =>
+                  setPriceRange((prev) => ({ ...prev, max: e.target.value }))
+                }
               />
             </div>
 
@@ -313,17 +341,15 @@ const ProductBrowser = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">View:</span>
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                variant={viewMode === "grid" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setViewMode('grid')}
-              >
+                onClick={() => setViewMode("grid")}>
                 <Grid3X3 className="h-4 w-4" />
               </Button>
               <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
+                variant={viewMode === "list" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setViewMode('list')}
-              >
+                onClick={() => setViewMode("list")}>
                 <List className="h-4 w-4" />
               </Button>
             </div>
@@ -334,7 +360,7 @@ const ProductBrowser = () => {
       {/* Results */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">
-          {products.length} Product{products.length !== 1 ? 's' : ''} Found
+          {products.length} Product{products.length !== 1 ? "s" : ""} Found
         </h2>
       </div>
 
@@ -353,16 +379,24 @@ const ProductBrowser = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className={
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'space-y-4'
-        }>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
+          }>
           {products.map((product) => (
-            <Card key={product.id} className={viewMode === 'list' ? 'overflow-hidden' : ''}>
-              <div className={viewMode === 'list' ? 'flex' : ''}>
+            <Card
+              key={product.id}
+              className={viewMode === "list" ? "overflow-hidden" : ""}>
+              <div className={viewMode === "list" ? "flex" : ""}>
                 {product.images && product.images.length > 0 && (
-                  <div className={viewMode === 'list' ? 'w-48 flex-shrink-0' : 'aspect-video'}>
+                  <div
+                    className={
+                      viewMode === "list"
+                        ? "w-48 flex-shrink-0"
+                        : "aspect-video"
+                    }>
                     <img
                       src={product.images[0]}
                       alt={product.title}
@@ -370,15 +404,18 @@ const ProductBrowser = () => {
                     />
                   </div>
                 )}
-                
-                <div className={viewMode === 'list' ? 'flex-1' : ''}>
+
+                <div className={viewMode === "list" ? "flex-1" : ""}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg line-clamp-1">{product.title}</CardTitle>
+                        <CardTitle className="text-lg line-clamp-1">
+                          {product.title}
+                        </CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <MapPin className="h-3 w-3" />
-                          {product.location?.charAt(0).toUpperCase() + product.location?.slice(1)}
+                          {product.location?.charAt(0).toUpperCase() +
+                            product.location?.slice(1)}
                           <span>•</span>
                           <span>{product.category}</span>
                         </CardDescription>
@@ -387,19 +424,18 @@ const ProductBrowser = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => addToFavorites(String(product.id))}
-                        >
+                          onClick={() => addToFavorites(String(product.id))}>
                           <Heart className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="pt-0">
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                       {product.description}
                     </p>
-                    
+
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-1 text-lg font-bold text-primary">
                         <DollarSign className="h-4 w-4" />
@@ -410,11 +446,14 @@ const ProductBrowser = () => {
                         {product.views}
                       </div>
                     </div>
-                    
+
                     {product.tags && product.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {product.tags.slice(0, 3).map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs">
                             {tag}
                           </Badge>
                         ))}
@@ -425,25 +464,34 @@ const ProductBrowser = () => {
                         )}
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>By {product.seller?.display_name || product.seller_name || 'Seller'}</span>
-                      <span>{product.createdAt ? new Date(product.createdAt).toLocaleDateString() : product.created_at ? new Date(product.created_at).toLocaleDateString() : ''}</span>
+                      <span>
+                        By{" "}
+                        {product.seller?.display_name ||
+                          product.seller_name ||
+                          "Seller"}
+                      </span>
+                      <span>
+                        {product.createdAt
+                          ? new Date(product.createdAt).toLocaleDateString()
+                          : product.created_at
+                          ? new Date(product.created_at).toLocaleDateString()
+                          : ""}
+                      </span>
                     </div>
-                    
+
                     <div className="flex gap-2 mt-4">
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="flex-1"
-                        onClick={() => handleContactSeller(product)}
-                      >
+                        onClick={() => handleContactSeller(product)}>
                         Contact Seller
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/product/${product.id}`)}
-                      >
+                        onClick={() => navigate(`/product/${product.id}`)}>
                         View Details
                       </Button>
                     </div>
@@ -461,22 +509,25 @@ const ProductBrowser = () => {
           <DialogHeader>
             <DialogTitle>Contact Seller</DialogTitle>
             <DialogDescription>
-              Send a message to {selectedProduct?.seller?.display_name || selectedProduct?.seller_name || 'the seller'}
+              Send a message to{" "}
+              {selectedProduct?.seller?.display_name ||
+                selectedProduct?.seller_name ||
+                "the seller"}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {/* Seller Contact Info */}
-            {(selectedProduct?.seller?.email || selectedProduct?.seller?.phone_number) && (
+            {(selectedProduct?.seller?.email ||
+              selectedProduct?.seller?.phone_number) && (
               <>
                 <div className="bg-muted/50 p-3 rounded-lg space-y-2">
                   {selectedProduct?.seller?.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a 
+                      <a
                         href={`mailto:${selectedProduct.seller.email}`}
-                        className="text-sm hover:underline"
-                      >
+                        className="text-sm hover:underline">
                         {selectedProduct.seller.email}
                       </a>
                     </div>
@@ -485,10 +536,9 @@ const ProductBrowser = () => {
                     <>
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a 
+                        <a
                           href={`tel:${selectedProduct.seller.phone_number}`}
-                          className="text-sm hover:underline"
-                        >
+                          className="text-sm hover:underline">
                           {selectedProduct.seller.phone_number}
                         </a>
                       </div>
@@ -496,11 +546,23 @@ const ProductBrowser = () => {
                         variant="outline"
                         className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                         onClick={() => {
-                          const phone = selectedProduct.seller.phone_number?.replace(/\D/g, '');
-                          const message = encodeURIComponent(`Hi ${selectedProduct.seller.display_name || 'seller'}, I'm interested in your product: ${selectedProduct.title}`);
-                          window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-                        }}
-                      >
+                          const phone =
+                            selectedProduct.seller.phone_number?.replace(
+                              /\D/g,
+                              ""
+                            );
+                          const message = encodeURIComponent(
+                            `Hi ${
+                              selectedProduct.seller.display_name || "seller"
+                            }, I'm interested in your product: ${
+                              selectedProduct.title
+                            }`
+                          );
+                          window.open(
+                            `https://wa.me/${phone}?text=${message}`,
+                            "_blank"
+                          );
+                        }}>
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Contact via WhatsApp
                       </Button>
@@ -518,17 +580,27 @@ const ProductBrowser = () => {
                 <Input
                   id="subject"
                   value={messageForm.subject}
-                  onChange={(e) => setMessageForm(prev => ({ ...prev, subject: e.target.value }))}
+                  onChange={(e) =>
+                    setMessageForm((prev) => ({
+                      ...prev,
+                      subject: e.target.value,
+                    }))
+                  }
                   placeholder="Enter subject"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
                 <Textarea
                   id="message"
                   value={messageForm.message}
-                  onChange={(e) => setMessageForm(prev => ({ ...prev, message: e.target.value }))}
+                  onChange={(e) =>
+                    setMessageForm((prev) => ({
+                      ...prev,
+                      message: e.target.value,
+                    }))
+                  }
                   placeholder="Write your message here..."
                   rows={5}
                 />
@@ -540,14 +612,14 @@ const ProductBrowser = () => {
             <Button
               variant="outline"
               onClick={() => setShowContactDialog(false)}
-              disabled={sendingMessage}
-            >
+              disabled={sendingMessage}>
               Cancel
             </Button>
             <Button
               onClick={handleSendMessage}
-              disabled={sendingMessage || !messageForm.subject || !messageForm.message}
-            >
+              disabled={
+                sendingMessage || !messageForm.subject || !messageForm.message
+              }>
               {sendingMessage ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

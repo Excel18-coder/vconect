@@ -69,7 +69,7 @@ const CategoryPage = () => {
         // Import the API function
         const { productsAPI } = await import("@/services/api");
 
-        const filters = {
+        const filters: any = {
           limit: 50,
         };
 
