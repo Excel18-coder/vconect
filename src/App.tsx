@@ -12,7 +12,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PostAd from "./pages/PostAd";
 import ProductDetail from "./pages/ProductDetail";
-import Revenue from "./pages/Revenue";
 import Search from "./pages/Search";
 import Sell from "./pages/Sell";
 
@@ -39,9 +38,7 @@ const App = () => (
             <Route path="/market" element={<CategoryPage />} />
             <Route path="/education" element={<CategoryPage />} />
             <Route path="/entertainment" element={<CategoryPage />} />
-            <Route path="/revenue" element={<Revenue />} />
             <Route path="/ai-insights" element={<AIInsights />} />
-            <Route path="/category/revenue" element={<Revenue />} />
             <Route path="/category/algorithm" element={<AIInsights />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

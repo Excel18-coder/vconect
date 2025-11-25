@@ -69,7 +69,6 @@ const Account = () => {
         "activity",
         "favorites",
         "products",
-        "earnings",
         "analytics",
       ].includes(tab)
     ) {
@@ -286,9 +285,6 @@ const Account = () => {
                   Products
                 </TabsTrigger>
               )}
-              <TabsTrigger value="earnings" className="hidden lg:flex">
-                Earnings
-              </TabsTrigger>
               <TabsTrigger value="analytics" className="hidden lg:flex">
                 Analytics
               </TabsTrigger>
@@ -614,37 +610,6 @@ const Account = () => {
                 <ProductManager />
               </TabsContent>
             )}
-
-            <TabsContent value="earnings" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Earnings Overview</CardTitle>
-                  <CardDescription>
-                    Track your revenue and commissions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">$0.00</p>
-                      <p className="text-sm text-muted-foreground">
-                        Total Earnings
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">$0.00</p>
-                      <p className="text-sm text-muted-foreground">
-                        This Month
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">$0.00</p>
-                      <p className="text-sm text-muted-foreground">Pending</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="analytics" className="space-y-6">
               <Card>

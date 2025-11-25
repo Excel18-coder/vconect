@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Brain,
   Car,
-  DollarSign,
   GraduationCap,
   Home,
   PlayCircle,
@@ -23,7 +22,6 @@ const Navigation = () => {
       icon: PlayCircle,
       path: "/category/entertainment",
     },
-    { name: "Revenue", icon: DollarSign, path: "/revenue" },
     { name: "AI Insights", icon: Brain, path: "/ai-insights" },
   ];
 

@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Brain,
   Car,
-  DollarSign,
   GraduationCap,
   Home,
   PlayCircle,
@@ -63,15 +62,6 @@ const categories = [
     features: ["Content Creation", "Live Streaming", "Monetization"],
   },
   {
-    id: "revenue",
-    title: "Revenue",
-    description: "Track your earnings and optimize your income streams.",
-    icon: DollarSign,
-    image: "/images/revenue.jpg",
-    color: "from-green-700 to-green-800",
-    features: ["Earnings Dashboard", "Analytics", "Payment Tracking"],
-  },
-  {
     id: "algorithm",
     title: "AI Insights",
     description: "Get personalized recommendations powered by advanced AI.",
@@ -97,8 +87,8 @@ const CategoryGrid = () => {
             Explore Our <span className="text-blue-600">Marketplace</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Seven powerful sections designed to meet all your digital needs in
-            one unified platform
+            Six powerful sections designed to meet all your digital needs in one
+            unified platform
           </p>
         </div>
 
