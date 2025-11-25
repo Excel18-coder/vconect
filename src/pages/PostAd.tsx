@@ -78,11 +78,6 @@ const PostAd = () => {
       subcategories: ["Electronics", "Furniture", "Clothing", "Books", "Other"],
     },
     {
-      value: "education",
-      label: "Education",
-      subcategories: ["Tutoring", "Courses", "Books", "Materials"],
-    },
-    {
       value: "entertainment",
       label: "Entertainment",
       subcategories: ["Events", "Tickets", "Equipment"],

@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Brain,
   Car,
-  GraduationCap,
   Home,
   PlayCircle,
   ShoppingBag,
@@ -42,16 +41,6 @@ const categories = [
     features: ["Multi-vendor", "Reviews & Ratings", "Secure Checkout"],
   },
   {
-    id: "education",
-    title: "Education",
-    description:
-      "Learn new skills with courses from basic to professional levels.",
-    icon: GraduationCap,
-    image: "/images/education.jpg",
-    color: "from-red-600 to-red-700",
-    features: ["Online Courses", "Certificates", "Live Classes"],
-  },
-  {
     id: "entertainment",
     title: "Entertainment",
     description:
@@ -87,8 +76,8 @@ const CategoryGrid = () => {
             Explore Our <span className="text-blue-600">Marketplace</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Six powerful sections designed to meet all your digital needs in one
-            unified platform
+            Five powerful sections designed to meet all your digital needs in
+            one unified platform
           </p>
         </div>
 

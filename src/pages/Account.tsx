@@ -28,12 +28,12 @@ import {
   Briefcase,
   Car,
   DollarSign,
-  GraduationCap,
   Heart,
   Home,
   MapPin,
   MessageCircle,
   Package,
+  PlayCircle,
   Settings,
   ShoppingBag,
   Stethoscope,
@@ -150,7 +150,7 @@ const Account = () => {
       landlord: Home,
       employer: Briefcase,
       doctor: Stethoscope,
-      tutor: GraduationCap,
+      tutor: User,
       admin: Settings,
     };
     const Icon = iconMap[type as keyof typeof iconMap] || User;
@@ -384,9 +384,9 @@ const Account = () => {
                   <Button
                     variant="outline"
                     className="h-auto flex-col gap-2 p-4"
-                    onClick={() => navigate("/category/education")}>
-                    <GraduationCap className="h-6 w-6" />
-                    <span>Learn & Grow</span>
+                    onClick={() => navigate("/category/entertainment")}>
+                    <PlayCircle className="h-6 w-6" />
+                    <span>Entertainment</span>
                   </Button>
                 </CardContent>
               </Card>

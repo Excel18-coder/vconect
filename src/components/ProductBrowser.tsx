@@ -116,7 +116,6 @@ const ProductBrowser = () => {
     { value: "house", label: "Real Estate" },
     { value: "transport", label: "Transportation" },
     { value: "market", label: "Marketplace" },
-    { value: "education", label: "Education" },
     { value: "entertainment", label: "Entertainment" },
   ];
 

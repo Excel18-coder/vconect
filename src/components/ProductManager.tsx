@@ -88,7 +88,6 @@ const ProductManager = () => {
     house: ["Apartments", "Houses", "Commercial", "Land", "Vacation Rentals"],
     transport: ["Cars", "Motorcycles", "Buses", "Trucks", "Spare Parts"],
     market: ["Electronics", "Fashion", "Home & Garden", "Sports", "Books"],
-    education: ["Courses", "Tutoring", "Certifications", "Online Classes"],
     entertainment: ["Events", "Music", "Movies", "Gaming", "Content Creation"],
   };
 

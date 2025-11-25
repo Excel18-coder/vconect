@@ -185,14 +185,6 @@ const Search = () => {
                   </Badge>
                   <Badge
                     variant={
-                      selectedCategory === "education" ? "default" : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => handleCategoryChange("education")}>
-                    Education
-                  </Badge>
-                  <Badge
-                    variant={
                       selectedCategory === "entertainment"
                         ? "default"
                         : "outline"
