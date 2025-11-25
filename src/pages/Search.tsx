@@ -1,26 +1,32 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Filter, 
-  MapPin, 
-  Star, 
-  Search as SearchIcon,
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Clock,
+  Filter,
   Heart,
+  MapPin,
+  Search as SearchIcon,
   Share2,
-  Clock
+  Star,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const Search = () => {
   const [searchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [loading, setLoading] = useState(false);
 
   // Mock search results
@@ -28,18 +34,22 @@ const Search = () => {
     id: i + 1,
     title: `Search Result ${i + 1} for "${searchQuery}"`,
     price: Math.floor(Math.random() * 100000) + 5000,
-    location: ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru'][Math.floor(Math.random() * 4)],
+    location: ["Nairobi", "Mombasa", "Kisumu", "Nakuru"][
+      Math.floor(Math.random() * 4)
+    ],
     rating: 4 + Math.random(),
     reviews: Math.floor(Math.random() * 100) + 10,
-    category: ['House', 'Transport', 'Market', 'Health', 'Jobs'][Math.floor(Math.random() * 5)],
+    category: ["House", "Transport", "Market", "Education", "Entertainment"][
+      Math.floor(Math.random() * 5)
+    ],
     featured: Math.random() > 0.7,
     seller: `Seller ${i + 1}`,
     description: `High quality item matching your search for "${searchQuery}". Great condition and competitive pricing.`,
-    timePosted: Math.floor(Math.random() * 24) + 1
+    timePosted: Math.floor(Math.random() * 24) + 1,
   }));
 
   useEffect(() => {
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
     if (query) {
       setSearchQuery(query);
       // Simulate search loading
@@ -75,7 +85,7 @@ const Search = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Search Header */}
         <div className="mb-8">
@@ -88,22 +98,25 @@ const Search = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button 
-                type="submit" 
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-primary to-pink-500"
-              >
+              <Button
+                type="submit"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-primary to-pink-500">
                 Search
               </Button>
             </div>
           </form>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">
-                {searchQuery ? `Search results for "${searchQuery}"` : 'Search Results'}
+                {searchQuery
+                  ? `Search results for "${searchQuery}"`
+                  : "Search Results"}
               </h1>
               <p className="text-muted-foreground">
-                {searchQuery ? `Found ${results.length} results` : 'Enter a search term to find items'}
+                {searchQuery
+                  ? `Found ${results.length} results`
+                  : "Enter a search term to find items"}
               </p>
             </div>
           </div>
@@ -130,8 +143,12 @@ const Search = () => {
                     <SelectContent>
                       <SelectItem value="relevance">Relevance</SelectItem>
                       <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="price-low">
+                        Price: Low to High
+                      </SelectItem>
+                      <SelectItem value="price-high">
+                        Price: High to Low
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" size="icon">
@@ -144,7 +161,9 @@ const Search = () => {
             {/* Results */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {results.map((item) => (
-                <Card key={item.id} className="group hover:shadow-lg transition-all duration-300">
+                <Card
+                  key={item.id}
+                  className="group hover:shadow-lg transition-all duration-300">
                   <div className="relative">
                     {item.featured && (
                       <Badge className="absolute top-2 left-2 z-10 bg-gradient-to-r from-primary to-pink-500">
@@ -152,10 +171,16 @@ const Search = () => {
                       </Badge>
                     )}
                     <div className="absolute top-2 right-2 z-10 flex gap-1">
-                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8">
                         <Heart className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8">
                         <Share2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -167,7 +192,7 @@ const Search = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                       <Badge variant="outline" className="text-xs">
@@ -206,7 +231,9 @@ const Search = () => {
                           by {item.seller}
                         </div>
                       </div>
-                      <Button size="sm" className="bg-gradient-to-r from-primary to-pink-500">
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-primary to-pink-500">
                         View
                       </Button>
                     </div>
@@ -229,19 +256,26 @@ const Search = () => {
             <SearchIcon className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Start Your Search</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Enter keywords above to find products, services, properties, jobs and more across Kenya
+              Enter keywords above to find products, services, properties, jobs
+              and more across Kenya
             </p>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-              {['Houses in Nairobi', 'Used Cars', 'Electronics', 'Remote Jobs'].map((suggestion) => (
-                <Button 
+              {[
+                "Houses in Nairobi",
+                "Used Cars",
+                "Electronics",
+                "Remote Jobs",
+              ].map((suggestion) => (
+                <Button
                   key={suggestion}
-                  variant="outline" 
+                  variant="outline"
                   onClick={() => {
                     setSearchQuery(suggestion);
-                    window.location.href = `/search?q=${encodeURIComponent(suggestion)}`;
-                  }}
-                >
+                    window.location.href = `/search?q=${encodeURIComponent(
+                      suggestion
+                    )}`;
+                  }}>
                   {suggestion}
                 </Button>
               ))}

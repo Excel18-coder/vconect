@@ -1,18 +1,16 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  Car, 
-  ShoppingBag, 
-  Heart, 
-  Briefcase, 
-  GraduationCap, 
-  PlayCircle, 
-  DollarSign,
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowRight,
   Brain,
-  ArrowRight
+  Car,
+  DollarSign,
+  GraduationCap,
+  Home,
+  PlayCircle,
+  ShoppingBag,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Images are now loaded from public/images folder
 
@@ -24,7 +22,7 @@ const categories = [
     icon: Home,
     image: "/images/house.jpg",
     color: "from-blue-500 to-blue-600",
-    features: ["Property Listings", "Virtual Tours", "Map Integration"]
+    features: ["Property Listings", "Virtual Tours", "Map Integration"],
   },
   {
     id: "transport",
@@ -33,7 +31,7 @@ const categories = [
     icon: Car,
     image: "/images/transport.jpg",
     color: "from-green-500 to-green-600",
-    features: ["Bus Tickets", "GPS Tracking", "Real-time Updates"]
+    features: ["Bus Tickets", "GPS Tracking", "Real-time Updates"],
   },
   {
     id: "market",
@@ -42,43 +40,27 @@ const categories = [
     icon: ShoppingBag,
     image: "/images/market2.jpg",
     color: "from-red-500 to-red-600",
-    features: ["Multi-vendor", "Reviews & Ratings", "Secure Checkout"]
-  },
-  {
-    id: "health",
-    title: "Health",
-    description: "Connect with doctors and access healthcare services remotely.",
-    icon: Heart,
-    image: "/images/health.jpg",
-    color: "from-blue-600 to-blue-700",
-    features: ["Telemedicine", "Online Pharmacy", "Emergency Services"]
-  },
-  {
-    id: "jobs",
-    title: "Jobs",
-    description: "Find career opportunities or hire talented professionals.",
-    icon: Briefcase,
-    image: "/images/jobs.jpg",
-    color: "from-green-600 to-green-700",
-    features: ["Job Listings", "CV Builder", "Direct Hiring"]
+    features: ["Multi-vendor", "Reviews & Ratings", "Secure Checkout"],
   },
   {
     id: "education",
     title: "Education",
-    description: "Learn new skills with courses from basic to professional levels.",
+    description:
+      "Learn new skills with courses from basic to professional levels.",
     icon: GraduationCap,
     image: "/images/education.jpg",
     color: "from-red-600 to-red-700",
-    features: ["Online Courses", "Certificates", "Live Classes"]
+    features: ["Online Courses", "Certificates", "Live Classes"],
   },
   {
     id: "entertainment",
     title: "Entertainment",
-    description: "Create, share, and discover amazing content with the community.",
+    description:
+      "Create, share, and discover amazing content with the community.",
     icon: PlayCircle,
     image: "/images/entertainment.jpg",
     color: "from-blue-700 to-blue-800",
-    features: ["Content Creation", "Live Streaming", "Monetization"]
+    features: ["Content Creation", "Live Streaming", "Monetization"],
   },
   {
     id: "revenue",
@@ -87,7 +69,7 @@ const categories = [
     icon: DollarSign,
     image: "/images/revenue.jpg",
     color: "from-green-700 to-green-800",
-    features: ["Earnings Dashboard", "Analytics", "Payment Tracking"]
+    features: ["Earnings Dashboard", "Analytics", "Payment Tracking"],
   },
   {
     id: "algorithm",
@@ -96,8 +78,12 @@ const categories = [
     icon: Brain,
     image: "/images/ai_insights.jpg",
     color: "from-red-700 to-red-800",
-    features: ["Smart Recommendations", "Predictive Analytics", "User Insights"]
-  }
+    features: [
+      "Smart Recommendations",
+      "Predictive Analytics",
+      "User Insights",
+    ],
+  },
 ];
 
 const CategoryGrid = () => {
@@ -111,30 +97,35 @@ const CategoryGrid = () => {
             Explore Our <span className="text-blue-600">Marketplace</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Nine powerful sections designed to meet all your digital needs in one unified platform
+            Seven powerful sections designed to meet all your digital needs in
+            one unified platform
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
-            <Card key={category.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-gradient-to-br from-background to-muted/50">
+            <Card
+              key={category.id}
+              className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-gradient-to-br from-background to-muted/50">
               <CardContent className="p-0">
                 <div className="relative">
                   {category.image ? (
                     <div className="relative h-48 overflow-hidden">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-20`}></div>
-                      <img 
-                        src={category.image} 
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-20`}></div>
+                      <img
+                        src={category.image}
                         alt={category.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   ) : (
-                    <div className={`h-48 bg-gradient-to-br ${category.color} flex items-center justify-center`}>
+                    <div
+                      className={`h-48 bg-gradient-to-br ${category.color} flex items-center justify-center`}>
                       <category.icon className="h-16 w-16 text-white" />
                     </div>
                   )}
-                  
+
                   <div className="absolute top-4 left-4">
                     <div className="p-2 bg-white/90 rounded-lg shadow-lg">
                       <category.icon className="h-6 w-6 text-blue-600" />
@@ -147,21 +138,22 @@ const CategoryGrid = () => {
                   <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                     {category.description}
                   </p>
-                  
+
                   <div className="space-y-2 mb-6">
                     {category.features.map((feature, index) => (
-                      <div key={index} className="flex items-center text-sm text-muted-foreground">
+                      <div
+                        key={index}
+                        className="flex items-center text-sm text-muted-foreground">
                         <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></div>
                         {feature}
                       </div>
                     ))}
                   </div>
 
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors"
-                    onClick={() => navigate(`/category/${category.id}`)}
-                  >
+                    onClick={() => navigate(`/category/${category.id}`)}>
                     Explore {category.title}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>

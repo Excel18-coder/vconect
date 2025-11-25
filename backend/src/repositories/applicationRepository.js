@@ -3,9 +3,9 @@
  * Handles all database operations for job applications
  */
 
-const { sql } = require('../config/database');
-const logger = require('../utils/logger');
-const { NotFoundError } = require('../errors');
+const { sql } = require("../config/database");
+const logger = require("../utils/logger");
+const { NotFoundError } = require("../errors");
 
 class ApplicationRepository {
   /**
@@ -25,11 +25,13 @@ class ApplicationRepository {
         )
         RETURNING *
       `;
-      
-      logger.debug('Job application created in database', { applicationId: result[0]?.id });
+
+      logger.debug("Job application created in database", {
+        applicationId: result[0]?.id,
+      });
       return result[0];
     } catch (error) {
-      logger.error('Failed to create job application', error, applicationData);
+      logger.error("Failed to create job application", error, applicationData);
       throw error;
     }
   }
@@ -44,10 +46,10 @@ class ApplicationRepository {
         WHERE id = ${applicationId}
         LIMIT 1
       `;
-      
+
       return result[0] || null;
     } catch (error) {
-      logger.error('Failed to find application', error, { applicationId });
+      logger.error("Failed to find application", error, { applicationId });
       throw error;
     }
   }
@@ -81,10 +83,12 @@ class ApplicationRepository {
         WHERE ja.id = ${applicationId}
         LIMIT 1
       `;
-      
+
       return result[0] || null;
     } catch (error) {
-      logger.error('Failed to find application with details', error, { applicationId });
+      logger.error("Failed to find application with details", error, {
+        applicationId,
+      });
       throw error;
     }
   }
@@ -99,10 +103,13 @@ class ApplicationRepository {
         WHERE job_id = ${jobId} AND applicant_id = ${applicantId}
         LIMIT 1
       `;
-      
+
       return result[0] || null;
     } catch (error) {
-      logger.error('Failed to find application by job and applicant', error, { jobId, applicantId });
+      logger.error("Failed to find application by job and applicant", error, {
+        jobId,
+        applicantId,
+      });
       throw error;
     }
   }
@@ -119,7 +126,7 @@ class ApplicationRepository {
       if (job_id) {
         conditions.push(sql`ja.job_id = ${job_id}`);
       }
-      if (status && status !== 'all') {
+      if (status && status !== "all") {
         conditions.push(sql`ja.status = ${status}`);
       }
 
@@ -140,10 +147,12 @@ class ApplicationRepository {
         ORDER BY ja.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
-      
+
       return result;
     } catch (error) {
-      logger.error('Failed to find applications by employer', error, { employerId });
+      logger.error("Failed to find applications by employer", error, {
+        employerId,
+      });
       throw error;
     }
   }
@@ -157,7 +166,7 @@ class ApplicationRepository {
 
       let conditions = [sql`ja.applicant_id = ${applicantId}`];
 
-      if (status && status !== 'all') {
+      if (status && status !== "all") {
         conditions.push(sql`ja.status = ${status}`);
       }
 
@@ -181,10 +190,12 @@ class ApplicationRepository {
         ORDER BY ja.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
-      
+
       return result;
     } catch (error) {
-      logger.error('Failed to find applications by applicant', error, { applicantId });
+      logger.error("Failed to find applications by applicant", error, {
+        applicantId,
+      });
       throw error;
     }
   }
@@ -200,15 +211,15 @@ class ApplicationRepository {
         WHERE id = ${applicationId}
         RETURNING *
       `;
-      
+
       if (result.length === 0) {
-        throw new NotFoundError('Application', applicationId);
+        throw new NotFoundError("Application", applicationId);
       }
-      
-      logger.debug('Application updated in database', { applicationId });
+
+      logger.debug("Application updated in database", { applicationId });
       return result[0];
     } catch (error) {
-      logger.error('Failed to update application', error, { applicationId });
+      logger.error("Failed to update application", error, { applicationId });
       throw error;
     }
   }
@@ -222,11 +233,11 @@ class ApplicationRepository {
         DELETE FROM job_applications
         WHERE id = ${applicationId}
       `;
-      
-      logger.debug('Application deleted from database', { applicationId });
+
+      logger.debug("Application deleted from database", { applicationId });
       return true;
     } catch (error) {
-      logger.error('Failed to delete application', error, { applicationId });
+      logger.error("Failed to delete application", error, { applicationId });
       throw error;
     }
   }
