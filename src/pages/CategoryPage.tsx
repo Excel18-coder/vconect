@@ -1,24 +1,29 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Filter, 
-  MapPin, 
-  Star, 
-  Search,
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Filter,
   Grid,
-  List,
   Heart,
+  List,
+  MapPin,
+  Package,
+  Search,
   Share2,
-  Package
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -38,21 +43,21 @@ interface Product {
 const CategoryPage = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   const categoryTitles: { [key: string]: string } = {
     house: "Real Estate & Properties",
-    transport: "Transportation & Logistics", 
+    transport: "Transportation & Logistics",
     market: "Marketplace & Shopping",
     health: "Healthcare Services",
     jobs: "Jobs & Careers",
     education: "Education & Courses",
     entertainment: "Entertainment & Media",
     revenue: "Revenue & Analytics",
-    "ai-insights": "AI Insights & Analytics"
+    "ai-insights": "AI Insights & Analytics",
   };
 
   // Fetch products
@@ -60,14 +65,23 @@ const CategoryPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/products/browse?category=${category || ''}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data.data.products || []);
+
+        // Import the API function
+        const { productsAPI } = await import("@/services/api");
+
+        const filters = {
+          limit: 50,
+        };
+
+        if (category) {
+          filters.category = category;
         }
+
+        const response = await productsAPI.browseProducts(filters);
+        setProducts(response.data?.products || []);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -77,21 +91,22 @@ const CategoryPage = () => {
   }, [category]);
 
   // Filter products based on search query
-  const filteredProducts = products.filter(product =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProducts = products.filter(
+    (product) =>
+      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            {categoryTitles[category || ''] || 'Category'}
+            {categoryTitles[category || ""] || "Category"}
           </h1>
           <p className="text-muted-foreground">
             Discover the best {category} options in Kenya
@@ -148,17 +163,15 @@ const CategoryPage = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">View:</span>
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('grid')}
-              >
+                onClick={() => setViewMode("grid")}>
                 <Grid className="h-4 w-4" />
               </Button>
               <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('list')}
-              >
+                onClick={() => setViewMode("list")}>
                 <List className="h-4 w-4" />
               </Button>
             </div>
@@ -175,31 +188,42 @@ const CategoryPage = () => {
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No products found</h3>
             <p className="text-muted-foreground">
-              {searchQuery ? 'Try adjusting your search terms' : 'No products available in this category yet'}
+              {searchQuery
+                ? "Try adjusting your search terms"
+                : "No products available in this category yet"}
             </p>
           </div>
         ) : (
           <>
-            <div className={`grid gap-6 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                : 'grid-cols-1'
-            }`}>
+            <div
+              className={`grid gap-6 ${
+                viewMode === "grid"
+                  ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1"
+              }`}>
               {filteredProducts.map((product) => (
-                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300">
+                <Card
+                  key={product.id}
+                  className="group hover:shadow-lg transition-all duration-300">
                   <div className="relative">
                     <div className="absolute top-2 right-2 z-10 flex gap-1">
-                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8">
                         <Heart className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="secondary" className="h-8 w-8">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8">
                         <Share2 className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
                       {product.images && product.images.length > 0 ? (
-                        <img 
-                          src={product.images[0]} 
+                        <img
+                          src={product.images[0]}
                           alt={product.title}
                           className="w-full h-full object-cover"
                         />
@@ -210,7 +234,7 @@ const CategoryPage = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg group-hover:text-primary transition-colors">
                       {product.title}
@@ -234,14 +258,13 @@ const CategoryPage = () => {
                           KSh {product.price.toLocaleString()}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          by {product.seller_name || 'Seller'}
+                          by {product.seller_name || "Seller"}
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="bg-gradient-to-r from-primary to-pink-500"
-                        onClick={() => navigate(`/product/${product.id}`)}
-                      >
+                        onClick={() => navigate(`/product/${product.id}`)}>
                         View Details
                       </Button>
                     </div>

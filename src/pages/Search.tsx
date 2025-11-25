@@ -12,56 +12,81 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { productsAPI } from "@/services/api";
 import {
-  Clock,
-  Filter,
   Heart,
   MapPin,
+  Package,
   Search as SearchIcon,
   Share2,
-  Star,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const Search = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
-  // Mock search results
-  const results = Array.from({ length: 8 }, (_, i) => ({
-    id: i + 1,
-    title: `Search Result ${i + 1} for "${searchQuery}"`,
-    price: Math.floor(Math.random() * 100000) + 5000,
-    location: ["Nairobi", "Mombasa", "Kisumu", "Nakuru"][
-      Math.floor(Math.random() * 4)
-    ],
-    rating: 4 + Math.random(),
-    reviews: Math.floor(Math.random() * 100) + 10,
-    category: ["House", "Transport", "Market", "Education", "Entertainment"][
-      Math.floor(Math.random() * 5)
-    ],
-    featured: Math.random() > 0.7,
-    seller: `Seller ${i + 1}`,
-    description: `High quality item matching your search for "${searchQuery}". Great condition and competitive pricing.`,
-    timePosted: Math.floor(Math.random() * 24) + 1,
-  }));
-
+  // Fetch search results
   useEffect(() => {
     const query = searchParams.get("q");
     if (query) {
       setSearchQuery(query);
-      // Simulate search loading
-      setLoading(true);
-      setTimeout(() => setLoading(false), 1000);
+      fetchSearchResults(query);
+    } else {
+      setResults([]);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedCategory, sortBy]);
+
+  const fetchSearchResults = async (query) => {
+    try {
+      setLoading(true);
+
+      const filters = {
+        search: query,
+        sortBy: sortBy,
+        limit: 50,
+      };
+
+      if (selectedCategory !== "all") {
+        filters.category = selectedCategory;
+      }
+
+      const response = await productsAPI.searchProducts(query, filters);
+      setResults(response.data?.products || []);
+    } catch (error) {
+      console.error("Error searching products:", error);
+      toast.error("Failed to search products");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    if (searchQuery) {
+      fetchSearchResults(searchQuery);
+    }
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+    if (searchQuery) {
+      fetchSearchResults(searchQuery);
     }
   };
 
@@ -128,20 +153,61 @@ const Search = () => {
             <div className="mb-8 p-4 bg-muted/50 rounded-lg">
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="flex gap-2 flex-wrap">
-                  <Badge variant="secondary">All Categories</Badge>
-                  <Badge variant="outline">House</Badge>
-                  <Badge variant="outline">Transport</Badge>
-                  <Badge variant="outline">Market</Badge>
-                  <Badge variant="outline">Health</Badge>
-                  <Badge variant="outline">Jobs</Badge>
+                  <Badge
+                    variant={selectedCategory === "all" ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("all")}>
+                    All Categories
+                  </Badge>
+                  <Badge
+                    variant={
+                      selectedCategory === "house" ? "default" : "outline"
+                    }
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("house")}>
+                    House
+                  </Badge>
+                  <Badge
+                    variant={
+                      selectedCategory === "transport" ? "default" : "outline"
+                    }
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("transport")}>
+                    Transport
+                  </Badge>
+                  <Badge
+                    variant={
+                      selectedCategory === "market" ? "default" : "outline"
+                    }
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("market")}>
+                    Market
+                  </Badge>
+                  <Badge
+                    variant={
+                      selectedCategory === "education" ? "default" : "outline"
+                    }
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("education")}>
+                    Education
+                  </Badge>
+                  <Badge
+                    variant={
+                      selectedCategory === "entertainment"
+                        ? "default"
+                        : "outline"
+                    }
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryChange("entertainment")}>
+                    Entertainment
+                  </Badge>
                 </div>
                 <div className="flex gap-2 ml-auto">
-                  <Select defaultValue="relevance">
+                  <Select value={sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger className="w-[140px]">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
                       <SelectItem value="newest">Newest First</SelectItem>
                       <SelectItem value="price-low">
                         Price: Low to High
@@ -151,103 +217,115 @@ const Search = () => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             </div>
 
             {/* Results */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {results.map((item) => (
-                <Card
-                  key={item.id}
-                  className="group hover:shadow-lg transition-all duration-300">
-                  <div className="relative">
-                    {item.featured && (
-                      <Badge className="absolute top-2 left-2 z-10 bg-gradient-to-r from-primary to-pink-500">
-                        Featured
-                      </Badge>
-                    )}
-                    <div className="absolute top-2 right-2 z-10 flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="h-8 w-8">
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center">
-                        <span className="text-muted-foreground text-center px-4">
+            {results.length === 0 && !loading ? (
+              <div className="text-center py-12">
+                <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">No results found</h3>
+                <p className="text-muted-foreground">
+                  Try different keywords or browse our categories
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {results.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
+                      onClick={() => navigate(`/product/${item.id}`)}>
+                      <div className="relative">
+                        <div className="absolute top-2 right-2 z-10 flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}>
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}>
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
+                          {item.images && item.images.length > 0 ? (
+                            <img
+                              src={item.images[0]}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center">
+                              <Package className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                          <Badge variant="outline" className="text-xs">
+                            {item.category}
+                          </Badge>
+                          {item.condition && (
+                            <Badge variant="secondary" className="text-xs">
+                              {item.condition}
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
                           {item.title}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        {item.category}
-                      </Badge>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{item.timePosted}h ago</span>
-                      </div>
-                    </div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-                      {item.title}
-                    </CardTitle>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{item.location}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span>{item.rating.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xl font-bold text-primary">
-                          KSh {item.price.toLocaleString()}
+                        </CardTitle>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            <span>{item.location || "Kenya"}</span>
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          by {item.seller}
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-primary to-pink-500">
-                        View
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </CardHeader>
 
-            {/* Pagination */}
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg">
-                Load More Results
-              </Button>
-            </div>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-xl font-bold text-primary">
+                              KSh {item.price.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              by {item.seller_name || "Seller"}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-primary to-pink-500">
+                            View
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Results count */}
+                <div className="text-center mt-12">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {results.length}{" "}
+                    {results.length === 1 ? "result" : "results"} for "
+                    {searchQuery}"
+                  </p>
+                </div>
+              </>
+            )}
           </>
         )}
 

@@ -1,30 +1,31 @@
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 // Helper function to get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('accessToken');
+  return localStorage.getItem("accessToken");
 };
 
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   const data = await response.json();
-  
+
   if (!response.ok) {
-    throw new Error(data.message || 'An error occurred');
+    throw new Error(data.message || "An error occurred");
   }
-  
+
   return data;
 };
 
 // Helper function to make authenticated requests
 const authFetch = (url, options = {}) => {
   const token = getAuthToken();
-  
+
   return fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
@@ -34,86 +35,86 @@ const authFetch = (url, options = {}) => {
 // Authentication endpoints
 export const authAPI = {
   // Register user
-  register: async (email, password, displayName, userType = 'buyer') => {
-    const response = await authFetch('/auth/register', {
-      method: 'POST',
+  register: async (email, password, displayName, userType = "buyer") => {
+    const response = await authFetch("/auth/register", {
+      method: "POST",
       body: JSON.stringify({ email, password, displayName, userType }),
     });
-    
+
     const data = await handleResponse(response);
-    
+
     // Store tokens if registration includes them
     if (data.data?.tokens?.accessToken) {
-      localStorage.setItem('accessToken', data.data.tokens.accessToken);
-      localStorage.setItem('refreshToken', data.data.tokens.refreshToken);
+      localStorage.setItem("accessToken", data.data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.data.tokens.refreshToken);
     }
-    
+
     return data;
   },
 
   // Login user
   login: async (email, password) => {
-    const response = await authFetch('/auth/login', {
-      method: 'POST',
+    const response = await authFetch("/auth/login", {
+      method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    
+
     const data = await handleResponse(response);
-    
+
     // Store tokens
     if (data.data?.tokens?.accessToken) {
-      localStorage.setItem('accessToken', data.data.tokens.accessToken);
-      localStorage.setItem('refreshToken', data.data.tokens.refreshToken);
+      localStorage.setItem("accessToken", data.data.tokens.accessToken);
+      localStorage.setItem("refreshToken", data.data.tokens.refreshToken);
     }
-    
+
     return data;
   },
 
   // Logout user
   logout: async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    
+    const refreshToken = localStorage.getItem("refreshToken");
+
     if (refreshToken) {
       try {
-        await authFetch('/auth/logout', {
-          method: 'POST',
+        await authFetch("/auth/logout", {
+          method: "POST",
           body: JSON.stringify({ refreshToken }),
         });
       } catch (error) {
-        console.warn('Logout request failed:', error);
+        console.warn("Logout request failed:", error);
       }
     }
-    
+
     // Clear tokens regardless
     clearAuth();
   },
 
   // Get current user
   getMe: async () => {
-    const response = await authFetch('/auth/me');
+    const response = await authFetch("/auth/me");
     return handleResponse(response);
   },
 
   // Refresh token
   refreshToken: async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    
+    const refreshToken = localStorage.getItem("refreshToken");
+
     if (!refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
-    
-    const response = await authFetch('/auth/refresh-token', {
-      method: 'POST',
+
+    const response = await authFetch("/auth/refresh-token", {
+      method: "POST",
       body: JSON.stringify({ refreshToken }),
     });
-    
+
     const data = await handleResponse(response);
-    
+
     // Update access token
     if (data.data?.accessToken) {
-      localStorage.setItem('accessToken', data.data.accessToken);
+      localStorage.setItem("accessToken", data.data.accessToken);
     }
-    
+
     return data;
   },
 
@@ -125,8 +126,8 @@ export const authAPI = {
 
   // Request password reset
   requestPasswordReset: async (email) => {
-    const response = await authFetch('/auth/request-password-reset', {
-      method: 'POST',
+    const response = await authFetch("/auth/request-password-reset", {
+      method: "POST",
       body: JSON.stringify({ email }),
     });
     return handleResponse(response);
@@ -134,8 +135,8 @@ export const authAPI = {
 
   // Reset password
   resetPassword: async (token, password) => {
-    const response = await authFetch('/auth/reset-password', {
-      method: 'POST',
+    const response = await authFetch("/auth/reset-password", {
+      method: "POST",
       body: JSON.stringify({ token, password }),
     });
     return handleResponse(response);
@@ -149,27 +150,27 @@ export const auth = authAPI;
 export const profileAPI = {
   // Get current user profile
   getProfile: async () => {
-    const response = await authFetch('/profile');
+    const response = await authFetch("/profile");
     return handleResponse(response);
   },
 
   // Update profile
   updateProfile: async (profileData) => {
-    const response = await authFetch('/profile', {
-      method: 'PUT',
+    const response = await authFetch("/profile", {
+      method: "PUT",
       body: JSON.stringify(profileData),
     });
-    
+
     return handleResponse(response);
   },
 
   // Update avatar URL
   updateAvatar: async (avatarUrl) => {
-    const response = await authFetch('/profile/avatar', {
-      method: 'PATCH',
+    const response = await authFetch("/profile/avatar", {
+      method: "PATCH",
       body: JSON.stringify({ avatarUrl }),
     });
-    
+
     return handleResponse(response);
   },
 
@@ -185,7 +186,7 @@ export const profileAPI = {
       ...(query && { query }),
       ...filters,
     });
-    
+
     const response = await fetch(`${API_BASE_URL}/profile/search?${params}`);
     return handleResponse(response);
   },
@@ -196,45 +197,45 @@ export const uploadAPI = {
   // Upload avatar
   uploadAvatar: async (file) => {
     const formData = new FormData();
-    formData.append('image', file);
-    
+    formData.append("image", file);
+
     const token = getAuthToken();
     const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: formData,
     });
-    
+
     return handleResponse(response);
   },
 
   // Upload multiple listing images
   uploadListingImages: async (files) => {
     const formData = new FormData();
-    files.forEach(file => {
-      formData.append('images', file);
+    files.forEach((file) => {
+      formData.append("images", file);
     });
-    
+
     const token = getAuthToken();
     const response = await fetch(`${API_BASE_URL}/upload/listing-images`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: formData,
     });
-    
+
     return handleResponse(response);
   },
 
   // Delete image
   deleteImage: async (publicId) => {
     const response = await authFetch(`/upload/image/${publicId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
-    
+
     return handleResponse(response);
   },
 
@@ -246,12 +247,83 @@ export const uploadAPI = {
   },
 
   // Get upload signature for client-side uploads
-  getUploadSignature: async (folder = 'vmarket') => {
-    const response = await authFetch('/upload/signature', {
-      method: 'POST',
+  getUploadSignature: async (folder = "vmarket") => {
+    const response = await authFetch("/upload/signature", {
+      method: "POST",
       body: JSON.stringify({ folder }),
     });
-    
+
+    return handleResponse(response);
+  },
+};
+
+// Products API
+export const productsAPI = {
+  // Browse products
+  browseProducts: async (filters = {}) => {
+    const params = new URLSearchParams();
+
+    if (filters.category) params.append("category", filters.category);
+    if (filters.subcategory) params.append("subcategory", filters.subcategory);
+    if (filters.search) params.append("search", filters.search);
+    if (filters.location) params.append("location", filters.location);
+    if (filters.minPrice) params.append("minPrice", filters.minPrice);
+    if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+    if (filters.condition) params.append("condition", filters.condition);
+    if (filters.sortBy) params.append("sortBy", filters.sortBy);
+    if (filters.page) params.append("page", filters.page);
+    if (filters.limit) params.append("limit", filters.limit);
+
+    const response = await fetch(`${API_BASE_URL}/products/browse?${params}`);
+    return handleResponse(response);
+  },
+
+  // Search products
+  searchProducts: async (searchQuery, filters = {}) => {
+    const params = new URLSearchParams({
+      search: searchQuery,
+      ...filters,
+    });
+
+    const response = await fetch(`${API_BASE_URL}/products/browse?${params}`);
+    return handleResponse(response);
+  },
+
+  // Get single product
+  getProduct: async (productId) => {
+    const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+    return handleResponse(response);
+  },
+
+  // Create product
+  createProduct: async (productData) => {
+    const response = await authFetch("/products", {
+      method: "POST",
+      body: JSON.stringify(productData),
+    });
+    return handleResponse(response);
+  },
+
+  // Update product
+  updateProduct: async (productId, productData) => {
+    const response = await authFetch(`/products/${productId}`, {
+      method: "PUT",
+      body: JSON.stringify(productData),
+    });
+    return handleResponse(response);
+  },
+
+  // Delete product
+  deleteProduct: async (productId) => {
+    const response = await authFetch(`/products/${productId}`, {
+      method: "DELETE",
+    });
+    return handleResponse(response);
+  },
+
+  // Get user's products
+  getMyProducts: async () => {
+    const response = await authFetch("/products/my-products");
     return handleResponse(response);
   },
 };
@@ -259,21 +331,26 @@ export const uploadAPI = {
 // Messaging API
 export const messageAPI = {
   // Send message to seller/user
-  sendMessage: async (receiverId, subject, messageBody, attachmentUrl = null) => {
+  sendMessage: async (
+    receiverId,
+    subject,
+    messageBody,
+    attachmentUrl = null
+  ) => {
     const payload = {
       receiver_id: receiverId,
       subject,
       message: messageBody,
       attachment_url: attachmentUrl,
     };
-    
-    console.log('messageAPI.sendMessage payload:', payload);
-    
-    const response = await authFetch('/buyers/messages', {
-      method: 'POST',
+
+    console.log("messageAPI.sendMessage payload:", payload);
+
+    const response = await authFetch("/buyers/messages", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
-    
+
     return handleResponse(response);
   },
 
@@ -284,14 +361,14 @@ export const messageAPI = {
       limit: limit.toString(),
       ...(conversationWith && { conversation_with: conversationWith }),
     });
-    
+
     const response = await authFetch(`/buyers/messages?${params}`);
     return handleResponse(response);
   },
 
   // Get conversations list
   getConversations: async () => {
-    const response = await authFetch('/buyers/messages/conversations');
+    const response = await authFetch("/buyers/messages/conversations");
     return handleResponse(response);
   },
 
@@ -304,42 +381,42 @@ export const messageAPI = {
   // Mark message as read
   markAsRead: async (messageId) => {
     const response = await authFetch(`/buyers/messages/${messageId}/read`, {
-      method: 'PATCH',
+      method: "PATCH",
     });
-    
+
     return handleResponse(response);
   },
 
   // Delete message
   deleteMessage: async (messageId) => {
     const response = await authFetch(`/buyers/messages/${messageId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
-    
+
     return handleResponse(response);
   },
 
   // Reply to message
   replyToMessage: async (messageId, messageBody, attachmentUrl = null) => {
     const response = await authFetch(`/buyers/messages/${messageId}/reply`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({
         message_body: messageBody,
         attachment_url: attachmentUrl,
       }),
     });
-    
+
     return handleResponse(response);
   },
 };
 
 // Utility function to check if user is authenticated
 export const isAuthenticated = () => {
-  return !!localStorage.getItem('accessToken');
+  return !!localStorage.getItem("accessToken");
 };
 
 // Utility function to clear authentication
 export const clearAuth = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
 };
