@@ -5,7 +5,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Account from "./pages/Account";
-import AIInsights from "./pages/AIInsights";
 import Auth from "./pages/Auth";
 import CategoryPage from "./pages/CategoryPage";
 import Index from "./pages/Index";
@@ -32,13 +31,7 @@ const App = () => (
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/sell" element={<Sell />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/category/:categoryId" element={<CategoryPage />} />
-            <Route path="/house" element={<CategoryPage />} />
-            <Route path="/transport" element={<CategoryPage />} />
-            <Route path="/market" element={<CategoryPage />} />
-            <Route path="/entertainment" element={<CategoryPage />} />
-            <Route path="/ai-insights" element={<AIInsights />} />
-            <Route path="/category/algorithm" element={<AIInsights />} />
+            <Route path="/category/:category" element={<CategoryPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

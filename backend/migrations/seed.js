@@ -6,13 +6,6 @@ const seedCategories = async () => {
 
     const categories = [
       {
-        name: "Education",
-        slug: "education",
-        description:
-          "Educational services, tutoring, courses, and learning materials",
-        icon_url: "/images/education.jpg",
-      },
-      {
         name: "Entertainment",
         slug: "entertainment",
         description: "Movies, music, games, events, and entertainment services",

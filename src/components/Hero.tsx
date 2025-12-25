@@ -19,9 +19,8 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
-                Discover housing, transportation, shopping, healthcare, jobs,
-                education, and entertainment—all in one powerful platform
-                designed for Kenya.
+                Discover housing, transportation, shopping, and entertainment -
+                all in one powerful platform designed for Kenya.
               </p>
             </div>
 
@@ -70,9 +69,9 @@ const Hero = () => {
                   <TrendingUp className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">AI Powered</h3>
+                  <h3 className="font-semibold">Growing Community</h3>
                   <p className="text-sm text-muted-foreground">
-                    Personalized recommendations
+                    More listings every day
                   </p>
                 </div>
               </div>

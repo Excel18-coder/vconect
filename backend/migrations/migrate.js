@@ -1,8 +1,8 @@
-const { sql } = require('../src/config/database');
+const { sql } = require("../src/config/database");
 
 const createTables = async () => {
   try {
-    console.log('🚀 Starting database migration...');
+    console.log("🚀 Starting database migration...");
 
     // Create users table
     await sql`
@@ -27,7 +27,7 @@ const createTables = async () => {
         display_name VARCHAR(255),
         avatar_url TEXT,
         bio TEXT,
-        user_type VARCHAR(50) DEFAULT 'buyer' CHECK (user_type IN ('buyer', 'seller', 'landlord', 'employer', 'doctor', 'tutor', 'admin')),
+        user_type VARCHAR(50) DEFAULT 'buyer' CHECK (user_type IN ('buyer', 'seller', 'landlord', 'admin')),
         phone_number VARCHAR(20),
         location VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -166,18 +166,17 @@ const createTables = async () => {
         EXECUTE FUNCTION update_updated_at_column()
     `;
 
-    console.log('✅ Database migration completed successfully!');
-    console.log('📋 Tables created:');
-    console.log('   - users');
-    console.log('   - profiles');
-    console.log('   - categories');
-    console.log('   - listings');
-    console.log('   - favorites');
-    console.log('   - messages');
-    console.log('   - user_sessions');
-
+    console.log("✅ Database migration completed successfully!");
+    console.log("📋 Tables created:");
+    console.log("   - users");
+    console.log("   - profiles");
+    console.log("   - categories");
+    console.log("   - listings");
+    console.log("   - favorites");
+    console.log("   - messages");
+    console.log("   - user_sessions");
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error("❌ Migration failed:", error);
     throw error;
   }
 };
@@ -186,11 +185,11 @@ const createTables = async () => {
 if (require.main === module) {
   createTables()
     .then(() => {
-      console.log('Migration completed successfully');
+      console.log("Migration completed successfully");
       process.exit(0);
     })
     .catch((error) => {
-      console.error('Migration failed:', error);
+      console.error("Migration failed:", error);
       process.exit(1);
     });
 }

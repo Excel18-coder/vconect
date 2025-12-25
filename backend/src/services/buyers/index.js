@@ -3,14 +3,8 @@
  * Exports all buyer-related services
  */
 
-const wishlistService = require('./wishlistService');
-const notificationService = require('./notificationService');
-const messageService = require('./messageService');
-const reviewService = require('./reviewService');
+const messageService = require("./messageService");
 
 module.exports = {
-  wishlistService,
-  notificationService,
   messageService,
-  reviewService
 };

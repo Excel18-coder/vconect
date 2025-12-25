@@ -1,15 +1,15 @@
+import logoImage from "@/assets/logo.jpeg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import logoImage from "@/assets/logo.jpeg";
-import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Mail, 
-  Phone, 
-  MapPin 
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
 } from "lucide-react";
 
 const Footer = () => {
@@ -20,16 +20,17 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img 
-                src={logoImage} 
-                alt="VCONECT Logo" 
+              <img
+                src={logoImage}
+                alt="VCONECT Logo"
                 className="w-12 h-12 object-contain rounded-lg bg-transparent"
-                style={{ mixBlendMode: 'multiply' }}
+                style={{ mixBlendMode: "multiply" }}
               />
               <span className="text-xl font-bold text-blue-600">VCONECT</span>
             </div>
             <p className="text-muted-foreground">
-              Kenya's leading digital marketplace connecting communities through technology, commerce, and innovation.
+              Kenya's leading digital marketplace connecting communities through
+              technology, commerce, and innovation.
             </p>
             <div className="flex space-x-2">
               <Button variant="ghost" size="icon">
@@ -51,11 +52,31 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold">Quick Links</h3>
             <div className="space-y-2 text-sm">
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">About Us</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">How It Works</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Seller Guide</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Buyer Protection</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Help Center</a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                About Us
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                How It Works
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Seller Guide
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Buyer Protection
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Help Center
+              </a>
             </div>
           </div>
 
@@ -63,11 +84,26 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-semibold">Categories</h3>
             <div className="space-y-2 text-sm">
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Real Estate</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Transportation</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Marketplace</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Healthcare</a>
-              <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">Jobs & Careers</a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Real Estate
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Transportation
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Marketplace
+              </a>
+              <a
+                href="#"
+                className="block text-muted-foreground hover:text-primary transition-colors">
+                Entertainment
+              </a>
             </div>
           </div>
 
@@ -88,7 +124,7 @@ const Footer = () => {
                 <span>Kirinyaga, Kenya</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <p className="text-sm font-medium">Subscribe to our newsletter</p>
               <div className="flex space-x-2">
@@ -107,9 +143,21 @@ const Footer = () => {
             <div className="text-xs">Powered by CIPHER</div>
           </div>
           <div className="flex space-x-6 text-sm">
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</a>
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </a>
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-primary transition-colors">
+              Terms of Service
+            </a>
+            <a
+              href="#"
+              className="text-muted-foreground hover:text-primary transition-colors">
+              Cookie Policy
+            </a>
           </div>
         </div>
       </div>

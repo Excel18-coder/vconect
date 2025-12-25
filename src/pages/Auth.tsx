@@ -1,18 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
-import { z } from 'zod';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 const authSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   displayName: z.string().optional(),
   userType: z.string().optional(),
 });
@@ -20,10 +32,10 @@ const authSchema = z.object({
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    displayName: '',
-    userType: 'buyer'
+    email: "",
+    password: "",
+    displayName: "",
+    userType: "buyer",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, signUp, user } = useAuth();
@@ -32,16 +44,18 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/account');
+      navigate("/account");
     }
   }, [user, navigate]);
 
   const validateForm = (isSignUp = false) => {
     try {
-      const schema = isSignUp 
-        ? authSchema.extend({ displayName: z.string().min(1, 'Display name is required') })
+      const schema = isSignUp
+        ? authSchema.extend({
+            displayName: z.string().min(1, "Display name is required"),
+          })
         : authSchema.pick({ email: true, password: true });
-      
+
       schema.parse(formData);
       setErrors({});
       return true;
@@ -62,18 +76,20 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm(false)) return;
-    
+
     setIsLoading(true);
     const { error } = await signIn(formData.email, formData.password);
 
     if (!error && user) {
       // Redirect based on user type
       const userMetadata = (user as any)?.user_metadata;
-      if (userMetadata?.user_type === 'seller' || 
-          userMetadata?.userType === 'seller') {
-        navigate('/account?tab=products'); // Direct sellers to product management
+      if (
+        userMetadata?.user_type === "seller" ||
+        userMetadata?.userType === "seller"
+      ) {
+        navigate("/account?tab=products"); // Direct sellers to product management
       } else {
-        navigate('/account');
+        navigate("/account");
       }
     }
     setIsLoading(false);
@@ -82,25 +98,30 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm(true)) return;
-    
+
     setIsLoading(true);
-    const { error } = await signUp(formData.email, formData.password, formData.displayName, formData.userType);
-    
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      formData.displayName,
+      formData.userType
+    );
+
     if (!error) {
       // Redirect based on user type
-      if (formData.userType === 'seller') {
-        navigate('/account?tab=products'); // Direct sellers to product management
+      if (formData.userType === "seller") {
+        navigate("/account?tab=products"); // Direct sellers to product management
       } else {
-        navigate('/account');
+        navigate("/account");
       }
     }
     setIsLoading(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -110,7 +131,9 @@ const Auth = () => {
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl text-primary">Welcome</CardTitle>
-            <CardDescription>Sign in to your account or create a new one</CardDescription>
+            <CardDescription>
+              Sign in to your account or create a new one
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
@@ -118,7 +141,7 @@ const Auth = () => {
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
@@ -128,12 +151,16 @@ const Auth = () => {
                       type="email"
                       placeholder="Enter your email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={errors.email ? 'border-destructive' : ''}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      className={errors.email ? "border-destructive" : ""}
                     />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
                     <Input
@@ -141,23 +168,30 @@ const Auth = () => {
                       type="password"
                       placeholder="Enter your password"
                       value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className={errors.password ? 'border-destructive' : ''}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      className={errors.password ? "border-destructive" : ""}
                     />
-                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="text-sm text-destructive">
+                        {errors.password}
+                      </p>
+                    )}
                   </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-primary hover:bg-primary/90" 
-                    disabled={isLoading}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary hover:bg-primary/90"
+                    disabled={isLoading}>
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Sign In
                   </Button>
                 </form>
               </TabsContent>
-              
+
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
@@ -167,12 +201,18 @@ const Auth = () => {
                       type="text"
                       placeholder="Enter your display name"
                       value={formData.displayName}
-                      onChange={(e) => handleInputChange('displayName', e.target.value)}
-                      className={errors.displayName ? 'border-destructive' : ''}
+                      onChange={(e) =>
+                        handleInputChange("displayName", e.target.value)
+                      }
+                      className={errors.displayName ? "border-destructive" : ""}
                     />
-                    {errors.displayName && <p className="text-sm text-destructive">{errors.displayName}</p>}
+                    {errors.displayName && (
+                      <p className="text-sm text-destructive">
+                        {errors.displayName}
+                      </p>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email-signup">Email</Label>
                     <Input
@@ -180,12 +220,16 @@ const Auth = () => {
                       type="email"
                       placeholder="Enter your email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={errors.email ? 'border-destructive' : ''}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      className={errors.email ? "border-destructive" : ""}
                     />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="password-signup">Password</Label>
                     <Input
@@ -193,15 +237,25 @@ const Auth = () => {
                       type="password"
                       placeholder="Create a password"
                       value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className={errors.password ? 'border-destructive' : ''}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      className={errors.password ? "border-destructive" : ""}
                     />
-                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="text-sm text-destructive">
+                        {errors.password}
+                      </p>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="userType">Account Type</Label>
-                    <Select value={formData.userType} onValueChange={(value) => handleInputChange('userType', value)}>
+                    <Select
+                      value={formData.userType}
+                      onValueChange={(value) =>
+                        handleInputChange("userType", value)
+                      }>
                       <SelectTrigger>
                         <SelectValue placeholder="Select account type" />
                       </SelectTrigger>
@@ -209,19 +263,17 @@ const Auth = () => {
                         <SelectItem value="buyer">Buyer</SelectItem>
                         <SelectItem value="seller">Seller</SelectItem>
                         <SelectItem value="landlord">Landlord</SelectItem>
-                        <SelectItem value="employer">Employer</SelectItem>
-                        <SelectItem value="doctor">Doctor</SelectItem>
-                        <SelectItem value="tutor">Tutor</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-primary hover:bg-primary/90" 
-                    disabled={isLoading}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary hover:bg-primary/90"
+                    disabled={isLoading}>
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Sign Up
                   </Button>
                 </form>

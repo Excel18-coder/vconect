@@ -1,21 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  ArrowRight,
-  Brain,
-  Car,
-  Home,
-  PlayCircle,
-  ShoppingBag,
-} from "lucide-react";
+import { ArrowRight, Car, Home, PlayCircle, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Images are now loaded from public/images folder
 
 const categories = [
   {
-    id: "house",
-    title: "House",
+    id: "housing",
+    title: "Housing",
     description: "Find your perfect home. Rent or buy properties across Kenya.",
     icon: Home,
     image: "/images/house.jpg",
@@ -50,19 +43,6 @@ const categories = [
     color: "from-blue-700 to-blue-800",
     features: ["Content Creation", "Live Streaming", "Monetization"],
   },
-  {
-    id: "algorithm",
-    title: "AI Insights",
-    description: "Get personalized recommendations powered by advanced AI.",
-    icon: Brain,
-    image: "/images/ai_insights.jpg",
-    color: "from-red-700 to-red-800",
-    features: [
-      "Smart Recommendations",
-      "Predictive Analytics",
-      "User Insights",
-    ],
-  },
 ];
 
 const CategoryGrid = () => {
@@ -76,8 +56,7 @@ const CategoryGrid = () => {
             Explore Our <span className="text-blue-600">Marketplace</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Five powerful sections designed to meet all your digital needs in
-            one unified platform
+            Browse categories and discover great deals from sellers.
           </p>
         </div>
 

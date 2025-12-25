@@ -49,15 +49,10 @@ const CategoryPage = () => {
   const [loading, setLoading] = useState(true);
 
   const categoryTitles: { [key: string]: string } = {
-    house: "Real Estate & Properties",
+    housing: "Real Estate & Properties",
     transport: "Transportation & Logistics",
     market: "Marketplace & Shopping",
-    health: "Healthcare Services",
-    jobs: "Jobs & Careers",
-    education: "Education & Courses",
     entertainment: "Entertainment & Media",
-    revenue: "Revenue & Analytics",
-    "ai-insights": "AI Insights & Analytics",
   };
 
   // Fetch products

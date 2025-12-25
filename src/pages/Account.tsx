@@ -25,7 +25,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  Briefcase,
   Car,
   DollarSign,
   Heart,
@@ -36,8 +35,6 @@ import {
   PlayCircle,
   Settings,
   ShoppingBag,
-  Stethoscope,
-  TrendingUp,
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -66,10 +63,10 @@ const Account = () => {
       [
         "overview",
         "settings",
+        "messages",
         "activity",
         "favorites",
         "products",
-        "analytics",
       ].includes(tab)
     ) {
       setActiveTab(tab);
@@ -148,9 +145,6 @@ const Account = () => {
       buyer: ShoppingBag,
       seller: DollarSign,
       landlord: Home,
-      employer: Briefcase,
-      doctor: Stethoscope,
-      tutor: User,
       admin: Settings,
     };
     const Icon = iconMap[type as keyof typeof iconMap] || User;
@@ -162,9 +156,6 @@ const Account = () => {
       buyer: "bg-primary",
       seller: "bg-secondary",
       landlord: "bg-accent",
-      employer: "bg-muted",
-      doctor: "bg-primary",
-      tutor: "bg-secondary",
       admin: "bg-destructive",
     };
     return colorMap[type as keyof typeof colorMap] || "bg-muted";
@@ -236,8 +227,7 @@ const Account = () => {
 
           {/* Seller Welcome Message */}
           {(profile?.userType === "seller" ||
-            profile?.userType === "landlord" ||
-            profile?.userType === "employer") && (
+            profile?.userType === "landlord") && (
             <Card className="mb-6 bg-gradient-to-r from-primary/10 to-pink-500/10 border-primary/20">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -269,7 +259,7 @@ const Account = () => {
             value={activeTab}
             onValueChange={setActiveTab}
             className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="messages">
@@ -279,15 +269,11 @@ const Account = () => {
               <TabsTrigger value="activity">Activity</TabsTrigger>
               <TabsTrigger value="favorites">Favorites</TabsTrigger>
               {(profile?.userType === "seller" ||
-                profile?.userType === "landlord" ||
-                profile?.userType === "employer") && (
+                profile?.userType === "landlord") && (
                 <TabsTrigger value="products" className="hidden lg:flex">
                   Products
                 </TabsTrigger>
               )}
-              <TabsTrigger value="analytics" className="hidden lg:flex">
-                Analytics
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -485,9 +471,6 @@ const Account = () => {
                               <SelectItem value="buyer">Buyer</SelectItem>
                               <SelectItem value="seller">Seller</SelectItem>
                               <SelectItem value="landlord">Landlord</SelectItem>
-                              <SelectItem value="employer">Employer</SelectItem>
-                              <SelectItem value="doctor">Doctor</SelectItem>
-                              <SelectItem value="tutor">Tutor</SelectItem>
                             </SelectContent>
                           </Select>
                           <p className="text-xs text-muted-foreground">
@@ -604,32 +587,11 @@ const Account = () => {
             </TabsContent>
 
             {(profile?.userType === "seller" ||
-              profile?.userType === "landlord" ||
-              profile?.userType === "employer") && (
+              profile?.userType === "landlord") && (
               <TabsContent value="products" className="space-y-6">
                 <ProductManager />
               </TabsContent>
             )}
-
-            <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Performance Analytics</CardTitle>
-                  <CardDescription>
-                    Insights into your marketplace performance
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center h-32">
-                    <TrendingUp className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                  <p className="text-center text-muted-foreground">
-                    Analytics will be available once you start using the
-                    platform.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
         </div>
       </main>

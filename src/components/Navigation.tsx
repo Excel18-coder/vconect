@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Brain, Car, Home, PlayCircle, ShoppingBag } from "lucide-react";
+import { Car, Home, PlayCircle, ShoppingBag } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Navigation = () => {
   const location = useLocation();
 
   const mainCategories = [
-    { name: "House", icon: Home, path: "/category/house" },
+    { name: "Housing", icon: Home, path: "/category/housing" },
     { name: "Transport", icon: Car, path: "/category/transport" },
     { name: "Market", icon: ShoppingBag, path: "/category/market" },
     {
@@ -14,7 +14,6 @@ const Navigation = () => {
       icon: PlayCircle,
       path: "/category/entertainment",
     },
-    { name: "AI Insights", icon: Brain, path: "/ai-insights" },
   ];
 
   return (

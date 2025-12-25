@@ -84,8 +84,12 @@ const ProductManager = () => {
     images: [],
   });
 
+  const CUSTOM_OPTION_VALUE = "__custom__";
+  const [customCategory, setCustomCategory] = useState("");
+  const [customSubcategory, setCustomSubcategory] = useState("");
+
   const categories = {
-    house: ["Apartments", "Houses", "Commercial", "Land", "Vacation Rentals"],
+    housing: ["Apartments", "Houses", "Commercial", "Land", "Vacation Rentals"],
     transport: ["Cars", "Motorcycles", "Buses", "Trucks", "Spare Parts"],
     market: ["Electronics", "Fashion", "Home & Garden", "Sports", "Books"],
     entertainment: ["Events", "Music", "Movies", "Gaming", "Content Creation"],
@@ -153,23 +157,47 @@ const ProductManager = () => {
       tags: "",
       images: [],
     });
+    setCustomCategory("");
+    setCustomSubcategory("");
     setEditingProduct(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const effectiveCategory =
+      formData.category === CUSTOM_OPTION_VALUE
+        ? customCategory.trim()
+        : formData.category;
+    const effectiveSubcategory =
+      formData.subcategory === CUSTOM_OPTION_VALUE
+        ? customSubcategory.trim()
+        : formData.subcategory;
+
     // Validate required fields
     if (
       !formData.title ||
       !formData.description ||
       !formData.price ||
-      !formData.category ||
-      !formData.subcategory ||
+      !effectiveCategory ||
+      !effectiveSubcategory ||
       !formData.condition ||
       !formData.location
     ) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (formData.category === CUSTOM_OPTION_VALUE && !customCategory.trim()) {
+      toast.error("Please type your category");
+      return;
+    }
+
+    if (
+      formData.subcategory === CUSTOM_OPTION_VALUE &&
+      !customSubcategory.trim()
+    ) {
+      toast.error("Please type your subcategory");
       return;
     }
 
@@ -183,8 +211,8 @@ const ProductManager = () => {
       formDataToSend.append("title", formData.title);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("price", formData.price);
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("subcategory", formData.subcategory);
+      formDataToSend.append("category", effectiveCategory);
+      formDataToSend.append("subcategory", effectiveSubcategory);
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("location", formData.location);
       formDataToSend.append("tags", formData.tags);
@@ -344,43 +372,58 @@ const ProductManager = () => {
                   <Label htmlFor="category">Category *</Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
                       setFormData((prev) => ({
                         ...prev,
                         category: value,
                         subcategory: "",
-                      }))
-                    }>
+                      }));
+                      setCustomCategory("");
+                      setCustomSubcategory("");
+                    }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="house">Real Estate</SelectItem>
+                      <SelectItem value="housing">Real Estate</SelectItem>
                       <SelectItem value="transport">Transportation</SelectItem>
                       <SelectItem value="market">Marketplace</SelectItem>
-                      <SelectItem value="health">Healthcare</SelectItem>
-                      <SelectItem value="jobs">Jobs</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
                       <SelectItem value="entertainment">
                         Entertainment
                       </SelectItem>
+                      <SelectItem value={CUSTOM_OPTION_VALUE}>
+                        Other (Type your own)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {formData.category === CUSTOM_OPTION_VALUE && (
+                    <Input
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="Type your category"
+                      maxLength={100}
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="subcategory">Subcategory *</Label>
                   <Select
                     value={formData.subcategory}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, subcategory: value }))
-                    }
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, subcategory: value }));
+                      if (value !== CUSTOM_OPTION_VALUE) {
+                        setCustomSubcategory("");
+                      }
+                    }}
                     disabled={!formData.category}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select subcategory" />
                     </SelectTrigger>
                     <SelectContent>
                       {formData.category &&
+                        formData.category !== CUSTOM_OPTION_VALUE &&
                         categories[
                           formData.category as keyof typeof categories
                         ]?.map((sub) => (
@@ -388,8 +431,21 @@ const ProductManager = () => {
                             {sub}
                           </SelectItem>
                         ))}
+
+                      <SelectItem value={CUSTOM_OPTION_VALUE}>
+                        Other (Type your own)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {formData.subcategory === CUSTOM_OPTION_VALUE && (
+                    <Input
+                      value={customSubcategory}
+                      onChange={(e) => setCustomSubcategory(e.target.value)}
+                      placeholder="Type your subcategory"
+                      maxLength={100}
+                    />
+                  )}
                 </div>
               </div>
 

@@ -44,6 +44,11 @@ const PostAd = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
+  const CUSTOM_OPTION_VALUE = "__custom__";
+  const [customCategory, setCustomCategory] = useState("");
+  const [customSubcategory, setCustomSubcategory] = useState("");
+  const [customLocation, setCustomLocation] = useState("");
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -63,7 +68,7 @@ const PostAd = () => {
 
   const categories = [
     {
-      value: "house",
+      value: "housing",
       label: "Real Estate",
       subcategories: ["Apartment", "House", "Land", "Commercial"],
     },
@@ -169,6 +174,19 @@ const PostAd = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const effectiveCategory =
+      formData.category === CUSTOM_OPTION_VALUE
+        ? customCategory.trim()
+        : formData.category;
+    const effectiveSubcategory =
+      formData.subcategory === CUSTOM_OPTION_VALUE
+        ? customSubcategory.trim()
+        : formData.subcategory;
+    const effectiveLocation =
+      formData.location === CUSTOM_OPTION_VALUE
+        ? customLocation.trim()
+        : formData.location;
+
     // Validation
     if (!formData.title.trim()) {
       toast.error("Please enter a product title");
@@ -182,12 +200,27 @@ const PostAd = () => {
       toast.error("Please enter a valid price");
       return;
     }
-    if (!formData.category) {
-      toast.error("Please select a category");
+    if (!effectiveCategory) {
+      toast.error("Please select or type a category");
       return;
     }
-    if (!formData.location) {
-      toast.error("Please select a location");
+    if (!effectiveLocation) {
+      toast.error("Please select or type a location");
+      return;
+    }
+    if (formData.category === CUSTOM_OPTION_VALUE && !customCategory.trim()) {
+      toast.error("Please type your category");
+      return;
+    }
+    if (
+      formData.subcategory === CUSTOM_OPTION_VALUE &&
+      !customSubcategory.trim()
+    ) {
+      toast.error("Please type your subcategory");
+      return;
+    }
+    if (formData.location === CUSTOM_OPTION_VALUE && !customLocation.trim()) {
+      toast.error("Please type your location");
       return;
     }
     if (imageFiles.length === 0) {
@@ -213,12 +246,12 @@ const PostAd = () => {
       formDataToSend.append("title", formData.title.trim());
       formDataToSend.append("description", formData.description.trim());
       formDataToSend.append("price", formData.price);
-      formDataToSend.append("category", formData.category);
-      if (formData.subcategory) {
-        formDataToSend.append("subcategory", formData.subcategory);
+      formDataToSend.append("category", effectiveCategory);
+      if (effectiveSubcategory) {
+        formDataToSend.append("subcategory", effectiveSubcategory);
       }
       formDataToSend.append("condition", formData.condition);
-      formDataToSend.append("location", formData.location);
+      formDataToSend.append("location", effectiveLocation);
       formDataToSend.append("stock_quantity", formData.stock_quantity);
       formDataToSend.append(
         "discount_percentage",
@@ -267,6 +300,11 @@ const PostAd = () => {
   const selectedCategory = categories.find(
     (cat) => cat.value === formData.category
   );
+
+  const selectedCategorySubcategories = selectedCategory?.subcategories || [];
+  const subcategoryOptions = selectedCategorySubcategories.includes("Other")
+    ? selectedCategorySubcategories
+    : [...selectedCategorySubcategories, "Other"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -331,6 +369,8 @@ const PostAd = () => {
                       onValueChange={(value) => {
                         handleInputChange("category", value);
                         handleInputChange("subcategory", "");
+                        setCustomSubcategory("");
+                        setCustomCategory("");
                       }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -341,8 +381,25 @@ const PostAd = () => {
                             {cat.label}
                           </SelectItem>
                         ))}
+                        <SelectItem value={CUSTOM_OPTION_VALUE}>
+                          Other (Type your own)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+
+                    {formData.category === CUSTOM_OPTION_VALUE && (
+                      <div className="mt-2">
+                        <Input
+                          value={customCategory}
+                          onChange={(e) => setCustomCategory(e.target.value)}
+                          placeholder="Type your category (e.g., Farm Produce, Services, Tools)"
+                          maxLength={100}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          This will be saved as a new category.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {selectedCategory &&
@@ -358,13 +415,38 @@ const PostAd = () => {
                             <SelectValue placeholder="Select subcategory" />
                           </SelectTrigger>
                           <SelectContent>
-                            {selectedCategory.subcategories.map((sub) => (
-                              <SelectItem key={sub} value={sub.toLowerCase()}>
-                                {sub}
-                              </SelectItem>
-                            ))}
+                            {subcategoryOptions.map((sub) => {
+                              if (sub === "Other") {
+                                return (
+                                  <SelectItem
+                                    key={sub}
+                                    value={CUSTOM_OPTION_VALUE}>
+                                    Other (Type your own)
+                                  </SelectItem>
+                                );
+                              }
+
+                              return (
+                                <SelectItem key={sub} value={sub.toLowerCase()}>
+                                  {sub}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
+
+                        {formData.subcategory === CUSTOM_OPTION_VALUE && (
+                          <div className="mt-2">
+                            <Input
+                              value={customSubcategory}
+                              onChange={(e) =>
+                                setCustomSubcategory(e.target.value)
+                              }
+                              placeholder="Type your subcategory"
+                              maxLength={100}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                 </div>
@@ -505,8 +587,22 @@ const PostAd = () => {
                             {loc}
                           </SelectItem>
                         ))}
+                        <SelectItem value={CUSTOM_OPTION_VALUE}>
+                          Other (Type your own)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+
+                    {formData.location === CUSTOM_OPTION_VALUE && (
+                      <div className="mt-2">
+                        <Input
+                          value={customLocation}
+                          onChange={(e) => setCustomLocation(e.target.value)}
+                          placeholder="Type your location (e.g., Nairobi, Westlands)"
+                          maxLength={255}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>
