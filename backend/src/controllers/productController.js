@@ -755,7 +755,7 @@ const browseProducts = asyncHandler(async (req, res) => {
 
   try {
     // Build filters (so category tabs only show matching items)
-    const conditions = ["l.status = 'active'"];
+    let where = sql`l.status = 'active'`;
 
     if (category) {
       const normalized = normalizeCategorySlug(category);
@@ -770,58 +770,54 @@ const browseProducts = asyncHandler(async (req, res) => {
           ...getCategoryAliases("entertainment"),
         ].map((s) => s.toLowerCase());
 
-        conditions.push(
-          `(
-            LOWER(c.slug) = ANY(${sql.array(
-              marketAliases.map((s) => s.toLowerCase()),
-              "text"
-            )})
-            OR c.slug IS NULL
-            OR LOWER(c.slug) <> ALL(${sql.array(
-              excludedPrimaryAliases,
-              "text"
-            )})
-          )`
-        );
+        where = sql`${where} AND (
+          LOWER(c.slug) = ANY(${sql.array(
+            marketAliases.map((s) => s.toLowerCase()),
+            "text"
+          )})
+          OR c.slug IS NULL
+          OR LOWER(c.slug) <> ALL(${sql.array(excludedPrimaryAliases, "text")})
+        )`;
       } else {
         const aliases = getCategoryAliases(normalized);
 
         // Match by slug aliases primarily; keep name fallback to be tolerant of older data.
-        conditions.push(
-          `(
-            LOWER(c.slug) = ANY(${sql.array(
-              aliases.map((s) => s.toLowerCase()),
-              "text"
-            )})
-            OR LOWER(c.name) = LOWER(${sql`${category}`})
-          )`
-        );
+        where = sql`${where} AND (
+          LOWER(c.slug) = ANY(${sql.array(
+            aliases.map((s) => s.toLowerCase()),
+            "text"
+          )})
+          OR LOWER(c.name) = LOWER(${category})
+        )`;
       }
     }
 
     if (search) {
-      conditions.push(
-        `(
-          l.title ILIKE '%' || ${sql`${search}`} || '%'
-          OR l.description ILIKE '%' || ${sql`${search}`} || '%'
-        )`
-      );
+      const q = `%${search}%`;
+      where = sql`${where} AND (l.title ILIKE ${q} OR l.description ILIKE ${q})`;
     }
 
     if (condition) {
-      conditions.push(`LOWER(l.condition) = LOWER(${sql`${condition}`})`);
+      where = sql`${where} AND LOWER(l.condition) = LOWER(${condition})`;
     }
 
     if (location) {
-      conditions.push(`l.location ILIKE '%' || ${sql`${location}`} || '%'`);
+      const loc = `%${location}%`;
+      where = sql`${where} AND l.location ILIKE ${loc}`;
     }
 
     if (min_price) {
-      conditions.push(`l.price >= ${sql`${min_price}`}`);
+      const min = Number(min_price);
+      if (!Number.isNaN(min)) {
+        where = sql`${where} AND l.price >= ${min}`;
+      }
     }
 
     if (max_price) {
-      conditions.push(`l.price <= ${sql`${max_price}`}`);
+      const max = Number(max_price);
+      if (!Number.isNaN(max)) {
+        where = sql`${where} AND l.price <= ${max}`;
+      }
     }
 
     // Optional tag filtering (comma-separated)
@@ -833,23 +829,18 @@ const browseProducts = asyncHandler(async (req, res) => {
         .slice(0, 10);
 
       if (tagList.length > 0) {
-        conditions.push(
-          `EXISTS (
-            SELECT 1
-            FROM unnest(l.tags) AS t(tag)
-            WHERE LOWER(t.tag) = ANY(${sql.array(
-              tagList.map((t) => t.toLowerCase()),
-              "text"
-            )})
-          )`
-        );
+        where = sql`${where} AND EXISTS (
+          SELECT 1
+          FROM unnest(l.tags) AS t(tag)
+          WHERE LOWER(t.tag) = ANY(${sql.array(
+            tagList.map((t) => t.toLowerCase()),
+            "text"
+          )})
+        )`;
       }
     }
 
-    const whereClause =
-      conditions.length > 0
-        ? sql`WHERE ${sql.unsafe(conditions.join(" AND "))}`
-        : sql``;
+    const whereClause = sql`WHERE ${where}`;
 
     // NOTE: we keep ordering stable (created_at desc) to match existing behavior.
     // The `sort`/`order` query params are accepted but not trusted for dynamic SQL.
