@@ -8,6 +8,30 @@ const {
 } = require("../utils/response");
 const { asyncHandler } = require("../middleware/errorHandler");
 
+const uploadImagesToCloudinary = async (files = []) => {
+  if (!files || files.length === 0) return [];
+
+  const uploadPromises = files.map((file) => {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "vmarket/products",
+          resource_type: "image",
+          transformation: [{ quality: "auto:good" }, { fetch_format: "auto" }],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+
+      uploadStream.end(file.buffer);
+    });
+  });
+
+  return Promise.all(uploadPromises);
+};
+
 const slugifyCategory = (value) => {
   return String(value || "")
     .toLowerCase()
@@ -504,11 +528,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   // Handle image uploads if files are provided
   let imageUrls = existingProduct.images || [];
   if (req.files && req.files.length > 0) {
-    const uploadPromises = req.files.map((file) =>
-      uploadService.uploadImage(file, "products")
-    );
-    const uploadResults = await Promise.all(uploadPromises);
-    const newImageUrls = uploadResults.map((result) => result.url);
+    const newImageUrls = await uploadImagesToCloudinary(req.files);
 
     // Append new images to existing ones (max 8 total)
     imageUrls = [...imageUrls, ...newImageUrls].slice(0, 8);
@@ -552,6 +572,16 @@ const updateProduct = asyncHandler(async (req, res) => {
         : tags;
   }
 
+  // Treat "subcategory" as a tag (listings table doesn't have a subcategory column)
+  if (subcategory) {
+    const subcategoryTag = String(subcategory).trim();
+    if (subcategoryTag) {
+      const nextTags = Array.isArray(parsedTags) ? [...parsedTags] : [];
+      if (!nextTags.includes(subcategoryTag)) nextTags.push(subcategoryTag);
+      parsedTags = nextTags;
+    }
+  }
+
   // Update the product
   const updatedProducts = await sql`
     UPDATE listings 
@@ -562,7 +592,6 @@ const updateProduct = asyncHandler(async (req, res) => {
       condition = ${normalizedCondition},
       location = COALESCE(${location}, location),
       category_id = COALESCE(${category_id}, category_id),
-      subcategory = COALESCE(${subcategory}, subcategory),
       tags = COALESCE(${parsedTags}, tags),
       status = COALESCE(${status}, status),
       images = ${imageUrls},
