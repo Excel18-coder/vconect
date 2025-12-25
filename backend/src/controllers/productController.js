@@ -720,10 +720,13 @@ const browseProducts = asyncHandler(async (req, res) => {
     location,
     sort = "created_at",
     order = "DESC",
+    sortBy,
     tags,
   } = req.query;
 
-  const offset = (page - 1) * limit;
+  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+  const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const offsetNumber = (pageNumber - 1) * limitNumber;
 
   // Normalize common legacy/alias category slugs so category tabs isolate correctly
   const normalizeCategorySlug = (value) => {
@@ -754,8 +757,15 @@ const browseProducts = asyncHandler(async (req, res) => {
   };
 
   try {
-    // Build filters (so category tabs only show matching items)
-    let where = sql`l.status = 'active'`;
+    // Build filters using a plain query string + parameter array.
+    // Neon `sql` does not support composing SQL fragments via nested template tags.
+    const filterParams = [];
+    const addParam = (value) => {
+      filterParams.push(value);
+      return `$${filterParams.length}`;
+    };
+
+    const whereClauses = ["l.status = 'active'"];
 
     if (category) {
       const normalized = normalizeCategorySlug(category);
@@ -763,60 +773,76 @@ const browseProducts = asyncHandler(async (req, res) => {
       // Marketplace is the catch-all bucket: everything that isn't one of the
       // primary tabs (housing/transport/entertainment) should appear in Market.
       if (normalized === "market") {
-        const marketAliases = getCategoryAliases("market");
+        const marketAliases = getCategoryAliases("market").map((s) =>
+          s.toLowerCase()
+        );
         const excludedPrimaryAliases = [
           ...getCategoryAliases("housing"),
           ...getCategoryAliases("transport"),
           ...getCategoryAliases("entertainment"),
         ].map((s) => s.toLowerCase());
 
-        where = sql`${where} AND (
-          LOWER(c.slug) = ANY(${sql.array(
-            marketAliases.map((s) => s.toLowerCase()),
-            "text"
-          )})
+        const marketAliasesParam = addParam(marketAliases);
+        const excludedPrimaryParam = addParam(excludedPrimaryAliases);
+
+        whereClauses.push(`(
+          LOWER(c.slug) = ANY(${marketAliasesParam}::text[])
           OR c.slug IS NULL
-          OR LOWER(c.slug) <> ALL(${sql.array(excludedPrimaryAliases, "text")})
-        )`;
+          OR LOWER(c.slug) <> ALL(${excludedPrimaryParam}::text[])
+        )`);
       } else {
-        const aliases = getCategoryAliases(normalized);
+        const aliases = getCategoryAliases(normalized).map((s) =>
+          s.toLowerCase()
+        );
+        const aliasesParam = addParam(aliases);
+        const categoryParam = addParam(String(category));
 
         // Match by slug aliases primarily; keep name fallback to be tolerant of older data.
-        where = sql`${where} AND (
-          LOWER(c.slug) = ANY(${sql.array(
-            aliases.map((s) => s.toLowerCase()),
-            "text"
-          )})
-          OR LOWER(c.name) = LOWER(${category})
-        )`;
+        whereClauses.push(`(
+          LOWER(c.slug) = ANY(${aliasesParam}::text[])
+          OR LOWER(c.name) = LOWER(${categoryParam})
+        )`);
       }
     }
 
     if (search) {
-      const q = `%${search}%`;
-      where = sql`${where} AND (l.title ILIKE ${q} OR l.description ILIKE ${q})`;
+      const qParam = addParam(`%${String(search)}%`);
+      whereClauses.push(
+        `(l.title ILIKE ${qParam} OR l.description ILIKE ${qParam})`
+      );
     }
 
     if (condition) {
-      where = sql`${where} AND LOWER(l.condition) = LOWER(${condition})`;
+      const conditionParam = addParam(String(condition));
+      whereClauses.push(`LOWER(l.condition) = LOWER(${conditionParam})`);
     }
 
-    if (location) {
-      const loc = `%${location}%`;
-      where = sql`${where} AND l.location ILIKE ${loc}`;
+    if (location && String(location).toLowerCase() !== "all") {
+      const locParam = addParam(`%${String(location)}%`);
+      whereClauses.push(`l.location ILIKE ${locParam}`);
     }
 
-    if (min_price) {
+    if (
+      min_price !== undefined &&
+      min_price !== null &&
+      String(min_price) !== ""
+    ) {
       const min = Number(min_price);
       if (!Number.isNaN(min)) {
-        where = sql`${where} AND l.price >= ${min}`;
+        const minParam = addParam(min);
+        whereClauses.push(`l.price >= ${minParam}`);
       }
     }
 
-    if (max_price) {
+    if (
+      max_price !== undefined &&
+      max_price !== null &&
+      String(max_price) !== ""
+    ) {
       const max = Number(max_price);
       if (!Number.isNaN(max)) {
-        where = sql`${where} AND l.price <= ${max}`;
+        const maxParam = addParam(max);
+        whereClauses.push(`l.price <= ${maxParam}`);
       }
     }
 
@@ -829,22 +855,65 @@ const browseProducts = asyncHandler(async (req, res) => {
         .slice(0, 10);
 
       if (tagList.length > 0) {
-        where = sql`${where} AND EXISTS (
+        const tagArrayParam = addParam(tagList.map((t) => t.toLowerCase()));
+        whereClauses.push(`EXISTS (
           SELECT 1
-          FROM unnest(l.tags) AS t(tag)
-          WHERE LOWER(t.tag) = ANY(${sql.array(
-            tagList.map((t) => t.toLowerCase()),
-            "text"
-          )})
-        )`;
+          FROM unnest(COALESCE(l.tags, '{}'::text[])) AS t(tag)
+          WHERE LOWER(t.tag) = ANY(${tagArrayParam}::text[])
+        )`);
       }
     }
 
-    const whereClause = sql`WHERE ${where}`;
+    const whereSql = whereClauses.length
+      ? `WHERE ${whereClauses.join(" AND ")}`
+      : "";
 
-    // NOTE: we keep ordering stable (created_at desc) to match existing behavior.
-    // The `sort`/`order` query params are accepted but not trusted for dynamic SQL.
-    const products = await sql`
+    // Sorting: support frontend `sortBy` values, plus legacy `sort`/`order`.
+    let orderBySql = "l.created_at DESC";
+    const sortByKey = String(sortBy || "").toLowerCase();
+    if (sortByKey) {
+      switch (sortByKey) {
+        case "newest":
+          orderBySql = "l.created_at DESC";
+          break;
+        case "oldest":
+          orderBySql = "l.created_at ASC";
+          break;
+        case "price_low":
+          orderBySql = "l.price ASC";
+          break;
+        case "price_high":
+          orderBySql = "l.price DESC";
+          break;
+        case "popular":
+          orderBySql = "l.views_count DESC NULLS LAST, l.created_at DESC";
+          break;
+        default:
+          orderBySql = "l.created_at DESC";
+      }
+    } else {
+      const sortKey = String(sort || "").toLowerCase();
+      const orderKey =
+        String(order || "DESC").toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+      const sortColumns = {
+        created_at: "l.created_at",
+        price: "l.price",
+        views: "l.views_count",
+        views_count: "l.views_count",
+      };
+
+      const column = sortColumns[sortKey];
+      if (column) {
+        orderBySql = `${column} ${orderKey}`;
+      }
+    }
+
+    const limitParam = `$${filterParams.length + 1}`;
+    const offsetParam = `$${filterParams.length + 2}`;
+    const productsParams = [...filterParams, limitNumber, offsetNumber];
+
+    const productsQuery = `
       SELECT 
         l.id,
         l.user_id,
@@ -872,11 +941,13 @@ const browseProducts = asyncHandler(async (req, res) => {
       LEFT JOIN categories c ON l.category_id = c.id
       LEFT JOIN profiles p ON l.user_id = p.user_id
       LEFT JOIN users u ON l.user_id = u.id
-      ${whereClause}
-      ORDER BY l.created_at DESC
-      LIMIT ${parseInt(limit)}
-      OFFSET ${parseInt(offset)}
+      ${whereSql}
+      ORDER BY ${orderBySql}
+      LIMIT ${limitParam}
+      OFFSET ${offsetParam}
     `;
+
+    const products = await sql(productsQuery, productsParams);
 
     // Calculate final prices
     const enrichedProducts = products.map((product) => ({
@@ -901,22 +972,24 @@ const browseProducts = asyncHandler(async (req, res) => {
     }));
 
     // Get total count (must match same filters)
-    const totalResult = await sql`
-      SELECT COUNT(*) as total 
+    const countQuery = `
+      SELECT COUNT(*)::int as total 
       FROM listings l
       LEFT JOIN categories c ON l.category_id = c.id
-      ${whereClause}
+      ${whereSql}
     `;
+
+    const totalResult = await sql(countQuery, filterParams);
 
     const total = parseInt(totalResult[0]?.total || 0);
 
     return sendSuccess(res, "Products retrieved successfully", {
       products: enrichedProducts,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageNumber,
+        limit: limitNumber,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limitNumber),
       },
       filters: {
         category,
