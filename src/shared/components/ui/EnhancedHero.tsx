@@ -40,8 +40,8 @@ export function EnhancedHero() {
         </div>
       </div>
 
-      <div className="relative container mx-auto px-4 py-20 lg:py-32">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+      <div className="relative container mx-auto px-4 py-8 md:py-16 lg:py-24">
+        <div className="max-w-4xl mx-auto text-center space-y-4 md:space-y-6 lg:space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 animate-fade-in">
             <span className="relative flex h-2 w-2">
@@ -52,7 +52,7 @@ export function EnhancedHero() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight animate-slide-up">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight animate-slide-up">
             <span className="text-blue-600 dark:text-blue-400">Find Anything</span>
             <br />
             <span className="text-gray-900 dark:text-white">You Need</span>
