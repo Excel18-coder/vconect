@@ -1,6 +1,6 @@
 /**
  * Create Default Admin Account
- * Creates admin@gmail.com with password: 123
+ * Creates admin@gmail.com with password: 123456
  */
 
 const { sql } = require('../src/config/database');
@@ -11,7 +11,7 @@ async function createDefaultAdmin() {
     console.log('🔐 Creating default admin account...');
 
     const adminEmail = 'admin@gmail.com';
-    const adminPassword = '123';
+    const adminPassword = '123456';
 
     // Check if admin already exists
     const existingUser = await sql`
@@ -53,7 +53,7 @@ async function createDefaultAdmin() {
     console.log('✅ Default admin account created successfully!');
     console.log('');
     console.log('📧 Email: admin@gmail.com');
-    console.log('🔑 Password: 123');
+    console.log('🔑 Password: 123456');
     console.log('');
     console.log('⚠️  IMPORTANT: Change this password after first login!');
   } catch (error) {

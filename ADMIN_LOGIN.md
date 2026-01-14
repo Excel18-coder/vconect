@@ -4,7 +4,7 @@
 
 ```
 📧 Email:    admin@gmail.com
-🔑 Password: 123
+🔑 Password: 123456
 ```
 
 ## How to Login
@@ -45,7 +45,7 @@ This script will:
 
 ## Security Note
 
-⚠️ **WARNING**: The password "123" is very weak and for development only!
+⚠️ **WARNING**: The password "123456" is weak and for development only!
 
 For production, you should:
 
