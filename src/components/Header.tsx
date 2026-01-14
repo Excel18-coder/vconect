@@ -84,7 +84,7 @@ const Header = () => {
               variant="ghost"
               size="icon"
               className="hidden sm:flex relative transition-all duration-300 hover:scale-110"
-              onClick={() => console.log('TODO: Implement notifications')}
+              onClick={() => navigate('/account?tab=messages')}
             >
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse" />
@@ -93,7 +93,7 @@ const Header = () => {
               variant="ghost"
               size="icon"
               className="hidden sm:flex relative transition-all duration-300 hover:scale-110"
-              onClick={() => console.log('TODO: Implement cart')}
+              onClick={() => navigate('/account?tab=favorites')}
             >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute top-0 right-0 h-4 w-4 bg-primary rounded-full text-[10px] text-white flex items-center justify-center">
