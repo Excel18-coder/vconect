@@ -1,32 +1,33 @@
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const compression = require("compression");
-const cookieParser = require("cookie-parser");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const compression = require('compression');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 // Import middlewares
-const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
-const { generalLimiter } = require("./middleware/rateLimiter");
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { generalLimiter } = require('./middleware/rateLimiter');
 // const { neonAuthMiddleware } = require('./middleware/neonAuth'); // Disabled for now
 
 // Import routes
-const authRoutes = require("./routes/auth");
-const profileRoutes = require("./routes/profile");
-const uploadRoutes = require("./routes/upload");
-const productRoutes = require("./routes/products");
-const buyerRoutes = require("./routes/buyers");
+const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
+const uploadRoutes = require('./routes/upload');
+const productRoutes = require('./routes/products');
+const buyerRoutes = require('./routes/buyers');
+const adminRoutes = require('./routes/admin');
 // const neonAuthRoutes = require('./routes/neonAuth');
 
 // Import config
-const { testConnection } = require("./config/database");
-const { testCloudinaryConnection } = require("./config/cloudinary");
+const { testConnection } = require('./config/database');
+const { testCloudinaryConnection } = require('./config/cloudinary');
 
 const app = express();
 
 // Trust proxy for accurate IP addresses behind reverse proxies
-app.set("trust proxy", 1);
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(
@@ -34,13 +35,13 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        mediaSrc: ["'self'", "https://res.cloudinary.com"],
+        mediaSrc: ["'self'", 'https://res.cloudinary.com'],
       },
     },
   })
@@ -48,17 +49,17 @@ app.use(
 
 // CORS configuration - Flexible for development and production
 const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
   : [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:8080",
-      "https://vconect.vercel.app",
-      "https://vconect.onrender.com",
-      "https://www.vconect.co.ke",
-      "https://vconect.co.ke",
-      "https://v-market.onrender.com",
-      "https://v-market-frontend.onrender.com",
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:8080',
+      'https://vconect.vercel.app',
+      'https://vconect.onrender.com',
+      'https://www.vconect.co.ke',
+      'https://vconect.co.ke',
+      'https://v-market.onrender.com',
+      'https://v-market-frontend.onrender.com',
     ];
 
 const corsOptions = {
@@ -67,17 +68,14 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     // In development, allow all localhost origins
-    if (process.env.NODE_ENV === "development") {
-      if (
-        origin.startsWith("http://localhost:") ||
-        origin.startsWith("http://127.0.0.1:")
-      ) {
+    if (process.env.NODE_ENV === 'development') {
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
         return callback(null, true);
       }
     }
 
     // Allow all origins in production if CORS_ORIGINS is '*'
-    if (process.env.CORS_ORIGINS === "*") {
+    if (process.env.CORS_ORIGINS === '*') {
       return callback(null, true);
     }
 
@@ -85,28 +83,28 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("CORS Error: Origin not allowed:", origin);
-      console.log("Allowed origins:", allowedOrigins);
-      callback(new Error("Not allowed by CORS"));
+      console.log('CORS Error: Origin not allowed:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(cors(corsOptions));
 
 // Logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 } else {
-  app.use(morgan("combined"));
+  app.use(morgan('combined'));
 }
 
 // Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // Compression middleware
@@ -119,20 +117,20 @@ app.use(generalLimiter);
 // app.use(neonAuthMiddleware);
 
 // Health check endpoint
-app.get("/health", async (req, res) => {
+app.get('/health', async (req, res) => {
   try {
     const dbStatus = await testConnection();
     const cloudinaryStatus = await testCloudinaryConnection();
 
     const health = {
-      status: "OK",
+      status: 'OK',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: process.env.NODE_ENV,
-      version: process.env.npm_package_version || "1.0.0",
+      version: process.env.npm_package_version || '1.0.0',
       services: {
-        database: dbStatus ? "connected" : "disconnected",
-        cloudinary: cloudinaryStatus ? "connected" : "disconnected",
+        database: dbStatus ? 'connected' : 'disconnected',
+        cloudinary: cloudinaryStatus ? 'connected' : 'disconnected',
       },
     };
 
@@ -140,7 +138,7 @@ app.get("/health", async (req, res) => {
     res.status(statusCode).json(health);
   } catch (error) {
     res.status(503).json({
-      status: "ERROR",
+      status: 'ERROR',
       timestamp: new Date().toISOString(),
       error: error.message,
     });
@@ -148,37 +146,38 @@ app.get("/health", async (req, res) => {
 });
 
 // API routes
-app.use("/api/auth", authRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/neon-auth', neonAuthRoutes); // Disabled for now
-app.use("/api/profile", profileRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/buyers", buyerRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/buyers', buyerRoutes);
+app.use('/api/admin', adminRoutes);
 
 // API info endpoint
-app.get("/api", (req, res) => {
+app.get('/api', (req, res) => {
   res.json({
-    name: "Vconect API",
-    version: "1.0.0",
+    name: 'Vconect API',
+    version: '1.0.0',
     description: "Backend API for Vconect - Kenya's Digital Marketplace",
     endpoints: {
-      auth: "/api/auth",
-      profile: "/api/profile",
-      upload: "/api/upload",
-      products: "/api/products",
-      buyers: "/api/buyers",
+      auth: '/api/auth',
+      profile: '/api/profile',
+      upload: '/api/upload',
+      products: '/api/products',
+      buyers: '/api/buyers',
     },
-    documentation: "https://github.com/Excel18-coder/-Vmarket",
+    documentation: 'https://github.com/Excel18-coder/-Vmarket',
     timestamp: new Date().toISOString(),
   });
 });
 
 // Root endpoint
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   res.json({
-    message: "Welcome to Vconect API",
-    version: "1.0.0",
-    status: "running",
+    message: 'Welcome to Vconect API',
+    version: '1.0.0',
+    status: 'running',
     timestamp: new Date().toISOString(),
   });
 });

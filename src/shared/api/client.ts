@@ -327,4 +327,26 @@ export const api = {
     apiClient.upload<T>(endpoint, files, additionalData),
 };
 
+/**
+ * Authenticated fetch helper for direct fetch API calls
+ */
+export const authFetch = async (endpoint: string, options: RequestInit = {}) => {
+  const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
+  const baseURL = API_CONFIG.BASE_URL;
+  const url = endpoint.startsWith('http') ? endpoint : `${baseURL}${endpoint}`;
+
+  const headers = new Headers(options.headers);
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+};
+
 export default api;

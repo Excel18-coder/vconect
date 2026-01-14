@@ -1,10 +1,10 @@
 const { authService } = require('../services');
-const { 
-  sendSuccess, 
-  sendError, 
-  sendCreated, 
+const {
+  sendSuccess,
+  sendError,
+  sendCreated,
   sendUnauthorized,
-  sendNotFound 
+  sendNotFound,
 } = require('../utils/response');
 const { asyncHandler } = require('../middleware/errorHandler');
 
@@ -18,7 +18,7 @@ const register = asyncHandler(async (req, res) => {
     email,
     password,
     displayName,
-    userType
+    userType,
   });
 
   return sendCreated(res, 'User registered successfully', result);
@@ -111,6 +111,29 @@ const getMe = asyncHandler(async (req, res) => {
   return sendSuccess(res, 'User data retrieved successfully', result);
 });
 
+/**
+ * Change password
+ */
+const changePassword = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return sendError(res, 'Current password and new password are required', 400);
+  }
+
+  if (newPassword.length < 6) {
+    return sendError(res, 'New password must be at least 6 characters', 400);
+  }
+
+  if (currentPassword === newPassword) {
+    return sendError(res, 'New password must be different from current password', 400);
+  }
+
+  await authService.changePassword(userId, currentPassword, newPassword);
+  return sendSuccess(res, 'Password changed successfully');
+});
+
 module.exports = {
   register,
   login,
@@ -120,5 +143,6 @@ module.exports = {
   verifyEmail,
   requestPasswordReset,
   resetPassword,
-  getMe
+  getMe,
+  changePassword,
 };

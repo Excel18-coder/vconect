@@ -5,18 +5,18 @@
 
 const userRepository = require('../../repositories/userRepository');
 const tokenService = require('./tokenService');
-const { 
-  hashPassword, 
-  comparePassword, 
+const {
+  hashPassword,
+  comparePassword,
   generateVerificationToken,
-  generatePasswordResetToken 
+  generatePasswordResetToken,
 } = require('../../utils/auth');
 const logger = require('../../utils/logger');
-const { 
-  NotFoundError, 
-  AuthenticationError, 
+const {
+  NotFoundError,
+  AuthenticationError,
   ConflictError,
-  ValidationError 
+  ValidationError,
 } = require('../../errors');
 
 class AuthService {
@@ -34,7 +34,7 @@ class AuthService {
 
     // Hash password
     const passwordHash = await hashPassword(password);
-    
+
     // Generate verification token
     const verificationToken = generateVerificationToken();
 
@@ -44,13 +44,13 @@ class AuthService {
       password_hash: passwordHash,
       role: userType,
       is_verified: false,
-      verification_token: verificationToken
+      verification_token: verificationToken,
     });
 
     // Create user profile
     await userRepository.createProfile(user.id, {
       display_name: displayName || email.split('@')[0],
-      user_type: userType
+      user_type: userType,
     });
 
     // Generate tokens
@@ -64,10 +64,10 @@ class AuthService {
         email: user.email,
         role: user.role,
         isVerified: user.is_verified,
-        createdAt: user.created_at
+        createdAt: user.created_at,
       },
       tokens,
-      verificationToken // In production, send this via email instead
+      verificationToken, // In production, send this via email instead
     };
   }
 
@@ -102,9 +102,9 @@ class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
-        isVerified: user.is_verified
+        isVerified: user.is_verified,
       },
-      tokens
+      tokens,
     };
   }
 
@@ -120,7 +120,7 @@ class AuthService {
     logger.debug('Access token refreshed successfully');
 
     return {
-      accessToken: newAccessToken
+      accessToken: newAccessToken,
     };
   }
 
@@ -165,7 +165,7 @@ class AuthService {
     return {
       id: updatedUser.id,
       email: updatedUser.email,
-      isVerified: updatedUser.is_verified
+      isVerified: updatedUser.is_verified,
     };
   }
 
@@ -177,12 +177,12 @@ class AuthService {
 
     // Find user (don't reveal if exists or not for security)
     const user = await userRepository.findByEmail(email);
-    
+
     if (!user) {
       // Return success anyway (don't reveal if email exists)
       logger.debug('Password reset requested for non-existent email', { email });
       return {
-        message: 'If the email exists, a password reset link has been sent'
+        message: 'If the email exists, a password reset link has been sent',
       };
     }
 
@@ -198,7 +198,7 @@ class AuthService {
     // In production, send this via email
     return {
       message: 'If the email exists, a password reset link has been sent',
-      resetToken // Remove this in production
+      resetToken, // Remove this in production
     };
   }
 
@@ -232,7 +232,7 @@ class AuthService {
     logger.info('Password reset successfully', { userId: user.id });
 
     return {
-      message: 'Password reset successfully'
+      message: 'Password reset successfully',
     };
   }
 
@@ -253,7 +253,7 @@ class AuthService {
         email: user.email,
         role: user.role,
         isVerified: user.is_verified,
-        createdAt: user.created_at
+        createdAt: user.created_at,
       },
       profile: {
         displayName: user.display_name,
@@ -262,9 +262,41 @@ class AuthService {
         userType: user.user_type,
         phoneNumber: user.phone_number,
         location: user.location,
-        createdAt: user.profile_created_at
-      }
+        createdAt: user.profile_created_at,
+      },
     };
+  }
+
+  /**
+   * Change user password
+   */
+  async changePassword(userId, currentPassword, newPassword) {
+    logger.debug('Changing password', { userId });
+
+    // Get user
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isPasswordValid) {
+      throw new AuthenticationError('Current password is incorrect');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await userRepository.updatePassword(userId, hashedPassword);
+
+    // Invalidate all sessions for security
+    await sessionRepository.deleteAllUserSessions(userId);
+
+    logger.info('Password changed successfully', { userId });
+
+    return { message: 'Password changed successfully. Please log in again.' };
   }
 }
 

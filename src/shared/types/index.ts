@@ -5,7 +5,7 @@
 // Base Types
 export type ID = string | number;
 export type Timestamp = string;
-export type Currency = "KES"; // Kenyan Shilling
+export type Currency = 'KES'; // Kenyan Shilling
 
 // User Related Types
 export interface User {
@@ -32,7 +32,7 @@ export interface Profile {
   updatedAt: Timestamp;
 }
 
-export type UserType = "buyer" | "seller" | "landlord";
+export type UserType = 'buyer' | 'seller' | 'landlord' | 'admin';
 
 // Product Related Types
 export interface Product {
@@ -65,19 +65,8 @@ export interface ProductImage {
   order: number;
 }
 
-export type ProductCondition =
-  | "new"
-  | "like-new"
-  | "excellent"
-  | "good"
-  | "fair"
-  | "poor";
-export type ProductStatus =
-  | "active"
-  | "sold"
-  | "inactive"
-  | "pending"
-  | "rejected";
+export type ProductCondition = 'new' | 'like-new' | 'excellent' | 'good' | 'fair' | 'poor';
+export type ProductStatus = 'active' | 'sold' | 'inactive' | 'pending' | 'rejected';
 
 export interface SellerInfo {
   id: ID;
@@ -105,8 +94,8 @@ export interface ProductFilters {
 }
 
 export interface ProductSort {
-  field: "createdAt" | "price" | "views" | "title";
-  order: "asc" | "desc";
+  field: 'createdAt' | 'price' | 'views' | 'title';
+  order: 'asc' | 'desc';
 }
 
 export interface PaginationParams {
@@ -249,12 +238,12 @@ export interface ErrorState {
   message?: string;
 }
 
-export type ViewMode = "grid" | "list";
-export type Theme = "light" | "dark" | "system";
+export type ViewMode = 'grid' | 'list';
+export type Theme = 'light' | 'dark' | 'system';
 
 // Search Types
 export interface SearchSuggestion {
-  type: "product" | "category" | "location" | "user";
+  type: 'product' | 'category' | 'location' | 'user';
   label: string;
   value: string;
   metadata?: Record<string, any>;
@@ -268,7 +257,7 @@ export interface RecentSearch {
 // Notification Types
 export interface Notification {
   id: ID;
-  type: "info" | "success" | "warning" | "error";
+  type: 'info' | 'success' | 'warning' | 'error';
   title: string;
   message: string;
   actionUrl?: string;
@@ -292,7 +281,7 @@ export interface SEOMetadata {
   keywords?: string[];
   image?: string;
   url?: string;
-  type?: "website" | "article" | "product";
+  type?: 'website' | 'article' | 'product';
 }
 
 // Utility Types
@@ -310,6 +299,4 @@ export type AsyncData<T> = {
   error: Error | null;
 };
 
-export type AsyncFunction<T = void, P extends any[] = []> = (
-  ...args: P
-) => Promise<T>;
+export type AsyncFunction<T = void, P extends any[] = []> = (...args: P) => Promise<T>;
