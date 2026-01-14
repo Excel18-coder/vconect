@@ -6,7 +6,7 @@
 import {
   ActivityLog,
   AdminProfileSettings,
-  AdminStats,
+  AnalyticsDashboard,
   CategoryManagement,
   MessageManagement,
   ProductManagement,
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
-                <AdminStats />
+                <AnalyticsDashboard />
               </TabsContent>
 
               {/* Users Tab */}

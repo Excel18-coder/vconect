@@ -589,6 +589,89 @@ const bulkUpdateProductStatus = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get user products
+ * GET /api/admin/users/:id/products
+ */
+const getUserProducts = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { page = 1, limit = 50 } = req.query;
+  const offset = (page - 1) * limit;
+
+  const products = await sql`
+    SELECT 
+      p.*,
+      COUNT(*) OVER() as total_count
+    FROM products p
+    WHERE p.seller_id = ${id}
+    ORDER BY p.created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  const total = products.length > 0 ? parseInt(products[0].total_count) : 0;
+
+  return sendSuccess(res, 'User products retrieved successfully', {
+    products,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+
+/**
+ * Delete user and all their data
+ * DELETE /api/admin/users/:id
+ */
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Delete user's products first
+  await sql`
+    DELETE FROM products
+    WHERE seller_id = ${id}
+  `;
+
+  // Delete user's messages
+  await sql`
+    DELETE FROM messages
+    WHERE sender_id = ${id} OR receiver_id = ${id}
+  `;
+
+  // Delete user's profile
+  await sql`
+    DELETE FROM profiles
+    WHERE user_id = ${id}
+  `;
+
+  // Delete user's sessions
+  await sql`
+    DELETE FROM sessions
+    WHERE user_id = ${id}
+  `;
+
+  // Finally delete the user
+  const result = await sql`
+    DELETE FROM users
+    WHERE id = ${id}
+    RETURNING id, email
+  `;
+
+  if (result.length === 0) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  logger.warn('User deleted by admin', {
+    userId: id,
+    userEmail: result[0].email,
+    adminId: req.user.id,
+  });
+
+  return sendSuccess(res, 'User and all associated data deleted successfully');
+});
+
+/**
  * Get platform statistics
  * GET /api/admin/stats/platform
  */
@@ -656,6 +739,8 @@ const getPlatformStats = asyncHandler(async (req, res) => {
 module.exports = {
   getDashboardStats,
   getUsers,
+  getUserProducts,
+  deleteUser,
   getProducts,
   updateProductStatus,
   deleteProduct,

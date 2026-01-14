@@ -19,9 +19,11 @@ router.get('/stats/platform', adminController.getPlatformStats);
 
 // User Management
 router.get('/users', adminController.getUsers);
+router.get('/users/:id/products', adminController.getUserProducts);
 router.patch('/users/:id/role', adminController.updateUserRole);
 router.patch('/users/:id/suspend', adminController.suspendUser);
 router.patch('/users/:id/verify', adminController.verifyUser);
+router.delete('/users/:id', adminController.deleteUser);
 
 // Product Management
 router.get('/products', adminController.getProducts);

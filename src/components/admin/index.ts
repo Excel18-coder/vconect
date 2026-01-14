@@ -6,6 +6,7 @@
 export { ActivityLog } from './ActivityLog';
 export { AdminProfileSettings } from './AdminProfileSettings';
 export { AdminStats } from './AdminStats';
+export { AnalyticsDashboard } from './AnalyticsDashboard';
 export { CategoryManagement } from './CategoryManagement';
 export { MessageManagement } from './MessageManagement';
 export { ProductManagement } from './ProductManagement';
