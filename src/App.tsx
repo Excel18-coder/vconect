@@ -1,44 +1,15 @@
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/useAuth";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Account from "./pages/Account";
-import Auth from "./pages/Auth";
-import CategoryPage from "./pages/CategoryPage";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import PostAd from "./pages/PostAd";
-import ProductDetail from "./pages/ProductDetail";
-import Search from "./pages/Search";
-import Sell from "./pages/Sell";
+/**
+ * Main Application Component
+ * Refactored for better organization and code splitting
+ */
 
-const queryClient = new QueryClient();
+import { AppProviders } from "@/app/providers";
+import { AppRoutes } from "@/app/routes";
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/post-ad" element={<PostAd />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/sell" element={<Sell />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/category/:category" element={<CategoryPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <AppProviders>
+    <AppRoutes />
+  </AppProviders>
 );
 
 export default App;

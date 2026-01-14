@@ -1,12 +1,19 @@
-import { Search, ShoppingCart, User, LogOut, Bell, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/useAuth";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import logoImage from "@/assets/logo.jpeg";
+import logoImage from '@/assets/logo.jpeg';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
+import { Bell, LogOut, Menu, Search, ShoppingCart, User } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { user, profile, signOut, loading } = useAuth();
@@ -19,65 +26,81 @@ const Header = () => {
   };
 
   const getInitials = (name: string) => {
-    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+    return name
+      ? name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+      : 'U';
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <header className="sticky top-0 z-50 glass glass-border shadow-elegant animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-3">
-              <img 
-                src={logoImage} 
-                alt="VCONECT Logo" 
+            <Link
+              to="/"
+              className="flex items-center space-x-3 transition-transform hover:scale-105 duration-300"
+            >
+              <img
+                src={logoImage}
+                alt="VCONECT Logo"
                 className="w-12 h-12 object-contain rounded-lg bg-transparent"
                 style={{ mixBlendMode: 'multiply' }}
               />
-              <span className="text-xl font-bold text-blue-600">VCONECT</span>
+              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">VCONECT</span>
             </Link>
           </div>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              const query = formData.get('search') as string;
-              if (query.trim()) {
-                navigate(`/search?q=${encodeURIComponent(query)}`);
-              }
-            }} className="relative w-full">
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const query = formData.get('search') as string;
+                if (query.trim()) {
+                  navigate(`/search?q=${encodeURIComponent(query)}`);
+                }
+              }}
+              className="relative w-full"
+            >
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 name="search"
                 type="text"
-                placeholder="Search products, services, properties..."
-                className="w-full pl-10 pr-4"
+                placeholder="Search for cars, houses, electronics..."
+                className="w-full pl-10 pr-4 transition-all duration-300 focus:shadow-glow bg-white dark:bg-gray-900"
               />
             </form>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="hidden sm:flex"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:flex relative transition-all duration-300 hover:scale-110"
               onClick={() => console.log('TODO: Implement notifications')}
             >
               <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full animate-pulse" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="hidden sm:flex"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:flex relative transition-all duration-300 hover:scale-110"
               onClick={() => console.log('TODO: Implement cart')}
             >
               <ShoppingCart className="h-5 w-5" />
+              <span className="absolute top-0 right-0 h-4 w-4 bg-primary rounded-full text-[10px] text-white flex items-center justify-center">
+                0
+              </span>
             </Button>
-            
+
             {loading ? (
               <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
             ) : user ? (
@@ -98,9 +121,7 @@ const Header = () => {
                       <p className="text-sm font-medium leading-none">
                         {profile?.displayName || 'User'}
                       </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -124,8 +145,13 @@ const Header = () => {
                 </Link>
               </Button>
             )}
-            
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
           </div>
@@ -133,14 +159,17 @@ const Header = () => {
 
         {/* Mobile Search */}
         <div className="md:hidden pb-4">
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const query = formData.get('search') as string;
-            if (query.trim()) {
-              navigate(`/search?q=${encodeURIComponent(query)}`);
-            }
-          }} className="relative">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const query = formData.get('search') as string;
+              if (query.trim()) {
+                navigate(`/search?q=${encodeURIComponent(query)}`);
+              }
+            }}
+            className="relative"
+          >
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               name="search"
