@@ -14,6 +14,7 @@ const {
 } = require('../services/analytics/analytics-aggregation-service');
 const { eventTrackingService } = require('../services/analytics/event-tracking-service');
 const { auditLoggingService } = require('../services/analytics/audit-logging-service');
+const { cloudinary } = require('../config/cloudinary');
 const logger = require('../utils/logger');
 
 /**
@@ -23,13 +24,72 @@ const logger = require('../utils/logger');
 const getDashboardOverview = asyncHandler(async (req, res) => {
   const kpis = await analyticsAggregationService.getDashboardKPIs();
 
-  // Get real-time stats (not pre-aggregated)
+  // Get real-time stats from database
   const realtimeStats = await sql`
     SELECT 
+      (SELECT COUNT(DISTINCT user_id) FROM user_events WHERE created_at >= NOW() - INTERVAL '1 hour') as active_users_last_hour,
+      (SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURRENT_DATE) as registrations_today,
+      (SELECT COUNT(*) FROM products WHERE DATE(created_at) = CURRENT_DATE) as new_products_today,
       (SELECT COUNT(*) FROM users WHERE is_suspended = true) as suspended_users,
       (SELECT COUNT(*) FROM users WHERE is_banned = true) as banned_users,
-      (SELECT COUNT(*) FROM security_events WHERE resolved = false) as unresolved_security_events,
-      (SELECT COUNT(*) FROM admin_audit_logs WHERE created_at >= NOW() - INTERVAL '24 hours') as admin_actions_24h
+      (SELECT COUNT(*) FROM products WHERE status = 'active') as total_active_products,
+      (SELECT COUNT(*) FROM messages WHERE DATE(created_at) = CURRENT_DATE) as messages_today,
+      (SELECT COUNT(*) FROM users) as total_users,
+      (SELECT COUNT(*) FROM products) as total_products
+  `;
+
+  // Get Cloudinary storage stats
+  let cloudinaryStats = {
+    totalResources: 0,
+    totalStorage: 0,
+    storageUsedMB: 0,
+    bandwidthUsedGB: 0,
+    status: 'connected',
+  };
+
+  try {
+    const usage = await cloudinary.api.usage();
+    cloudinaryStats = {
+      totalResources: usage.resources || 0,
+      totalStorage: usage.storage || 0,
+      storageUsedMB: ((usage.storage || 0) / (1024 * 1024)).toFixed(2),
+      bandwidthUsedGB: ((usage.bandwidth?.usage || 0) / (1024 * 1024 * 1024)).toFixed(2),
+      status: 'connected',
+    };
+  } catch (error) {
+    logger.error('Failed to fetch Cloudinary stats:', error);
+    cloudinaryStats.status = 'error';
+  }
+
+  // Get distribution data
+  const usersByType = await sql`
+    SELECT 
+      COALESCE(p.user_type, 'unknown') as user_type,
+      COUNT(*) as count
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    GROUP BY p.user_type
+    ORDER BY count DESC
+  `;
+
+  const productsByStatus = await sql`
+    SELECT 
+      status,
+      COUNT(*) as count
+    FROM products
+    GROUP BY status
+    ORDER BY count DESC
+  `;
+
+  const productsByCategory = await sql`
+    SELECT 
+      category,
+      COUNT(*) as count
+    FROM products
+    WHERE status = 'active'
+    GROUP BY category
+    ORDER BY count DESC
+    LIMIT 10
   `;
 
   // Get recent admin activity
@@ -47,9 +107,26 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     LIMIT 10
   `;
 
+  const stats = realtimeStats[0];
+
   return sendSuccess(res, 'Dashboard overview retrieved', {
     kpis,
-    realtime: realtimeStats[0],
+    realtime: {
+      activeUsersLastHour: parseInt(stats.active_users_last_hour) || 0,
+      registrationsToday: parseInt(stats.registrations_today) || 0,
+      newProductsToday: parseInt(stats.new_products_today) || 0,
+      messagesToday: parseInt(stats.messages_today) || 0,
+      securityAlerts: parseInt(stats.suspended_users) + parseInt(stats.banned_users) || 0,
+      totalUsers: parseInt(stats.total_users) || 0,
+      totalProducts: parseInt(stats.total_products) || 0,
+      activeProducts: parseInt(stats.total_active_products) || 0,
+    },
+    cloudinary: cloudinaryStats,
+    distribution: {
+      usersByType,
+      productsByStatus,
+      productsByCategory,
+    },
     recentActivity,
   });
 });

@@ -1,11 +1,15 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { authFetch } from '@/services/api-client';
 import {
   Activity,
+  Cloud,
+  Database,
   Loader2,
   MessageSquare,
   Package,
+  RefreshCw,
   Shield,
   TrendingDown,
   TrendingUp,
@@ -27,15 +31,29 @@ interface RealtimeStats {
   activeUsersLastHour: number;
   registrationsToday: number;
   newProductsToday: number;
+  messagesToday: number;
   securityAlerts: number;
+  totalUsers: number;
+  totalProducts: number;
+  activeProducts: number;
+}
+
+interface CloudinaryStats {
+  totalResources: number;
+  totalStorage: number;
+  storageUsedMB: string;
+  bandwidthUsedGB: string;
+  status: string;
 }
 
 interface DashboardData {
   kpis: DashboardKPIs;
   realTime: RealtimeStats;
+  cloudinary: CloudinaryStats;
   distribution: {
     usersByType: Array<{ user_type: string; count: number }>;
     productsByStatus: Array<{ status: string; count: number }>;
+    productsByCategory: Array<{ category: string; count: number }>;
   };
   recentActivity: Array<{
     action: string;
@@ -50,19 +68,29 @@ const AdminDashboardOverview: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchDashboardData();
+
+    // Auto-refresh every 30 seconds for real-time data
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      setLoading(data === null); // Only show loader on initial load
       const response = await authFetch('/admin/analytics/dashboard');
       const result = await response.json();
 
       if (result.success) {
         setData(result.data);
+        setLastUpdated(new Date());
+        setError(null);
       } else {
         setError(result.message || 'Failed to load dashboard data');
       }
@@ -94,6 +122,20 @@ const AdminDashboardOverview: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Dashboard Header with Refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Analytics Overview</h2>
+          <p className="text-sm text-muted-foreground">
+            Last updated: {lastUpdated.toLocaleTimeString()} • Auto-refreshes every 30s
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
+
       {/* Security Alerts Banner */}
       {data.realTime.securityAlerts > 0 && (
         <Alert variant="destructive">
@@ -106,7 +148,7 @@ const AdminDashboardOverview: React.FC = () => {
       )}
 
       {/* Real-time Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users (1h)</CardTitle>
@@ -142,6 +184,17 @@ const AdminDashboardOverview: React.FC = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Messages Today</CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.realTime.messagesToday}</div>
+            <p className="text-xs text-muted-foreground">Messages sent today</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Security Alerts</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -151,6 +204,83 @@ const AdminDashboardOverview: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cloudinary Storage Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cloud className="h-5 w-5" />
+            Cloudinary Storage Stats
+          </CardTitle>
+          <CardDescription>Real-time media storage and bandwidth usage</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Status</p>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    data.cloudinary.status === 'connected' ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                />
+                <p className="text-lg font-semibold capitalize">{data.cloudinary.status}</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Total Resources</p>
+              <p className="text-lg font-semibold">
+                {data.cloudinary.totalResources.toLocaleString()}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Storage Used</p>
+              <p className="text-lg font-semibold">{data.cloudinary.storageUsedMB} MB</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Bandwidth Used</p>
+              <p className="text-lg font-semibold">{data.cloudinary.bandwidthUsedGB} GB</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Database Overview Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Database Overview
+          </CardTitle>
+          <CardDescription>Real-time database statistics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Total Users</p>
+              <p className="text-lg font-semibold">{data.realTime.totalUsers.toLocaleString()}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Total Products</p>
+              <p className="text-lg font-semibold">
+                {data.realTime.totalProducts.toLocaleString()}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Active Products</p>
+              <p className="text-lg font-semibold">
+                {data.realTime.activeProducts.toLocaleString()}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Messages Today</p>
+              <p className="text-lg font-semibold">
+                {data.realTime.messagesToday.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Key Performance Indicators */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -207,7 +337,7 @@ const AdminDashboardOverview: React.FC = () => {
       </div>
 
       {/* Distribution Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Users by Type</CardTitle>
@@ -237,6 +367,25 @@ const AdminDashboardOverview: React.FC = () => {
               {data.distribution.productsByStatus.map(item => (
                 <div key={item.status} className="flex items-center justify-between">
                   <span className="text-sm font-medium capitalize">{item.status}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {item.count.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Categories</CardTitle>
+            <CardDescription>Active products by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {data.distribution.productsByCategory?.map(item => (
+                <div key={item.category} className="flex items-center justify-between">
+                  <span className="text-sm font-medium capitalize">{item.category}</span>
                   <span className="text-sm text-muted-foreground">
                     {item.count.toLocaleString()}
                   </span>
