@@ -345,14 +345,18 @@ const AdminDashboardOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {data.distribution.usersByType.map(item => (
-                <div key={item.user_type} className="flex items-center justify-between">
-                  <span className="text-sm font-medium capitalize">{item.user_type}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {item.count.toLocaleString()}
-                  </span>
-                </div>
-              ))}
+              {data.distribution.usersByType && data.distribution.usersByType.length > 0 ? (
+                data.distribution.usersByType.map(item => (
+                  <div key={item.user_type} className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{item.user_type}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {item.count.toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No data available</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -364,14 +368,19 @@ const AdminDashboardOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {data.distribution.productsByStatus.map(item => (
-                <div key={item.status} className="flex items-center justify-between">
-                  <span className="text-sm font-medium capitalize">{item.status}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {item.count.toLocaleString()}
-                  </span>
-                </div>
-              ))}
+              {data.distribution.productsByStatus &&
+              data.distribution.productsByStatus.length > 0 ? (
+                data.distribution.productsByStatus.map(item => (
+                  <div key={item.status} className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{item.status}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {item.count.toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No data available</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -383,14 +392,19 @@ const AdminDashboardOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {data.distribution.productsByCategory?.map(item => (
-                <div key={item.category} className="flex items-center justify-between">
-                  <span className="text-sm font-medium capitalize">{item.category}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {item.count.toLocaleString()}
-                  </span>
-                </div>
-              ))}
+              {data.distribution.productsByCategory &&
+              data.distribution.productsByCategory.length > 0 ? (
+                data.distribution.productsByCategory.map(item => (
+                  <div key={item.category} className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{item.category}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {item.count.toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No data available</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -404,24 +418,28 @@ const AdminDashboardOverview: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {data.recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between border-b pb-2 last:border-0"
-              >
-                <div>
-                  <p className="text-sm font-medium">
-                    {activity.action.replace(/_/g, ' ').replace(/\./g, ' ')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    by {activity.admin_name || activity.admin_email} • {activity.target_type}
-                  </p>
+            {data.recentActivity && data.recentActivity.length > 0 ? (
+              data.recentActivity.map((activity, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                >
+                  <div>
+                    <p className="text-sm font-medium">
+                      {activity.action.replace(/_/g, ' ').replace(/\./g, ' ')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      by {activity.admin_name || activity.admin_email} • {activity.target_type}
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(activity.created_at).toLocaleTimeString()}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(activity.created_at).toLocaleTimeString()}
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No recent activity</p>
+            )}
           </div>
         </CardContent>
       </Card>

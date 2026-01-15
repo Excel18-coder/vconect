@@ -172,14 +172,19 @@ const getUserDetails = asyncHandler(async (req, res) => {
     WHERE sender_id = ${id}
   `;
 
-  // Get security events
-  const securityEvents = await sql`
-    SELECT event_type, severity, description, created_at
-    FROM security_events
-    WHERE user_id = ${id}
-    ORDER BY created_at DESC
-    LIMIT 10
-  `;
+  // Get security events (if table exists)
+  let securityEvents = [];
+  try {
+    securityEvents = await sql`
+      SELECT event_type, severity, description, created_at
+      FROM security_events
+      WHERE user_id = ${id}
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+  } catch (error) {
+    logger.warn('Security events table not found or error fetching:', error.message);
+  }
 
   return sendSuccess(res, 'User details retrieved', {
     user,

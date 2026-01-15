@@ -29,13 +29,13 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     SELECT 
       (SELECT COUNT(DISTINCT user_id) FROM user_events WHERE created_at >= NOW() - INTERVAL '1 hour') as active_users_last_hour,
       (SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURRENT_DATE) as registrations_today,
-      (SELECT COUNT(*) FROM products WHERE DATE(created_at) = CURRENT_DATE) as new_products_today,
+      (SELECT COUNT(*) FROM listings WHERE DATE(created_at) = CURRENT_DATE) as new_products_today,
       (SELECT COUNT(*) FROM users WHERE is_suspended = true) as suspended_users,
       (SELECT COUNT(*) FROM users WHERE is_banned = true) as banned_users,
-      (SELECT COUNT(*) FROM products WHERE status = 'active') as total_active_products,
+      (SELECT COUNT(*) FROM listings WHERE status = 'active') as total_active_products,
       (SELECT COUNT(*) FROM messages WHERE DATE(created_at) = CURRENT_DATE) as messages_today,
       (SELECT COUNT(*) FROM users) as total_users,
-      (SELECT COUNT(*) FROM products) as total_products
+      (SELECT COUNT(*) FROM listings) as total_products
   `;
 
   // Get Cloudinary storage stats
@@ -76,7 +76,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     SELECT 
       status,
       COUNT(*) as count
-    FROM products
+    FROM listings
     GROUP BY status
     ORDER BY count DESC
   `;
@@ -85,7 +85,7 @@ const getDashboardOverview = asyncHandler(async (req, res) => {
     SELECT 
       category,
       COUNT(*) as count
-    FROM products
+    FROM listings
     WHERE status = 'active'
     GROUP BY category
     ORDER BY count DESC
