@@ -4,16 +4,16 @@
  */
 
 // User services
-const { authService, tokenService, profileService } = require("./users");
+const { authService, tokenService, profileService } = require('./users');
 
 // Buyer services
-const { messageService } = require("./buyers");
+const { messageService } = require('./buyers');
 
 // Product services
-const { productService, imageService } = require("./products");
+const { productService, imageService } = require('./products');
 
 // Upload service
-const uploadService = require("./upload/uploadService");
+const uploadService = require('./upload/upload-service');
 
 module.exports = {
   // User services

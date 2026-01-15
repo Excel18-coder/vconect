@@ -4,7 +4,6 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -19,7 +18,6 @@ import {
   Activity,
   ArrowDown,
   ArrowUp,
-  BarChart3,
   Calendar,
   DollarSign,
   Eye,
@@ -99,11 +97,11 @@ export function AnalyticsDashboard() {
   const fetchAllStats = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch dashboard stats
       const dashboardRes = await authFetch('/admin/dashboard/stats');
       const dashboardData = await dashboardRes.json();
-      
+
       // Fetch platform stats
       const platformRes = await authFetch(`/admin/stats/platform?days=${dateRange}`);
       const platformData = await platformRes.json();
@@ -111,7 +109,7 @@ export function AnalyticsDashboard() {
       if (dashboardData.success) {
         setDashboardStats(dashboardData.data);
       }
-      
+
       if (platformData.success) {
         setPlatformStats(platformData.data);
       }
@@ -322,7 +320,11 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">{dashboardStats.users.buyers}</span>
                       <Badge variant="secondary">
-                        {((dashboardStats.users.buyers / dashboardStats.users.total_users) * 100).toFixed(1)}%
+                        {(
+                          (dashboardStats.users.buyers / dashboardStats.users.total_users) *
+                          100
+                        ).toFixed(1)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -330,7 +332,9 @@ export function AnalyticsDashboard() {
                     <div
                       className="bg-blue-600 h-2 rounded-full"
                       style={{
-                        width: `${(dashboardStats.users.buyers / dashboardStats.users.total_users) * 100}%`,
+                        width: `${
+                          (dashboardStats.users.buyers / dashboardStats.users.total_users) * 100
+                        }%`,
                       }}
                     />
                   </div>
@@ -343,7 +347,11 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">{dashboardStats.users.sellers}</span>
                       <Badge variant="secondary">
-                        {((dashboardStats.users.sellers / dashboardStats.users.total_users) * 100).toFixed(1)}%
+                        {(
+                          (dashboardStats.users.sellers / dashboardStats.users.total_users) *
+                          100
+                        ).toFixed(1)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -351,7 +359,9 @@ export function AnalyticsDashboard() {
                     <div
                       className="bg-green-600 h-2 rounded-full"
                       style={{
-                        width: `${(dashboardStats.users.sellers / dashboardStats.users.total_users) * 100}%`,
+                        width: `${
+                          (dashboardStats.users.sellers / dashboardStats.users.total_users) * 100
+                        }%`,
                       }}
                     />
                   </div>
@@ -364,7 +374,11 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">{dashboardStats.users.landlords}</span>
                       <Badge variant="secondary">
-                        {((dashboardStats.users.landlords / dashboardStats.users.total_users) * 100).toFixed(1)}%
+                        {(
+                          (dashboardStats.users.landlords / dashboardStats.users.total_users) *
+                          100
+                        ).toFixed(1)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -372,7 +386,9 @@ export function AnalyticsDashboard() {
                     <div
                       className="bg-purple-600 h-2 rounded-full"
                       style={{
-                        width: `${(dashboardStats.users.landlords / dashboardStats.users.total_users) * 100}%`,
+                        width: `${
+                          (dashboardStats.users.landlords / dashboardStats.users.total_users) * 100
+                        }%`,
                       }}
                     />
                   </div>
@@ -408,7 +424,14 @@ export function AnalyticsDashboard() {
                               <div
                                 className="bg-blue-600 h-2 rounded-full"
                                 style={{
-                                  width: `${Math.min((day.registrations / Math.max(...platformStats.dailyStats.map(d => d.registrations))) * 100, 100)}%`,
+                                  width: `${Math.min(
+                                    (day.registrations /
+                                      Math.max(
+                                        ...platformStats.dailyStats.map(d => d.registrations)
+                                      )) *
+                                      100,
+                                    100
+                                  )}%`,
                                 }}
                               />
                             </div>
@@ -441,7 +464,12 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold">{dashboardStats.products.active_products}</span>
                       <Badge variant="default">
-                        {((dashboardStats.products.active_products / dashboardStats.products.total_products) * 100).toFixed(0)}%
+                        {(
+                          (dashboardStats.products.active_products /
+                            dashboardStats.products.total_products) *
+                          100
+                        ).toFixed(0)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -450,7 +478,12 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold">{dashboardStats.products.sold_products}</span>
                       <Badge variant="secondary">
-                        {((dashboardStats.products.sold_products / dashboardStats.products.total_products) * 100).toFixed(0)}%
+                        {(
+                          (dashboardStats.products.sold_products /
+                            dashboardStats.products.total_products) *
+                          100
+                        ).toFixed(0)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -459,7 +492,12 @@ export function AnalyticsDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold">{dashboardStats.products.inactive_products}</span>
                       <Badge variant="outline">
-                        {((dashboardStats.products.inactive_products / dashboardStats.products.total_products) * 100).toFixed(0)}%
+                        {(
+                          (dashboardStats.products.inactive_products /
+                            dashboardStats.products.total_products) *
+                          100
+                        ).toFixed(0)}
+                        %
                       </Badge>
                     </div>
                   </div>
@@ -487,7 +525,13 @@ export function AnalyticsDashboard() {
                           <div
                             className="bg-primary h-2 rounded-full"
                             style={{
-                              width: `${(cat.product_count / Math.max(...dashboardStats.categories.map(c => c.product_count))) * 100}%`,
+                              width: `${
+                                (cat.product_count /
+                                  Math.max(
+                                    ...dashboardStats.categories.map(c => c.product_count)
+                                  )) *
+                                100
+                              }%`,
                             }}
                           />
                         </div>
@@ -515,12 +559,17 @@ export function AnalyticsDashboard() {
                       <div>
                         <p className="text-sm text-muted-foreground">Total Messages</p>
                         <p className="text-2xl font-bold">
-                          {platformStats.messageActivity.reduce((sum, day) => sum + day.messages, 0)}
+                          {platformStats.messageActivity.reduce(
+                            (sum, day) => sum + day.messages,
+                            0
+                          )}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Unread</p>
-                        <p className="text-2xl font-bold">{dashboardStats.messages.unread_messages}</p>
+                        <p className="text-2xl font-bold">
+                          {dashboardStats.messages.unread_messages}
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-2 mt-4">
@@ -537,14 +586,19 @@ export function AnalyticsDashboard() {
                               <div
                                 className="bg-orange-600 h-2 rounded-full"
                                 style={{
-                                  width: `${Math.min((day.messages / Math.max(...platformStats.messageActivity.map(d => d.messages))) * 100, 100)}%`,
+                                  width: `${Math.min(
+                                    (day.messages /
+                                      Math.max(
+                                        ...platformStats.messageActivity.map(d => d.messages)
+                                      )) *
+                                      100,
+                                    100
+                                  )}%`,
                                 }}
                               />
                             </div>
                           </div>
-                          <span className="text-sm font-medium w-8 text-right">
-                            {day.messages}
-                          </span>
+                          <span className="text-sm font-medium w-8 text-right">{day.messages}</span>
                         </div>
                       ))}
                     </div>
@@ -570,7 +624,10 @@ export function AnalyticsDashboard() {
                     <div>
                       <p className="text-xs text-muted-foreground">Avg. per Product</p>
                       <p className="text-xl font-bold">
-                        {(Number(dashboardStats.products.total_views) / dashboardStats.products.total_products).toFixed(0)}
+                        {(
+                          Number(dashboardStats.products.total_views) /
+                          dashboardStats.products.total_products
+                        ).toFixed(0)}
                       </p>
                     </div>
                     <div>

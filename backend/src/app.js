@@ -7,8 +7,8 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 // Import middlewares
-const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
-const { generalLimiter } = require('./middleware/rateLimiter');
+const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
+const { generalLimiter } = require('./middleware/rate-limiter');
 // const { neonAuthMiddleware } = require('./middleware/neonAuth'); // Disabled for now
 
 // Import routes
@@ -18,6 +18,7 @@ const uploadRoutes = require('./routes/upload');
 const productRoutes = require('./routes/products');
 const buyerRoutes = require('./routes/buyers');
 const adminRoutes = require('./routes/admin');
+const adminEnhancedRoutes = require('./routes/admin-enhanced');
 // const neonAuthRoutes = require('./routes/neonAuth');
 
 // Import config
@@ -152,7 +153,8 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/buyers', buyerRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminEnhancedRoutes); // Enhanced admin routes with RBAC
+// app.use('/api/admin-legacy', adminRoutes); // Keep legacy routes for compatibility
 
 // API info endpoint
 app.get('/api', (req, res) => {

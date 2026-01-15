@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.js",
     "migrate": "node migrations/migrate.js",
     "seed": "node migrations/seed.js",
-    "create-admin": "node scripts/createDefaultAdmin.js",
+    "create-admin": "node scripts/admin/create-default-admin.js",
     "test": "jest"
   },
   "keywords": [

@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, requireRole } = require('../middleware/auth');
-const adminController = require('../controllers/adminController');
+const adminController = require('../controllers/admin-controller');
 
 // All admin routes require authentication and admin role
 router.use(authenticateToken);

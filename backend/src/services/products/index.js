@@ -3,10 +3,10 @@
  * Barrel export for product-related services
  */
 
-const productService = require('./productService');
-const imageService = require('./imageService');
+const productService = require('./product-service');
+const imageService = require('./image-service');
 
 module.exports = {
   productService,
-  imageService
+  imageService,
 };

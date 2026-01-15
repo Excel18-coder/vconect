@@ -6,14 +6,11 @@ const {
   updateProfile,
   updateAvatar,
   getPublicProfile,
-  searchProfiles
-} = require('../controllers/profileController');
+  searchProfiles,
+} = require('../controllers/profile-controller');
 
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
-const {
-  validateProfileUpdate,
-  handleValidationErrors
-} = require('../utils/validation');
+const { validateProfileUpdate, handleValidationErrors } = require('../utils/validation');
 
 // Public routes
 router.get('/search', optionalAuth, searchProfiles);

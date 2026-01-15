@@ -12,10 +12,10 @@ const {
   resetPassword,
   getMe,
   changePassword,
-} = require('../controllers/authController');
+} = require('../controllers/auth-controller');
 
 const { authenticateToken } = require('../middleware/auth');
-const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
+const { authLimiter, passwordResetLimiter } = require('../middleware/rate-limiter');
 const {
   validateRegister,
   validateLogin,

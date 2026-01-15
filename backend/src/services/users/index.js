@@ -3,12 +3,12 @@
  * Exports all user-related services
  */
 
-const authService = require('./authService');
-const tokenService = require('./tokenService');
-const profileService = require('./profileService');
+const authService = require('./auth-service');
+const tokenService = require('./token-service');
+const profileService = require('./profile-service');
 
 module.exports = {
   authService,
   tokenService,
-  profileService
+  profileService,
 };

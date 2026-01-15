@@ -11,14 +11,14 @@ const {
   browseProducts,
   addToFavorites,
   removeFromFavorites,
-  getFavorites
-} = require('../controllers/productController');
+  getFavorites,
+} = require('../controllers/product-controller');
 
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const {
   validateProductCreation,
   validateProductUpdate,
-  handleValidationErrors
+  handleValidationErrors,
 } = require('../utils/validation');
 
 // Configure multer for handling file uploads
@@ -27,7 +27,7 @@ const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
-    files: 8 // Max 8 images
+    files: 8, // Max 8 images
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
@@ -36,7 +36,7 @@ const upload = multer({
     } else {
       cb(new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.'), false);
     }
-  }
+  },
 });
 
 // Public routes (no authentication required)

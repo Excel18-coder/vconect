@@ -3,10 +3,10 @@
  * Central place to import all DTOs
  */
 
-const userDto = require("./userDto");
-const productDto = require("./productDto");
-const profileDto = require("./profileDto");
-const orderDto = require("./orderDto");
+const userDto = require('./user-dto');
+const productDto = require('./product-dto');
+const profileDto = require('./profile-dto');
+const orderDto = require('./order-dto');
 
 module.exports = {
   // User DTOs
