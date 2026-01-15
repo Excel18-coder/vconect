@@ -5,7 +5,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { authFetch } from '@/shared/api/client';
+import { authFetch } from '@/services/api-client';
 import { Activity, Clock, MessageSquare, Package, Settings, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -55,7 +55,7 @@ export function ActivityLog() {
 
   const fetchActivityLogs = async () => {
     try {
-      const response = await authFetch('/admin/activity-logs?limit=50');
+      const response = await authFetch('/admin/activity?limit=50');
       const data = await response.json();
 
       if (data.success) {

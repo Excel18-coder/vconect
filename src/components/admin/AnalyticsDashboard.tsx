@@ -1,34 +1,13 @@
 /**
  * Analytics Dashboard Component
- * Comprehensive analytics with customizable views
+ * Comprehensive analytics with real-time data from AdminDashboardOverview
  */
 
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { authFetch } from '@/shared/api/client';
-import {
-  Activity,
-  ArrowDown,
-  ArrowUp,
-  Calendar,
-  DollarSign,
-  Eye,
-  MessageCircle,
-  Package,
-  ShoppingBag,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import AdminDashboardOverview from './AdminDashboardOverview';
+
+export function AnalyticsDashboard() {
+  return <AdminDashboardOverview />;
+}
 
 interface PlatformStats {
   dailyStats: Array<{

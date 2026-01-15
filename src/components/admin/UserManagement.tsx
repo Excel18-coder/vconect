@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { authFetch } from '@/shared/api/client';
+import { authFetch } from '@/services/api-client';
 import { Ban, CheckCircle, ChevronDown, ChevronRight, Package, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

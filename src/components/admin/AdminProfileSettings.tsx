@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
-import { authFetch } from '@/shared/api/client';
+import { authFetch } from '@/services/api-client';
 import { Eye, EyeOff, Lock, Save, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

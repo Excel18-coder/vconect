@@ -26,7 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { authFetch } from '@/shared/api/client';
+import { authFetch } from '@/services/api-client';
 import { Edit, FolderOpen, Package, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

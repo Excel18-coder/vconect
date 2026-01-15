@@ -4,7 +4,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { authFetch } from '@/shared/api/client';
+import { authFetch } from '@/services/api-client';
 import {
   Activity,
   DollarSign,
