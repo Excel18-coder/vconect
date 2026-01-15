@@ -76,18 +76,18 @@ router.get(
   adminAnalyticsController.getAuditAnalytics
 );
 
-// System health
+// Performance metrics (system health)
 router.get(
-  '/analytics/system',
+  '/analytics/performance',
   hasPermission('analytics.view'),
-  adminAnalyticsController.getSystemHealth
+  adminAnalyticsController.getPerformanceMetrics
 );
 
 // Export analytics
 router.get(
   '/analytics/export',
   hasPermission('analytics.export'),
-  adminAnalyticsController.exportAnalytics
+  adminAnalyticsController.exportAnalyticsData
 );
 
 // ============================================================================

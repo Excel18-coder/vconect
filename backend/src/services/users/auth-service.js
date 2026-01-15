@@ -4,7 +4,7 @@
  */
 
 const userRepository = require('../../repositories/user-repository');
-const tokenService = require('./tokenService');
+const tokenService = require('./token-service');
 const {
   hashPassword,
   comparePassword,

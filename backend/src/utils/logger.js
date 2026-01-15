@@ -24,7 +24,7 @@ class Logger {
     this.isProduction = process.env.NODE_ENV === 'production';
     this.isDevelopment = process.env.NODE_ENV === 'development';
     this.logLevel = process.env.LOG_LEVEL || 'info';
-    
+
     // Performance tracking
     this.timers = new Map();
     this.metrics = {
@@ -73,7 +73,7 @@ class Logger {
   formatMessage(level, message, meta = {}) {
     const timestamp = new Date().toISOString();
     const pid = process.pid;
-    
+
     if (this.isProduction) {
       // JSON format for production (easier to parse/aggregate)
       return JSON.stringify({
@@ -84,11 +84,9 @@ class Logger {
         ...meta,
       });
     }
-    
+
     // Human-readable format for development
-    const metaString = Object.keys(meta).length > 0 
-      ? `\n  ${JSON.stringify(meta, null, 2)}`
-      : '';
+    const metaString = Object.keys(meta).length > 0 ? `\n  ${JSON.stringify(meta, null, 2)}` : '';
     return `[${timestamp}] [${level.toUpperCase()}] [PID:${pid}] ${message}${metaString}`;
   }
 
@@ -135,17 +133,19 @@ class Logger {
    */
   error(message, error = null, meta = {}) {
     if (!this.shouldLog('error')) return;
-    
+
     this.metrics.errors++;
-    
-    const errorMeta = error ? {
-      ...meta,
-      errorMessage: error.message,
-      errorName: error.name,
-      errorCode: error.code,
-      ...(this.isDevelopment && { stack: error.stack }),
-    } : meta;
-    
+
+    const errorMeta = error
+      ? {
+          ...meta,
+          errorMessage: error.message,
+          errorName: error.name,
+          errorCode: error.code,
+          ...(this.isDevelopment && { stack: error.stack }),
+        }
+      : meta;
+
     const formatted = this.formatMessage('error', message, errorMeta);
     console.error(`${colors.red}${formatted}${colors.reset}`);
   }
@@ -172,7 +172,10 @@ class Logger {
 
     if (duration > threshold) {
       this.metrics.slowQueries++;
-      this.warn(`Slow operation: ${label}`, { duration: `${duration}ms`, threshold: `${threshold}ms` });
+      this.warn(`Slow operation: ${label}`, {
+        duration: `${duration}ms`,
+        threshold: `${threshold}ms`,
+      });
     } else if (this.isDevelopment) {
       this.debug(`${label} completed`, { duration: `${duration}ms` });
     }
@@ -186,7 +189,7 @@ class Logger {
   request(req, res, duration) {
     const { method, originalUrl, ip } = req;
     const { statusCode } = res;
-    
+
     const meta = {
       method,
       url: originalUrl,
@@ -245,9 +248,6 @@ class Logger {
       info: 0,
       slowQueries: 0,
     };
-  }
-}
-    console.error(`${colors.red}${formattedMsg}${colors.reset}`);
   }
 
   debug(message, meta = {}) {
