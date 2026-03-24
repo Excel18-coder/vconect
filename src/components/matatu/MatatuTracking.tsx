@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, AlertCircle, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { API_CONFIG } from '@/config/api';
 
 interface Location {
   latitude: number;
@@ -82,7 +83,7 @@ export default function MatatuTracking({
     const fetchLocation = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/transport/tracking/${scheduleId}`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/transport/tracking/${scheduleId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
           },

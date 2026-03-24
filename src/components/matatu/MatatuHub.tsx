@@ -8,6 +8,7 @@ import MatatuTracking from '@/components/matatu/MatatuTracking';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader } from 'lucide-react';
+import { API_CONFIG } from '@/config/api';
 
 interface MatatuResult {
   id: string;
@@ -51,9 +52,13 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
     setSearchCriteria(criteria);
 
     try {
-      const response = await fetch(
-        `/api/transport/routes?from=${criteria.from}&to=${criteria.to}&date=${criteria.date}&passengers=${criteria.passengers}`
-      );
+      const url = `${API_CONFIG.BASE_URL}/transport/routes?from=${encodeURIComponent(criteria.from)}&to=${encodeURIComponent(criteria.to)}&date=${criteria.date}&passengers=${criteria.passengers}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
       const data = await response.json();
       setResults(data.schedules || []);
       setStep('results');
@@ -79,9 +84,12 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/transport/bookings', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({
           schedule_id: selectedMatatu?.id,
           seats_booked: selectedSeats,
@@ -89,6 +97,10 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
           user_id: userId,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
 
       const data = await response.json();
       if (data.booking_reference) {

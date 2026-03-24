@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, Ticket, AlertCircle, CheckCircle, XCircle, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { API_CONFIG } from '@/config/api';
 
 interface Booking {
   id: string;
@@ -36,7 +37,16 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
   const fetchBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/transport/bookings?userId=${userId}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
       const data = await response.json();
       setBookings(data.bookings || []);
     } catch (error) {
@@ -62,11 +72,19 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
   const handleCancel = async (bookingId: string) => {
     if (confirm('Are you sure you want to cancel this booking?')) {
       try {
-        await fetch(`/api/transport/bookings/${bookingId}`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings/${bookingId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
           body: JSON.stringify({ status: 'cancelled' }),
         });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
         fetchBookings();
       } catch (error) {
         console.error('Failed to cancel booking:', error);

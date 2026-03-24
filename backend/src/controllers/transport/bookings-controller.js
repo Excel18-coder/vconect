@@ -6,7 +6,7 @@
 const { sql } = require('../../config/database');
 const logger = require('../../utils/logger');
 const { v4: uuidv4 } = require('uuid');
-const EventTrackingService = require('../../services/analytics/event-tracking-service');
+const { eventTrackingService } = require('../../services/analytics/event-tracking-service');
 
 /**
  * POST /api/transport/bookings

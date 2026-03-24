@@ -5,8 +5,8 @@
  * All events are stored in the database for analytics and audit purposes
  */
 
-const { sql } = require('../config/database');
-const logger = require('../utils/logger');
+const { sql } = require('../../config/database');
+const logger = require('../../utils/logger');
 
 /**
  * Event categories

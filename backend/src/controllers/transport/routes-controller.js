@@ -5,7 +5,7 @@
 
 const { sql } = require('../../config/database');
 const logger = require('../../utils/logger');
-const EventTrackingService = require('../../services/analytics/event-tracking-service');
+const { eventTrackingService } = require('../../services/analytics/event-tracking-service');
 
 /**
  * GET /api/transport/routes
@@ -50,7 +50,7 @@ exports.searchRoutes = async (req, res) => {
     logger.info(`Route search: ${from} → ${to} on ${date}, found ${schedules.length} matches`);
 
     // Track search event
-    EventTrackingService.trackEvent({
+    eventTrackingService.trackEvent({
       userId: req.user?.id,
       eventType: 'matatu.search',
       category: 'transport',

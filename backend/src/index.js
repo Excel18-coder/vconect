@@ -98,6 +98,7 @@ const profileRoutes = require("./routes/profile");
 const productsRoutes = require("./routes/products");
 const buyersRoutes = require("./routes/buyers");
 const uploadRoutes = require("./routes/upload");
+const transportRoutes = require("./routes/transport");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -167,6 +168,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/buyers", buyersRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/transport", transportRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {
@@ -186,7 +188,11 @@ app.get("/", (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  sendError(res, "Route not found", 404);
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Global error handler
