@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
+import MatatuHub from "@/components/matatu/MatatuHub";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Product {
   id: number;
@@ -43,6 +45,7 @@ interface Product {
 const CategoryPage = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -50,12 +53,32 @@ const CategoryPage = () => {
 
   const categoryTitles: { [key: string]: string } = {
     housing: "Real Estate & Properties",
-    transport: "Transportation & Logistics",
+    transport: "Book Your Matatu",
     market: "Marketplace & Shopping",
     entertainment: "Entertainment & Media",
   };
 
-  // Fetch products
+  // For transport category, show MatafuHub instead of products
+  if (category === "transport") {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Book Your Matatu</h1>
+            <p className="text-muted-foreground">
+              Fast, reliable, and affordable matatu bookings across Kenya
+            </p>
+          </div>
+          <MatatuHub userId={user?.id} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Fetch products for other categories
   useEffect(() => {
     const fetchProducts = async () => {
       try {

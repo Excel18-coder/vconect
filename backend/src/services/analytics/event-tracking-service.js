@@ -20,6 +20,7 @@ const EVENT_CATEGORIES = {
   SEARCH: 'search',
   ADMIN: 'admin',
   SYSTEM: 'system',
+  TRANSPORT: 'transport',
 };
 
 /**
@@ -67,6 +68,15 @@ const EVENT_TYPES = {
   ADMIN_USER_DELETE: 'admin.user.delete',
   ADMIN_ROLE_CHANGE: 'admin.role.change',
   ADMIN_PRODUCT_DELETE: 'admin.product.delete',
+
+  // Transport/Matatu events
+  MATATU_SEARCH: 'matatu.search',
+  MATATU_BOOKING_CREATE: 'matatu.booking.create',
+  MATATU_BOOKING_CONFIRM: 'matatu.booking.confirm',
+  MATATU_BOOKING_CANCEL: 'matatu.booking.cancel',
+  MATATU_PAYMENT_PROCESS: 'matatu.payment.process',
+  MATATU_PAYMENT_SUCCESS: 'matatu.payment.success',
+  MATATU_PAYMENT_FAILED: 'matatu.payment.failed',
 };
 
 /**

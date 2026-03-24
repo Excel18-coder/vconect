@@ -19,6 +19,7 @@ const productRoutes = require('./routes/products');
 const buyerRoutes = require('./routes/buyers');
 const adminRoutes = require('./routes/admin');
 const adminEnhancedRoutes = require('./routes/admin-enhanced');
+const transportRoutes = require('./routes/transport');
 // const neonAuthRoutes = require('./routes/neonAuth');
 
 // Import config
@@ -153,6 +154,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/buyers', buyerRoutes);
+app.use('/api/transport', transportRoutes);
 app.use('/api/admin', adminEnhancedRoutes); // Enhanced admin routes with RBAC
 // app.use('/api/admin-legacy', adminRoutes); // Keep legacy routes for compatibility
 
