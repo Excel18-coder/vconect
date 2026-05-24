@@ -153,21 +153,25 @@ const CategoryPage = () => {
 
   if (category === "transport") {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen bg-white dark:bg-slate-950">
         <Header />
         <Navigation />
-        <div className="container mx-auto px-4 py-12">
-          <div className="mb-10 text-center space-y-4">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-xl group mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Marketplace
+        <div className="container mx-auto px-4 py-20 pb-32">
+          <div className="mb-16 text-center space-y-6">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-sm group mb-8 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <ArrowLeft className="h-3 w-3 mr-3 group-hover:-translate-x-1 transition-transform" />
+              Return to Catalog
             </Button>
-            <h1 className="text-4xl font-black italic tracking-tight">{categoryTitles.transport}</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {categoryDescriptions.transport}
+            <h1 className="text-6xl font-black italic tracking-tighter uppercase text-primary dark:text-white leading-none">
+              Strategic <span className="text-accent underline underline-offset-8 decoration-8 decoration-accent/20">Transport</span>
+            </h1>
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+              High-velocity logistics and enterprise-grade seat allocation for the Kenyan transport corridor.
             </p>
           </div>
-          <MatatuHub userId={user?.id} />
+          <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
+            <MatatuHub userId={user?.id} />
+          </div>
         </div>
         <Footer />
       </div>
@@ -181,33 +185,33 @@ const CategoryPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <Header />
       <Navigation />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <main className="container mx-auto px-4 py-20 pb-40">
+        <div className="max-w-7xl mx-auto space-y-16">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 py-8 border-b border-slate-100 dark:border-slate-800">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 pb-12 border-b-2 border-slate-50 dark:border-slate-900">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[10px]">
                 <Sparkles className="h-4 w-4" />
-                Curated Collection
+                Verified Sector Inventory
               </div>
-              <h1 className="text-4xl lg:text-5xl font-black italic tracking-tight">
-                {categoryTitles[category || ""] || "Specialty Listings"}
+              <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-none">
+                {categoryTitles[category || ""] || "Specialty Assets"}
               </h1>
-              <p className="text-muted-foreground text-lg max-w-xl">
-                {categoryDescriptions[category || ""] || "Discover high-quality options tailored for your needs."}
+              <p className="text-slate-500 text-lg max-w-2xl font-medium">
+                {categoryDescriptions[category || ""] || "Access our highly curated portfolio of premium marketplace assets."}
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 min-w-[300px]">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <div className="flex flex-col gap-4 min-w-[350px]">
+              <div className="relative group">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 group-focus-within:text-primary transition-colors" />
                 <Input
-                  placeholder="Search within category..."
-                  className="h-12 pl-11 rounded-2xl border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900"
+                  placeholder="Filter strategic inventory..."
+                  className="h-14 pl-12 rounded-sm border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 focus:border-primary/20 focus:ring-0 transition-all font-bold uppercase text-[10px] tracking-widest"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -216,50 +220,52 @@ const CategoryPage = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="rounded-lg h-7 px-3 bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
-                {filteredProducts.length} Items Found
-              </Badge>
+          <div className="flex items-center justify-between px-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-1 bg-accent rounded-full"></div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Current Yield: <span className="text-primary dark:text-white">{filteredProducts.length} Assets Found</span>
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-50 dark:bg-slate-900 rounded-sm border border-slate-100 dark:border-slate-800">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className={`rounded-xl h-9 px-4 ${viewMode === "grid" ? "bg-white dark:bg-slate-800 text-blue-600 shadow-sm" : "hover:bg-transparent"}`}
+                className={`rounded-sm h-8 px-4 font-black uppercase tracking-widest text-[9px] ${viewMode === "grid" ? "bg-white dark:bg-slate-800 text-primary shadow-sm" : "hover:bg-white/50"}`}
               >
-                <Grid className="h-4 w-4 mr-2" />
-                Grid
+                <Grid className="h-3 w-3 mr-2" />
+                Grid view
               </Button>
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className={`rounded-xl h-9 px-4 ${viewMode === "list" ? "bg-white dark:bg-slate-800 text-blue-600 shadow-sm" : "hover:bg-transparent"}`}
+                className={`rounded-sm h-8 px-4 font-black uppercase tracking-widest text-[9px] ${viewMode === "list" ? "bg-white dark:bg-slate-800 text-primary shadow-sm" : "hover:bg-white/50"}`}
               >
-                <List className="h-4 w-4 mr-2" />
-                List
+                <List className="h-3 w-3 mr-2" />
+                List view
               </Button>
             </div>
           </div>
 
           {/* Content */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-              <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Syncing Listings</p>
+            <div className="flex flex-col items-center justify-center py-40 space-y-8">
+              <div className="h-16 w-16 border-4 border-slate-100 border-t-accent rounded-full animate-spin"></div>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 animate-pulse">Syncing Sector Data...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <Card className="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-[2rem]">
-              <CardContent className="flex flex-col items-center justify-center py-24 italic">
-                <Package className="h-16 w-16 text-muted-foreground/30 mb-4" />
-                <h3 className="text-2xl font-bold">No results found</h3>
-                <p className="text-muted-foreground mt-2">Try refining your search or explore other categories.</p>
-              </CardContent>
-            </Card>
+            <div className="flex flex-col items-center justify-center py-32 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-100 dark:border-slate-800">
+              <Package className="h-20 w-20 text-slate-200 mb-8" />
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter text-primary dark:text-white">Zero Convergence</h2>
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2 mb-10">No assets matching your sector parameters.</p>
+              <Button variant="outline" onClick={() => navigate("/")} className="h-12 px-10 rounded-sm border-2 font-black uppercase tracking-widest text-[10px]">
+                Reset Navigation
+              </Button>
+            </div>
           ) : (
-            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" : "space-y-6"}>
+            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1" : "space-y-6"}>
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -279,38 +285,46 @@ const CategoryPage = () => {
 
       {/* Contact Seller Dialog */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
-          <DialogHeader className="p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-            <DialogTitle className="text-2xl font-black italic">Contact Seller</DialogTitle>
-            <DialogDescription className="text-base">
-              Item: <span className="font-bold text-blue-600">"{selectedProduct?.title}"</span>
+        <DialogContent className="max-w-md rounded-sm p-0 overflow-hidden border-0 shadow-premium">
+          <DialogHeader className="p-8 bg-slate-950 text-white">
+            <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[8px] mb-2">
+              <MessageCircle className="h-3 w-3" />
+              Secure Inquiry Protocol
+            </div>
+            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter">Initiate Inquiry</DialogTitle>
+            <DialogDescription className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+              Asset: <span className="text-white">{selectedProduct?.title}</span>
             </DialogDescription>
           </DialogHeader>
 
           <div className="p-8 space-y-6">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Message Body</Label>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Transaction Message</Label>
                 <Textarea
                   value={messageForm.message}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, message: e.target.value }))}
-                  placeholder="Tell the seller what you're looking for..."
-                  className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 italic"
-                  rows={6}
+                  placeholder="Formulate your inquiry to the asset manager..."
+                  className="rounded-sm bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 font-medium text-sm focus:border-primary/20 transition-all p-4"
+                  rows={5}
                 />
               </div>
             </div>
           </div>
 
           <DialogFooter className="p-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="ghost" onClick={() => setShowContactDialog(false)} className="font-bold rounded-xl">Cancel</Button>
-            <Button onClick={handleSendMessage} disabled={sendingMessage || !messageForm.message} className="bg-blue-600 hover:bg-blue-700 font-bold px-8 rounded-xl h-11">
-              {sendingMessage ? "Sending..." : "Submit Inquiry"}
+            <Button variant="ghost" onClick={() => setShowContactDialog(false)} className="text-[10px] font-black uppercase tracking-widest">Cancel</Button>
+            <Button
+              onClick={handleSendMessage}
+              disabled={sendingMessage || !messageForm.message}
+              className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] px-8 h-11 rounded-sm shadow-sm"
+            >
+              {sendingMessage ? "Processing..." : "Transmit Inquiry"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
 

@@ -152,7 +152,7 @@ const Search = () => {
       return;
     }
     try {
-      await productAPI.favorite(productId);
+      await productsAPI.favorite(productId);
       toast.success("Added to favorites");
     } catch (error) {
       toast.error("Failed to add to favorites");
@@ -160,87 +160,89 @@ const Search = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       <Header />
       <Navigation />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <main className="container mx-auto px-4 py-16">
+        <div className="max-w-7xl mx-auto space-y-16">
           {/* Search Header */}
-          <div className="relative p-12 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <SearchIcon className="h-64 w-64 rotate-12" />
+          <div className="relative p-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="absolute top-0 right-0 p-12 opacity-5">
+              <SearchIcon className="h-64 w-64 rotate-6 text-primary" />
             </div>
 
-            <div className="relative z-10 space-y-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">
+            <div className="relative z-10 space-y-10">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[10px]">
                   <Sparkles className="h-4 w-4" />
-                  Global Search
+                  Terminal Search Protocol
                 </div>
-                <h1 className="text-4xl lg:text-5xl font-black italic tracking-tight">
-                  {searchQuery ? `Search results for "${searchQuery}"` : "Discover the Entire Marketplace"}
+                <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-[0.9]">
+                  {searchQuery ? `Protocol: "${searchQuery}"` : "Access Global Marketplace"}
                 </h1>
-                <p className="text-muted-foreground text-lg max-w-2xl">
-                  Find exactly what you're looking for among thousands of verified listings across Kenya.
+                <p className="text-slate-500 text-lg max-w-2xl font-medium">
+                  Search Kenya's elite portfolio of properties, logistics, and premium assets
+                  with real-time verification and secure data encryption.
                 </p>
               </div>
 
               <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1 group">
-                  <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-blue-600 transition-colors" />
+                  <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5 group-focus-within:text-primary transition-colors" />
                   <Input
-                    placeholder="What are you looking for today?"
-                    className="h-16 pl-14 pr-6 text-lg rounded-2xl border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                    placeholder="Enter asset signature or category..."
+                    className="h-16 pl-16 pr-8 text-lg rounded-sm border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-primary/20 focus:ring-0 transition-all font-bold placeholder:text-slate-300"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-16 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-lg font-bold shadow-lg shadow-blue-600/20"
+                  className="h-16 px-12 rounded-sm bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-sm transition-transform active:scale-95"
                 >
-                  Execute Search
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  Initiate Search
+                  <ArrowRight className="ml-3 h-4 w-4" />
                 </Button>
               </form>
             </div>
           </div>
 
           {searchQuery && (
-            <div className="space-y-8">
+            <div className="space-y-10">
               {/* Filters Bar */}
-              <div className="flex flex-col lg:flex-row gap-6 p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 items-center justify-between">
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto no-scrollbar">
+              <div className="flex flex-col lg:flex-row gap-8 p-8 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 items-center justify-between">
+                <div className="flex items-center gap-4 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto no-scrollbar">
                   <Badge
                     variant={selectedCategory === "all" ? "default" : "outline"}
-                    className={`cursor-pointer h-10 px-6 rounded-xl transition-all ${selectedCategory === "all" ? "bg-blue-600 shadow-md shadow-blue-600/20" : "hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200"}`}
+                    className={`cursor-pointer h-10 px-8 rounded-sm font-black uppercase tracking-widest text-[10px] transition-all ${selectedCategory === "all" ? "bg-primary text-white" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
                     onClick={() => setSelectedCategory("all")}>
-                    All Categories
+                    All Sectors
                   </Badge>
                   {["housing", "market", "entertainment"].map((cat) => (
                     <Badge
                       key={cat}
                       variant={selectedCategory === cat ? "default" : "outline"}
-                      className={`cursor-pointer h-10 px-6 rounded-xl capitalize transition-all ${selectedCategory === cat ? "bg-blue-600 shadow-md shadow-blue-600/20" : "hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200"}`}
+                      className={`cursor-pointer h-10 px-8 rounded-sm font-black uppercase tracking-widest text-[10px] transition-all capitalize ${selectedCategory === cat ? "bg-accent text-white border-accent" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
                       onClick={() => setSelectedCategory(cat)}>
                       {cat}
                     </Badge>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-4 w-full lg:w-auto">
+                <div className="flex items-center gap-6 w-full lg:w-auto border-l border-slate-100 dark:border-slate-800 pl-6 hidden lg:flex">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sort Matrix:</span>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="h-12 w-full lg:w-[200px] rounded-xl bg-slate-50 dark:bg-slate-950 border-slate-200">
+                    <SelectTrigger className="h-10 w-[220px] rounded-sm bg-slate-50 dark:bg-slate-950 border-slate-200 font-bold uppercase text-[10px] tracking-widest">
                       <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder="Sort Results" />
+                        <Filter className="h-3 w-3 text-accent" />
+                        <SelectValue placeholder="Priority Level" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectContent className="rounded-sm">
+                      <SelectItem value="newest" className="text-[10px] font-black uppercase tracking-widest">Temporal: Newest</SelectItem>
+                      <SelectItem value="price-low" className="text-[10px] font-black uppercase tracking-widest">Value: Ascending</SelectItem>
+                      <SelectItem value="price-high" className="text-[10px] font-black uppercase tracking-widest">Value: Descending</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -248,35 +250,35 @@ const Search = () => {
 
               {/* Results Count Info */}
               {!loading && results.length > 0 && (
-                <div className="px-4">
-                  <h3 className="text-xl font-bold">
-                    Found <span className="text-blue-600">{results.length}</span> results for your query
+                <div className="px-2">
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">
+                    Search Yield: <span className="text-primary dark:text-white">{results.length} Matches</span>
                   </h3>
                 </div>
               )}
 
-              {/* Loading State */}
+              {/* Results Display */}
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-16">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="space-y-4 animate-pulse">
-                      <div className="aspect-[4/5] bg-slate-200 dark:bg-slate-800 rounded-3xl" />
-                      <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/2" />
+                    <div key={i} className="space-y-6 animate-pulse">
+                      <div className="aspect-[3/4] bg-slate-100 dark:bg-slate-900 rounded-lg" />
+                      <div className="h-6 bg-slate-100 dark:bg-slate-900 rounded-lg w-3/4" />
+                      <div className="h-4 bg-slate-100 dark:bg-slate-900 rounded-lg w-1/2" />
                     </div>
                   ))}
                 </div>
               ) : results.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-                  <Package className="h-20 w-20 text-muted-foreground opacity-20 mb-6" />
-                  <h2 className="text-3xl font-black italic">No matches found</h2>
-                  <p className="text-muted-foreground text-lg mt-2 mb-8">Try adjusting your terms or browse categories.</p>
-                  <Button variant="outline" onClick={() => navigate("/")} className="h-12 px-8 rounded-xl font-bold">
-                    Return to Directory
+                <div className="flex flex-col items-center justify-center py-32 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-100 dark:border-slate-800">
+                  <Package className="h-20 w-20 text-slate-200 mb-8" />
+                  <h2 className="text-4xl font-black italic uppercase tracking-tighter text-primary dark:text-white">Zero Convergence</h2>
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2 mb-10">Your parameters did not yield matching assets.</p>
+                  <Button variant="outline" onClick={() => navigate("/")} className="h-12 px-10 rounded-sm border-2 font-black uppercase tracking-widest text-[10px]">
+                    Reset Navigation
                   </Button>
                 </div>
               ) : (
-                <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" : "space-y-6"}>
+                <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1" : "space-y-6"}>
                   {results.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -293,11 +295,11 @@ const Search = () => {
           )}
 
           {!searchQuery && (
-            <div className="flex flex-col items-center justify-center py-32 space-y-8">
-              <div className="p-8 bg-blue-50 dark:bg-blue-900/20 rounded-full">
-                <SearchIcon className="h-16 w-16 text-blue-600 dark:text-blue-400" />
+            <div className="flex flex-col items-center justify-center py-40 space-y-12">
+              <div className="p-10 bg-slate-950 text-white rounded-full scale-110">
+                <SearchIcon className="h-16 w-16" />
               </div>
-              <div className="text-center space-y-4 max-w-md">
+              <div className="text-center space-y-6 max-w-lg">
                 <h2 className="text-3xl font-black italic tracking-tight">Ready to Find Something?</h2>
                 <p className="text-muted-foreground text-lg">
                   Enter keywords above to start exploring products, houses, and services across Kenya.

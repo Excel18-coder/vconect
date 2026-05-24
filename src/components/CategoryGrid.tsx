@@ -50,67 +50,67 @@ const CategoryGrid = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-24 bg-slate-50/50 dark:bg-slate-900/50">
+    <section className="py-32 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 space-y-4 animate-fade-in">
-          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
-            Curated <span className="text-blue-600">Categories</span>
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find exactly what you need with our specialized marketplace sectors tailored for the Kenyan market.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8 animate-fade-in">
+          <div className="space-y-4">
+            <div className="h-1 w-20 bg-accent rounded-full"></div>
+            <h2 className="text-5xl lg:text-6xl font-black tracking-tighter text-primary dark:text-white uppercase italic">
+              Strategic <span className="text-accent underline decoration-4 underline-offset-8 decoration-accent/20">Sectors</span>
+            </h2>
+            <p className="text-lg text-slate-500 max-w-xl font-medium leading-relaxed">
+              Targeted marketplace domains engineered for high-performance transactions and premium asset discovery.
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            className="text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 p-0 h-auto"
+            onClick={() => navigate('/search')}
+          >
+            Access Full Portfolio <ArrowRight className="ml-2 h-3 w-3" />
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
           {categories.map((category, index) => (
-            <Card
+            <div
               key={category.id}
-              className={`group overflow-hidden border-0 bg-white dark:bg-slate-950 shadow-elegant hover:shadow-hover transition-all duration-500 animate-slide-up`}
-              style={{ animationDelay: `${index * 100}ms` }}>
-              <CardContent className="p-0">
-                <div className="relative h-56 overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-300`}></div>
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute top-4 left-4 z-20">
-                    <div className="p-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                      <category.icon className={`h-6 w-6 ${category.iconColor}`} />
-                    </div>
+              className="group relative cursor-pointer overflow-hidden aspect-[4/5] bg-slate-950 border border-slate-100 dark:border-slate-800 transition-all duration-700"
+              onClick={() => navigate(`/category/${category.id}`)}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <img
+                src={category.image}
+                alt={category.title}
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-all duration-1000 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+
+              <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                <div className="mb-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <div className="w-12 h-12 rounded-sm bg-white dark:bg-slate-900 flex items-center justify-center mb-6 shadow-premium">
+                    <category.icon className="h-5 w-5 text-primary dark:text-white" />
                   </div>
-                  <div className="absolute bottom-4 left-4 z-20 text-white">
-                    <h3 className="text-xl font-bold">{category.title}</h3>
-                  </div>
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-2">{category.title}</h3>
+                  <p className="text-xs text-slate-300 font-medium leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                    {category.description}
+                  </p>
                 </div>
 
-                <div className="p-8 space-y-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed h-12 overflow-hidden italic">
-                    "{category.description}"
-                  </p>
-
-                  <div className="space-y-3">
-                    {category.features.map((feature, fIndex) => (
-                      <div
-                        key={fIndex}
-                        className="flex items-center text-sm font-medium">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-3"></div>
-                        {feature}
-                      </div>
+                <div className="pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {category.features.slice(0, 2).map((feature, fIndex) => (
+                      <span key={fIndex} className="text-[10px] font-black text-accent uppercase tracking-widest">
+                        • {feature}
+                      </span>
                     ))}
                   </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 border-blue-100 dark:border-blue-900 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all rounded-xl font-semibold"
-                    onClick={() => navigate(`/category/${category.id}`)}>
-                    Explore Section
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Hover Border Overlay */}
+              <div className="absolute inset-0 border-2 border-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            </div>
           ))}
         </div>
       </div>
