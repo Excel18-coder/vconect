@@ -315,7 +315,19 @@ export const productAPI = {
     const response = await authFetch('/products/favorites/my-list');
     return handleResponse(response);
   },
+
+  // Backward-compatible methods
+  searchProducts: async (query: string, filters: Record<string, any> = {}): Promise<any> => {
+    return productAPI.browse({ ...filters, search: query });
+  },
+
+  browseProducts: async (filters: Record<string, any> = {}): Promise<any> => {
+    return productAPI.browse(filters);
+  },
 };
+
+// Aliases for backward compatibility
+export const productsAPI = productAPI;
 
 export const messageAPI = {
   // Primary method (new signature)

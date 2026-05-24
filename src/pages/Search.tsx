@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { productsAPI, messageAPI } from "@/services/api-client";
-import { productAPI } from "@/services/api-client";
 import {
   Package,
   Search as SearchIcon,
