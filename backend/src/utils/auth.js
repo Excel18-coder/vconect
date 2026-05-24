@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('./logger');
 
 /**
  * Validate JWT secrets are available
@@ -8,23 +9,26 @@ const { v4: uuidv4 } = require('uuid');
  */
 const validateJWTSecrets = () => {
   if (!process.env.JWT_SECRET) {
-    console.error('❌ CRITICAL ERROR: JWT_SECRET is not defined in environment variables!');
-    console.error('📋 This must be set in your Render dashboard Environment tab');
-    console.error('🔑 Variable name: JWT_SECRET');
-    console.error('📝 Example value: (64+ character random string)');
+    logger.error('JWT_SECRET is not defined in environment variables');
+    logger.error('Set JWT_SECRET in your Render dashboard Environment tab');
+    logger.error('Example value: (64+ character random string)');
     throw new Error('JWT_SECRET environment variable is required but not defined');
   }
   
   if (!process.env.JWT_REFRESH_SECRET) {
-    console.error('❌ CRITICAL ERROR: JWT_REFRESH_SECRET is not defined in environment variables!');
-    console.error('📋 This must be set in your Render dashboard Environment tab');
-    console.error('🔑 Variable name: JWT_REFRESH_SECRET');
+    logger.error('JWT_REFRESH_SECRET is not defined in environment variables');
+    logger.error('Set JWT_REFRESH_SECRET in your Render dashboard Environment tab');
+    logger.error('Example value: (64+ character random string)');
     throw new Error('JWT_REFRESH_SECRET environment variable is required but not defined');
   }
   
-  // Validate secret length (should be at least 32 characters for security)
-  if (process.env.JWT_SECRET.length < 32) {
-    console.warn('⚠️  WARNING: JWT_SECRET is too short (< 32 characters). Use a longer secret for better security.');
+  // Validate secret length (should be at least 64 characters for security)
+  if (process.env.JWT_SECRET.length < 64) {
+    throw new Error('JWT_SECRET is too short. Use a 64+ character random string.');
+  }
+
+  if (process.env.JWT_REFRESH_SECRET.length < 64) {
+    throw new Error('JWT_REFRESH_SECRET is too short. Use a 64+ character random string.');
   }
   
   return true;

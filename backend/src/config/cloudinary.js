@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
+const logger = require('../utils/logger');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -12,10 +13,10 @@ cloudinary.config({
 const testCloudinaryConnection = async () => {
   try {
     const result = await cloudinary.api.ping();
-    console.log('✅ Cloudinary connected successfully');
+    logger.info('Cloudinary connected successfully');
     return true;
   } catch (error) {
-    console.error('❌ Cloudinary connection failed:', error.message);
+    logger.error('Cloudinary connection failed', error);
     return false;
   }
 };

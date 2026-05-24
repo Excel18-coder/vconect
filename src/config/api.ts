@@ -3,10 +3,13 @@
  * Handles API base URL for different environments
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-                     (import.meta.env.MODE === 'production' 
-                       ? 'https://vconect.onrender.com/api'
-                       : 'http://localhost:5000/api');
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_BASE_URL is not configured');
+}
+
+const TRANSPORT_INTEGRATION_BASE_URL = import.meta.env.VITE_TRANSPORT_INTEGRATION_URL;
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
@@ -14,6 +17,7 @@ export const API_CONFIG = {
   HEADERS: {
     'Content-Type': 'application/json',
   },
+  TRANSPORT_INTEGRATION_BASE_URL,
 };
 
 /**
@@ -31,15 +35,10 @@ export const getApiUrl = (endpoint: string): string => {
  * @returns {HeadersInit} Headers object with token if available
  */
 export const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem('token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
+
   return headers;
 };
 

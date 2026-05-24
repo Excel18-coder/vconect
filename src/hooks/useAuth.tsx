@@ -29,10 +29,9 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName?: string, userType?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  updateProfile: (updates: any) => Promise<{ error: any }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
   refetchProfile: () => Promise<void>;
   sendMagicLink: (email: string) => Promise<{ error: any }>;
-  checkNeonSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,27 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
-      // First try to check Neon Auth session
-      try {
-        const neonSession = await authAPI.getNeonSession();
-        if (neonSession.data?.user) {
-          setUser(neonSession.data.user);
-          setProfile(neonSession.data.user); // Neon session includes profile data
-          setLoading(false);
-          return;
-        }
-      } catch (neonError) {
-        console.log('No Neon Auth session found, checking JWT auth');
-      }
-
-      // Fallback to JWT auth check
+      // Check JWT auth
       if (isAuthenticated()) {
         try {
           const userData = await authAPI.getMe();
           setUser(userData.data.user);
           setProfile(userData.data.profile);
         } catch (error) {
-          console.error('Auth check failed:', error);
           clearAuth();
         }
       }
@@ -88,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const profileData = await profileAPI.getProfile();
           setProfile(profileData.data.profile);
         } catch (profileError) {
-          console.error('Failed to fetch profile after registration:', profileError);
+          // Ignore profile fetch errors; user is already registered
         }
       }
       
@@ -120,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const profileData = await profileAPI.getProfile();
           setProfile(profileData.data.profile);
         } catch (profileError) {
-          console.error('Failed to fetch profile after login:', profileError);
+          // Ignore profile fetch errors; user is already authenticated
         }
       }
       
@@ -142,21 +127,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Try Neon Auth signout first
-      try {
-        await authAPI.neonSignOut();
-      } catch (neonError) {
-        console.log('No Neon session to sign out from');
-      }
-
-      // Then try JWT logout
-      try {
-        await authAPI.logout();
-      } catch (jwtError) {
-        console.log('No JWT session to log out from');
-      }
+      await authAPI.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Ignore logout errors to ensure local state is cleared
     } finally {
       setUser(null);
       setProfile(null);
@@ -169,7 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = async (updates: any) => {
+  const updateProfile = async (updates: Partial<Profile>) => {
     try {
       const response = await profileAPI.updateProfile(updates);
       
@@ -199,7 +172,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const profileData = await profileAPI.getProfile();
         setProfile(profileData.data.profile);
       } catch (error) {
-        console.error('Failed to refetch profile:', error);
+        // Ignore profile refetch errors
       }
     }
   };
@@ -224,18 +197,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const checkNeonSession = async () => {
-    try {
-      const sessionData = await authAPI.verifyNeonSession();
-      if (sessionData.data?.user) {
-        setUser(sessionData.data.user);
-        setProfile(sessionData.data.user); // Neon session includes profile data
-      }
-    } catch (error) {
-      console.error('Neon session check failed:', error);
-    }
-  };
-
   const value = {
     user,
     profile,
@@ -246,7 +207,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateProfile,
     refetchProfile,
     sendMagicLink,
-    checkNeonSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

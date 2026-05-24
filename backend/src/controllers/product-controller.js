@@ -2,6 +2,7 @@ const { sql } = require('../config/database');
 const { cloudinary } = require('../config/cloudinary');
 const { sendSuccess, sendError, sendCreated, sendNotFound } = require('../utils/response');
 const { asyncHandler } = require('../middleware/error-handler');
+const logger = require('../utils/logger');
 
 const uploadImagesToCloudinary = async (files = []) => {
   if (!files || files.length === 0) return [];
@@ -134,7 +135,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
       imageUrls = await Promise.all(uploadPromises);
     } catch (uploadError) {
-      console.error('Error uploading images:', uploadError);
+      logger.error('Error uploading images', uploadError);
       return sendError(res, 'Failed to upload images', null, 500);
     }
   }
@@ -377,7 +378,7 @@ const getSellerProducts = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching seller products:', error);
+    logger.error('Error fetching seller products', error);
     return sendError(res, 'Failed to fetch products', error.message, 500);
   }
 });
@@ -576,7 +577,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     RETURNING *
   `;
 
-  console.log('✅ Product updated successfully:', id);
+  logger.info('Product updated successfully', { productId: id, userId });
 
   return sendSuccess(res, 'Product updated successfully', {
     product: {
@@ -617,7 +618,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   // Delete images from Cloudinary if they exist
   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-    console.log(`🗑️ Deleting ${product.images.length} images from Cloudinary for product ${id}`);
+    logger.info('Deleting images from Cloudinary', { productId: id, count: product.images.length });
 
     for (const imageUrl of product.images) {
       try {
@@ -632,10 +633,10 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
           // Delete from Cloudinary
           await cloudinary.uploader.destroy(publicId);
-          console.log(`✅ Deleted image from Cloudinary: ${publicId}`);
+          logger.info('Deleted image from Cloudinary', { publicId, productId: id });
         }
       } catch (error) {
-        console.error(`⚠️ Failed to delete image from Cloudinary: ${imageUrl}`, error);
+        logger.warn('Failed to delete image from Cloudinary', { imageUrl, productId: id, error: error?.message });
         // Continue with deletion even if Cloudinary delete fails
       }
     }
@@ -648,7 +649,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
       WHERE id = ${id} AND user_id = ${userId}
     `;
 
-    console.log('✅ Product permanently deleted from database:', id);
+    logger.info('Product permanently deleted', { productId: id, userId });
     return sendSuccess(res, 'Product and all images permanently deleted');
   } else {
     // Soft delete - change status to inactive
@@ -658,7 +659,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
       WHERE id = ${id} AND user_id = ${userId}
     `;
 
-    console.log('✅ Product soft deleted (status set to inactive):', id);
+    logger.info('Product soft deleted', { productId: id, userId });
     return sendSuccess(res, 'Product deleted successfully. Images removed from Cloudinary.');
   }
 });
@@ -942,7 +943,7 @@ const browseProducts = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Browse products error:', error);
+    logger.error('Browse products error', error);
     return sendError(res, 'Failed to retrieve products', error.message, 500);
   }
 });

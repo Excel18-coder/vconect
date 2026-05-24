@@ -95,8 +95,10 @@ const ProductManager = () => {
     entertainment: ["Events", "Music", "Movies", "Gaming", "Content Creation"],
   };
 
-  const apiUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiUrl) {
+    throw new Error("VITE_API_BASE_URL is not configured");
+  }
 
   useEffect(() => {
     fetchProducts();
@@ -107,23 +109,20 @@ const ProductManager = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
       const response = await fetch(`${apiUrl}/products/seller/my-products`, {
+        credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched products:", data.data?.products); // Debug log
         setProducts(data.data?.products || []);
       } else {
         toast.error("Failed to fetch products");
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
       toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
@@ -204,8 +203,6 @@ const ProductManager = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
-
       // Create FormData for file upload
       const formDataToSend = new FormData();
       formDataToSend.append("title", formData.title);
@@ -232,10 +229,7 @@ const ProductManager = () => {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // Don't set Content-Type, browser will set it with boundary for FormData
-        },
+        credentials: "include",
         body: formDataToSend,
       });
 
@@ -255,7 +249,6 @@ const ProductManager = () => {
         toast.error(result.message || "Failed to save product");
       }
     } catch (error) {
-      console.error("Error saving product:", error);
       toast.error("Failed to save product. Please try again.");
     } finally {
       setLoading(false);
@@ -283,11 +276,10 @@ const ProductManager = () => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
       const response = await fetch(`${apiUrl}/products/${productId}`, {
         method: "DELETE",
+        credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -304,7 +296,6 @@ const ProductManager = () => {
         toast.error(errorData.message || "Failed to delete product");
       }
     } catch (error) {
-      console.error("Error deleting product:", error);
       toast.error("Failed to delete product");
     } finally {
       setLoading(false);

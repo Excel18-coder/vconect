@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, Ticket, AlertCircle, CheckCircle, XCircle, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, getAuthHeaders } from '@/config/api';
+import { toast } from 'sonner';
 
 interface Booking {
   id: string;
@@ -38,8 +39,9 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
     try {
       setIsLoading(true);
       const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings`, {
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          ...getAuthHeaders(),
         }
       });
       
@@ -50,7 +52,7 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
       const data = await response.json();
       setBookings(data.bookings || []);
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      toast.error('Failed to fetch bookings');
     } finally {
       setIsLoading(false);
     }
@@ -74,9 +76,10 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
       try {
         const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings/${bookingId}`, {
           method: 'PUT',
+          credentials: 'include',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            ...getAuthHeaders(),
           },
           body: JSON.stringify({ status: 'cancelled' }),
         });
@@ -87,21 +90,20 @@ export default function MyBookings({ userId, onTrackBooking }: MyBookingsProps) 
         
         fetchBookings();
       } catch (error) {
-        console.error('Failed to cancel booking:', error);
+        toast.error('Failed to cancel booking');
       }
     }
   };
 
   const handleDownloadTicket = (bookingId: string) => {
-    // Generate and download ticket PDF
-    console.log('Downloading ticket for booking:', bookingId);
+    toast.message('Ticket download will be available shortly.');
   };
 
   const handleTrackBooking = (bookingId: string) => {
     if (onTrackBooking) {
       onTrackBooking(bookingId);
     } else {
-      console.log('Tracking booking:', bookingId);
+      toast.message('Tracking is available from your booking details.');
     }
   };
 

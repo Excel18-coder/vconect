@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const logger = require('./utils/logger');
 
 // Import middlewares
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
@@ -85,14 +86,13 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS Error: Origin not allowed:', origin);
-      console.log('Allowed origins:', allowedOrigins);
+      logger.warn('CORS origin not allowed', { origin, allowedOrigins });
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Transport-Api-Key'],
 };
 
 app.use(cors(corsOptions));

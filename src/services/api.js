@@ -1,11 +1,8 @@
 // API configuration
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-
-// Helper function to get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem("accessToken");
-};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!API_BASE_URL) {
+  throw new Error("VITE_API_BASE_URL is not configured");
+}
 
 // Helper function to handle API responses
 const handleResponse = async (response) => {
@@ -20,13 +17,11 @@ const handleResponse = async (response) => {
 
 // Helper function to make authenticated requests
 const authFetch = (url, options = {}) => {
-  const token = getAuthToken();
-
   return fetch(`${API_BASE_URL}${url}`, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   });
@@ -43,12 +38,6 @@ export const authAPI = {
 
     const data = await handleResponse(response);
 
-    // Store tokens if registration includes them
-    if (data.data?.tokens?.accessToken) {
-      localStorage.setItem("accessToken", data.data.tokens.accessToken);
-      localStorage.setItem("refreshToken", data.data.tokens.refreshToken);
-    }
-
     return data;
   },
 
@@ -61,32 +50,20 @@ export const authAPI = {
 
     const data = await handleResponse(response);
 
-    // Store tokens
-    if (data.data?.tokens?.accessToken) {
-      localStorage.setItem("accessToken", data.data.tokens.accessToken);
-      localStorage.setItem("refreshToken", data.data.tokens.refreshToken);
-    }
-
     return data;
   },
 
   // Logout user
   logout: async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (refreshToken) {
-      try {
-        await authFetch("/auth/logout", {
-          method: "POST",
-          body: JSON.stringify({ refreshToken }),
-        });
-      } catch (error) {
-        console.warn("Logout request failed:", error);
-      }
+    try {
+      await authFetch("/auth/logout", {
+        method: "POST",
+      });
+    } catch (error) {
+      // Ignore logout errors
+    } finally {
+      clearAuth();
     }
-
-    // Clear tokens regardless
-    clearAuth();
   },
 
   // Get current user
@@ -97,25 +74,11 @@ export const authAPI = {
 
   // Refresh token
   refreshToken: async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (!refreshToken) {
-      throw new Error("No refresh token available");
-    }
-
     const response = await authFetch("/auth/refresh-token", {
       method: "POST",
-      body: JSON.stringify({ refreshToken }),
     });
 
-    const data = await handleResponse(response);
-
-    // Update access token
-    if (data.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-    }
-
-    return data;
+    return handleResponse(response);
   },
 
   // Verify email
@@ -198,13 +161,11 @@ export const uploadAPI = {
   uploadAvatar: async (file) => {
     const formData = new FormData();
     formData.append("image", file);
-
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
       method: "POST",
       headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
       },
+      credentials: "include",
       body: formData,
     });
 
@@ -217,13 +178,11 @@ export const uploadAPI = {
     files.forEach((file) => {
       formData.append("images", file);
     });
-
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE_URL}/upload/listing-images`, {
       method: "POST",
       headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
       },
+      credentials: "include",
       body: formData,
     });
 
@@ -344,8 +303,6 @@ export const messageAPI = {
       attachment_url: attachmentUrl,
     };
 
-    console.log("messageAPI.sendMessage payload:", payload);
-
     const response = await authFetch("/buyers/messages", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -412,11 +369,10 @@ export const messageAPI = {
 
 // Utility function to check if user is authenticated
 export const isAuthenticated = () => {
-  return !!localStorage.getItem("accessToken");
+  return true;
 };
 
 // Utility function to clear authentication
 export const clearAuth = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  // No-op for cookie-based auth
 };

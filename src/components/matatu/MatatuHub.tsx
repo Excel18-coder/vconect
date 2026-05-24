@@ -8,7 +8,8 @@ import MatatuTracking from '@/components/matatu/MatatuTracking';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader } from 'lucide-react';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, getAuthHeaders } from '@/config/api';
+import { toast } from 'sonner';
 
 interface MatatuResult {
   id: string;
@@ -63,8 +64,7 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
       setResults(data.schedules || []);
       setStep('results');
     } catch (error) {
-      console.error('Search failed:', error);
-      alert('Failed to search matatus. Please try again.');
+      toast.error('Failed to search matatus. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -88,13 +88,12 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           schedule_id: selectedMatatu?.id,
           seats_booked: selectedSeats,
           payment_method: paymentMethod,
-          user_id: userId,
         }),
       });
 
@@ -103,15 +102,15 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
       }
 
       const data = await response.json();
-      if (data.booking_reference) {
-        setBookingReference(data.booking_reference);
+      const bookingRef = data.booking?.booking_reference || data.booking_reference;
+      if (bookingRef) {
+        setBookingReference(bookingRef);
         setStep('confirmation');
       } else {
-        alert('Booking failed. Please try again.');
+        toast.error('Booking failed. Please try again.');
       }
     } catch (error) {
-      console.error('Booking failed:', error);
-      alert('Failed to complete booking. Please try again.');
+      toast.error('Failed to complete booking. Please try again.');
     } finally {
       setIsLoading(false);
     }

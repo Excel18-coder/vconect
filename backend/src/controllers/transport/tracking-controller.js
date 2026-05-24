@@ -26,16 +26,9 @@ exports.getMatutuLocation = async (req, res) => {
     `;
 
     if (location.length === 0) {
-      // Return default location if no tracking data
-      // In production, this would be the actual current vehicle location
-      return res.status(200).json({
-        success: true,
-        location: {
-          latitude: -1.2921, // Nairobi
-          longitude: 36.8219,
-          timestamp: new Date().toISOString(),
-          note: 'Default location - live tracking not available yet',
-        },
+      return res.status(404).json({
+        success: false,
+        message: 'Live tracking not available yet',
       });
     }
 
@@ -66,10 +59,22 @@ exports.updateLocation = async (req, res) => {
   try {
     const { schedule_id, latitude, longitude, speed, direction, vehicle_id } = req.body;
 
-    if (!schedule_id || !latitude || !longitude) {
+    if (!schedule_id || latitude === undefined || longitude === undefined) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields: schedule_id, latitude, longitude',
+      });
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const spd = speed !== undefined ? parseFloat(speed) : null;
+    const dir = direction !== undefined ? parseInt(direction) : null;
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid latitude or longitude',
       });
     }
 
@@ -80,8 +85,8 @@ exports.updateLocation = async (req, res) => {
         speed, direction, timestamp
       ) VALUES (
         ${schedule_id}, ${vehicle_id || null}, 
-        ${latitude}, ${longitude},
-        ${speed || null}, ${direction || null}, NOW()
+        ${lat}, ${lng},
+        ${Number.isNaN(spd) ? null : spd}, ${Number.isNaN(dir) ? null : dir}, NOW()
       )
       RETURNING *
     `;

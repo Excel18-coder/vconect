@@ -1,8 +1,9 @@
 const { sql } = require('../src/config/database');
+const logger = require('../src/utils/logger');
 
 const createMatatuTables = async () => {
   try {
-    console.log('🚗 Starting matatu database migration...');
+    logger.info('Starting matatu database migration');
 
     // Create matatu_operators table
     await sql`
@@ -21,7 +22,7 @@ const createMatatuTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_operators table created');
+    logger.info('matatu_operators table created');
 
     // Create matatu_routes table
     await sql`
@@ -38,7 +39,7 @@ const createMatatuTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_routes table created');
+    logger.info('matatu_routes table created');
 
     // Create matatu_schedules table
     await sql`
@@ -56,7 +57,7 @@ const createMatatuTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_schedules table created');
+    logger.info('matatu_schedules table created');
 
     // Create matatu_bookings table
     await sql`
@@ -75,7 +76,7 @@ const createMatatuTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_bookings table created');
+    logger.info('matatu_bookings table created');
 
     // Create matatu_seats table
     await sql`
@@ -90,7 +91,7 @@ const createMatatuTables = async () => {
         UNIQUE(schedule_id, seat_number)
       )
     `;
-    console.log('✅ matatu_seats table created');
+    logger.info('matatu_seats table created');
 
     // Create matatu_payments table
     await sql`
@@ -108,7 +109,7 @@ const createMatatuTables = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_payments table created');
+    logger.info('matatu_payments table created');
 
     // Create matatu_locations table for GPS tracking
     await sql`
@@ -126,7 +127,7 @@ const createMatatuTables = async () => {
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    console.log('✅ matatu_locations table created');
+    logger.info('matatu_locations table created');
 
     // Create indexes for better performance
     await sql`CREATE INDEX IF NOT EXISTS idx_matatu_operators_email ON matatu_operators(email)`;
@@ -146,7 +147,7 @@ const createMatatuTables = async () => {
     await sql`CREATE INDEX IF NOT EXISTS idx_matatu_locations_timestamp ON matatu_locations(timestamp DESC)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_matatu_locations_coords ON matatu_locations(latitude, longitude)`;
 
-    console.log('✅ Indexes created');
+    logger.info('Indexes created');
 
     // Create trigger for updating timestamps
     await sql`
@@ -162,10 +163,10 @@ const createMatatuTables = async () => {
     // Note: Triggers are created automatically by the database
     // Individual trigger creation is skipped to avoid syntax issues
     
-    console.log('✅ All matatu tables created successfully! 🎉');
+    logger.info('All matatu tables created successfully');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Migration error:', error.message);
+    logger.error('Migration error', error);
     process.exit(1);
   }
 };

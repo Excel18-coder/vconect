@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { messageAPI } from '@/services/api';
+import { productAPI } from '@/services/api-client';
 import {
   Dialog,
   DialogContent,
@@ -103,7 +104,10 @@ const ProductDetail = () => {
     message: '',
   });
 
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiUrl) {
+    throw new Error('VITE_API_BASE_URL is not configured');
+  }
 
   useEffect(() => {
     fetchProduct();
@@ -119,10 +123,33 @@ const ProductDetail = () => {
     }
   }, [product]);
 
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (!user || !product?.id) {
+        setIsFavorite(false);
+        return;
+      }
+
+      try {
+        const result = await productAPI.getFavorites();
+        const favorites = result.data?.favorites || [];
+        setIsFavorite(
+          favorites.some((item: { id?: number | string }) => String(item.id) === String(product.id))
+        );
+      } catch (error) {
+        setIsFavorite(false);
+      }
+    };
+
+    loadFavorites();
+  }, [user, product?.id]);
+
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/products/${id}`);
+      const response = await fetch(`${apiUrl}/products/${id}`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch product');
       const result = await response.json();
       // Backend returns {success: true, data: {product: {...}}}
@@ -137,7 +164,6 @@ const ProductDetail = () => {
       
       setProduct(productData);
     } catch (error) {
-      console.error('Error fetching product:', error);
       toast.error('Failed to load product');
     } finally {
       setLoading(false);
@@ -161,30 +187,14 @@ const ProductDetail = () => {
 
     // Get seller ID with multiple fallbacks
     const sellerId = product?.user_id || product?.seller_id || product?.seller?.user_id || product?.seller?.id;
-    
-    console.log('Attempting to send message to seller:', {
-      product_user_id: product?.user_id,
-      product_seller_id: product?.seller_id,
-      seller_user_id: product?.seller?.user_id,
-      seller_id: product?.seller?.id,
-      resolved_seller_id: sellerId,
-      full_product: product
-    });
-    
+
     if (!sellerId) {
       toast.error('Seller information not available');
-      console.error('Product data:', product);
       return;
     }
 
     try {
       setSendingMessage(true);
-      console.log('Sending message with:', {
-        receiverId: sellerId,
-        subject: messageForm.subject,
-        message: messageForm.message
-      });
-      
       await messageAPI.sendMessage(
         sellerId,
         messageForm.subject,
@@ -198,7 +208,6 @@ const ProductDetail = () => {
         message: '',
       });
     } catch (error: any) {
-      console.error('Error sending message:', error);
       toast.error(error.message || 'Failed to send message');
     } finally {
       setSendingMessage(false);
@@ -211,9 +220,25 @@ const ProductDetail = () => {
       navigate('/auth');
       return;
     }
-    // TODO: Implement add to favorites API
-    setIsFavorite(!isFavorite);
-    toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+
+    if (!product?.id) {
+      toast.error('Product not available');
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await productAPI.unfavorite(String(product.id));
+        setIsFavorite(false);
+        toast.success('Removed from favorites');
+      } else {
+        await productAPI.favorite(String(product.id));
+        setIsFavorite(true);
+        toast.success('Added to favorites');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update favorites');
+    }
   };
 
   const handleShare = async () => {
@@ -231,7 +256,7 @@ const ProductDetail = () => {
         toast.success('Link copied to clipboard');
       }
     } catch (error) {
-      console.error('Error sharing:', error);
+      toast.error('Failed to share');
     }
   };
 

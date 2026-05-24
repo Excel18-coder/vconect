@@ -9,6 +9,7 @@
     "migrate": "node migrations/migrate.js",
     "seed": "node migrations/seed.js",
     "create-admin": "node scripts/admin/create-default-admin.js",
+    "test:auth": "node scripts/test-auth.js",
     "test": "jest"
   },
   "keywords": [

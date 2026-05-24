@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -63,8 +64,10 @@ const PostAd = () => {
     shipping_cost: "0",
   });
 
-  const apiUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiUrl) {
+    throw new Error("VITE_API_BASE_URL is not configured");
+  }
 
   const categories = [
     {
@@ -123,8 +126,8 @@ const PostAd = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const files: File[] = Array.from(e.target.files || []);
 
     if (files.length + imageFiles.length > 10) {
       toast.error("Maximum 10 images allowed");
@@ -171,7 +174,7 @@ const PostAd = () => {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const effectiveCategory =
@@ -231,25 +234,11 @@ const PostAd = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("accessToken");
-
-      if (!token) {
-        toast.error("Please login again");
-        navigate("/auth");
-        return;
-      }
-
       // Create FormData for multipart upload
       const formDataToSend = new FormData();
 
       // Add text fields
-      formDataToSend.append("title", formData.title.trim());
-      formDataToSend.append("description", formData.description.trim());
-      formDataToSend.append("price", formData.price);
-      formDataToSend.append("category", effectiveCategory);
-      if (effectiveSubcategory) {
-        formDataToSend.append("subcategory", effectiveSubcategory);
-      }
+
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("location", effectiveLocation);
       formDataToSend.append("stock_quantity", formData.stock_quantity);
@@ -275,9 +264,7 @@ const PostAd = () => {
 
       const response = await fetch(`${apiUrl}/products`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
         body: formDataToSend,
       });
 

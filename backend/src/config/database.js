@@ -1,5 +1,6 @@
 const { neon } = require('@neondatabase/serverless');
 require('dotenv').config();
+const logger = require('../utils/logger');
 
 // Database connection using Neon with increased timeout
 const sql = neon(process.env.DATABASE_URL, {
@@ -22,11 +23,10 @@ const executeWithTimeout = async (queryFn, timeoutMs = 25000) => {
 const testConnection = async () => {
   try {
     const result = await sql`SELECT version()`;
-    console.log('✅ Database connected successfully');
-    console.log('PostgreSQL version:', result[0].version);
+    logger.info('Database connected successfully', { version: result[0].version });
     return true;
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    logger.error('Database connection failed', error);
     return false;
   }
 };

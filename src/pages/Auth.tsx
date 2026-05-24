@@ -24,7 +24,13 @@ import { z } from "zod";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain uppercase letter")
+    .regex(/[a-z]/, "Password must contain lowercase letter")
+    .regex(/\d/, "Password must contain number")
+    .regex(/[!@#$%^&*(),.?\":{}|<>]/, "Password must contain special character"),
   displayName: z.string().optional(),
   userType: z.string().optional(),
 });

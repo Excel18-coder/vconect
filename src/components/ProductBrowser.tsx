@@ -28,6 +28,8 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { messageAPI } from "@/services/api";
+import { API_CONFIG } from "@/config/api";
+import { productAPI } from "@/services/api-client";
 import {
   DollarSign,
   Eye,
@@ -93,8 +95,7 @@ const ProductBrowser = () => {
     message: "",
   });
 
-  const apiUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  const apiUrl = API_CONFIG.BASE_URL;
 
   const getWhatsAppUrl = (phone: string | undefined, text: string) => {
     if (!phone) return null;
@@ -139,7 +140,8 @@ const ProductBrowser = () => {
       params.append("sortBy", sortBy);
 
       const response = await fetch(
-        `${apiUrl}/products/browse?${params.toString()}`
+        `${apiUrl}/products/browse?${params.toString()}`,
+        { credentials: "include" }
       );
 
       if (response.ok) {
@@ -150,7 +152,6 @@ const ProductBrowser = () => {
         toast.error("Failed to fetch products");
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
       toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
@@ -168,22 +169,9 @@ const ProductBrowser = () => {
     }
 
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${apiUrl}/products/${productId}/favorite`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        toast.success("Added to favorites");
-      } else {
-        toast.error("Failed to add to favorites");
-      }
+      await productAPI.favorite(productId);
+      toast.success("Added to favorites");
     } catch (error) {
-      console.error("Error adding to favorites:", error);
       toast.error("Failed to add to favorites");
     }
   };

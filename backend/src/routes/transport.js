@@ -6,9 +6,11 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
+const { transportIntegrationAuth } = require('../middleware/transport-integration');
 const routesController = require('../controllers/transport/routes-controller');
 const bookingsController = require('../controllers/transport/bookings-controller');
 const trackingController = require('../controllers/transport/tracking-controller');
+const integrationController = require('../controllers/transport/integration-controller');
 
 // ==================== ROUTES ====================
 // Search available routes
@@ -31,7 +33,11 @@ router.get('/tracking/history/:scheduleId', authenticateToken, trackingControlle
 router.get('/tracking/:scheduleId', authenticateToken, trackingController.getMatutuLocation);
 
 // Update matatu location (driver app)
-router.post('/tracking', trackingController.updateLocation);
+router.post('/tracking', transportIntegrationAuth, trackingController.updateLocation);
+
+// ==================== INTEGRATIONS ====================
+// Bulk import routes/schedules from external transport systems
+router.post('/integrations/schedules', transportIntegrationAuth, integrationController.importSchedules);
 
 // ==================== BOOKINGS ====================
 // Create booking

@@ -8,7 +8,7 @@
  * - Session persistence
  */
 
-import { authAPI, clearAuth, isAuthenticated, profileAPI } from '@/services/api-client';
+import { authAPI, clearAuth, profileAPI } from '@/services/api-client';
 import {
   createContext,
   ReactNode,
@@ -73,10 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let isMounted = true;
 
     const checkAuth = async () => {
-      if (!isAuthenticated()) {
-        setLoading(false);
-        return;
-      }
 
       try {
         const userData = await authAPI.getMe();
@@ -87,7 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setError(null);
         }
       } catch (err) {
-        console.error('Auth check failed:', err);
         if (isMounted) {
           clearAuth();
           setUser(null);
@@ -125,7 +120,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const profileData = await profileAPI.getProfile();
             setProfile(profileData.data.profile);
           } catch (profileError) {
-            console.error('Failed to fetch profile:', profileError);
           }
         }
 
@@ -196,7 +190,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await authAPI.logout();
     } catch (err) {
-      console.error('Logout error:', err);
     } finally {
       setUser(null);
       setProfile(null);
@@ -260,7 +253,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(profileData.data.profile);
       }
     } catch (err) {
-      console.error('Failed to refetch profile:', err);
     }
   }, [user]);
 

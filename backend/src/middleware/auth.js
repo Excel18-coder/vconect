@@ -1,5 +1,6 @@
 const { verifyToken, extractTokenFromHeader } = require('../utils/auth');
 const { sendUnauthorized, sendForbidden } = require('../utils/response');
+const logger = require('../utils/logger');
 const { sql } = require('../config/database');
 
 /**
@@ -8,7 +9,8 @@ const { sql } = require('../config/database');
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = extractTokenFromHeader(authHeader);
+    const tokenFromHeader = extractTokenFromHeader(authHeader);
+    const token = tokenFromHeader || req.cookies?.accessToken;
 
     if (!token) {
       return sendUnauthorized(res, 'Access token is required');
@@ -43,7 +45,7 @@ const authenticateToken = async (req, res, next) => {
     } else if (error.name === 'TokenExpiredError') {
       return sendUnauthorized(res, 'Token expired');
     } else {
-      console.error('Authentication error:', error);
+      logger.error('Authentication error', error);
       return sendUnauthorized(res, 'Authentication failed');
     }
   }
@@ -83,7 +85,7 @@ const requireRole = (allowedRoles) => {
       req.user.userType = userType;
       next();
     } catch (error) {
-      console.error('Role check error:', error);
+      logger.error('Role check error', error);
       return sendForbidden(res, 'Permission check failed');
     }
   };

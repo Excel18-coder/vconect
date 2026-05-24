@@ -40,6 +40,18 @@ import {
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { productAPI } from "@/services/api-client";
+
+interface FavoriteItem {
+  id: string | number;
+  title: string;
+  price: number;
+  final_price?: number;
+  images?: Array<{ url: string } | string>;
+  location?: string;
+  category_name?: string;
+  seller_name?: string;
+}
 
 const Account = () => {
   const { user, profile, updateProfile, signOut, loading } = useAuth();
@@ -54,6 +66,8 @@ const Account = () => {
     location: "",
     user_type: "buyer",
   });
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
 
   // Handle tab parameter from URL
   useEffect(() => {
@@ -97,6 +111,24 @@ const Account = () => {
       });
     }
   }, [profile, isEditing]);
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (!user || activeTab !== "favorites") return;
+
+      try {
+        setFavoritesLoading(true);
+        const result = await productAPI.getFavorites();
+        setFavorites(result.data?.favorites || []);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load favorites");
+      } finally {
+        setFavoritesLoading(false);
+      }
+    };
+
+    loadFavorites();
+  }, [activeTab, user]);
 
   const handleUpdateProfile = async () => {
     // Prepare update data - only send fields that are not empty
@@ -354,9 +386,7 @@ const Account = () => {
                   <Button
                     variant="outline"
                     className="h-auto flex-col gap-2 p-4"
-                    onClick={() =>
-                      console.log("TODO: Implement favorites page")
-                    }>
+                    onClick={() => navigate("/account?tab=favorites")}>
                     <Heart className="h-6 w-6" />
                     <span>View Favorites</span>
                   </Button>
@@ -579,9 +609,62 @@ const Account = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    No favorites saved yet.
-                  </p>
+                  {favoritesLoading ? (
+                    <p className="text-muted-foreground">Loading favorites...</p>
+                  ) : favorites.length === 0 ? (
+                    <p className="text-muted-foreground">No favorites saved yet.</p>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {favorites.map((item) => {
+                        const image = item.images?.[0];
+                        const imageUrl = typeof image === "string" ? image : image?.url;
+                        const price = item.final_price ?? item.price;
+
+                        return (
+                          <Card key={item.id} className="overflow-hidden">
+                            <CardContent className="p-4">
+                              <div className="flex gap-4">
+                                <div className="h-16 w-16 rounded-md bg-muted overflow-hidden">
+                                  {imageUrl ? (
+                                    <img
+                                      src={imageUrl}
+                                      alt={item.title}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : null}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="font-medium">{item.title}</p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {item.category_name || "Marketplace"}
+                                      </p>
+                                    </div>
+                                    <Badge variant="secondary">KES {Number(price).toLocaleString()}</Badge>
+                                  </div>
+                                  <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                                    {item.location && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        {item.location}
+                                      </span>
+                                    )}
+                                    {item.seller_name && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <User className="h-3 w-3" />
+                                        {item.seller_name}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

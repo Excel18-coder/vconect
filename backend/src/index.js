@@ -1,3 +1,5 @@
+const logger = require("./utils/logger");
+
 // Safe dotenv loading - only load if module exists and .env file exists
 let dotenvLoaded = false;
 try {
@@ -9,20 +11,16 @@ try {
   if (fs.existsSync(envPath)) {
     require("dotenv").config();
     dotenvLoaded = true;
-    console.log("✅ Environment variables loaded from .env file");
+    logger.info("Environment variables loaded from .env file");
   } else {
-    console.log(
-      "ℹ️  No .env file found, using environment variables from host"
-    );
+    logger.info("No .env file found, using environment variables from host");
   }
 } catch (error) {
-  console.log(
-    "ℹ️  dotenv not available, using environment variables from host"
-  );
+  logger.info("dotenv not available, using environment variables from host");
 }
 
 // Validate critical environment variables
-console.log("🔍 Validating environment variables...");
+logger.info("Validating environment variables");
 
 const requiredEnvVars = {
   DATABASE_URL: "PostgreSQL database connection string",
@@ -53,34 +51,31 @@ Object.entries(requiredEnvVars).forEach(([varName, description]) => {
         `  ⚠️  ${varName} is too short (${value.length} chars). Recommended: 64+ characters for security.`
       );
     }
-    console.log(`  ✅ ${varName} is set`);
+    logger.info(`${varName} is set`);
   }
 });
 
 // Log warnings
 if (warnings.length > 0) {
-  console.log("\n⚠️  WARNINGS:");
-  warnings.forEach((warning) => console.log(warning));
+  warnings.forEach((warning) => logger.warn(warning));
 }
 
 // Exit if critical variables are missing
 if (missingVars.length > 0) {
-  console.error(
-    "\n❌ CRITICAL ERROR: Missing required environment variables:\n"
-  );
-  missingVars.forEach((msg) => console.error(msg));
-  console.error("\n📋 TO FIX THIS ON RENDER:");
-  console.error("   1. Go to: https://dashboard.render.com/");
-  console.error("   2. Select your backend service");
-  console.error('   3. Click "Environment" in left sidebar');
-  console.error("   4. Add the missing variables listed above");
-  console.error('   5. Click "Save Changes"');
-  console.error("   6. Wait for automatic redeploy\n");
-  console.error("💡 TIP: Use backend/.env.render.example as a template\n");
+  logger.error("Missing required environment variables");
+  missingVars.forEach((msg) => logger.error(msg));
+  logger.error("TO FIX THIS ON RENDER:");
+  logger.error("1. Go to: https://dashboard.render.com/");
+  logger.error("2. Select your backend service");
+  logger.error('3. Click "Environment" in left sidebar');
+  logger.error("4. Add the missing variables listed above");
+  logger.error('5. Click "Save Changes"');
+  logger.error("6. Wait for automatic redeploy");
+  logger.error("TIP: Use backend/.env.render.example as a template");
   process.exit(1);
 }
 
-console.log("\n✅ All required environment variables are present and valid\n");
+logger.info("All required environment variables are present and valid");
 
 const express = require("express");
 const cors = require("cors");
@@ -89,7 +84,6 @@ const morgan = require("morgan");
 const compression = require("compression");
 const cookieParser = require("cookie-parser");
 
-const logger = require("./utils/logger");
 const { sendError } = require("./utils/response");
 
 // Import routes

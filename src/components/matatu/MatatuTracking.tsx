@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, AlertCircle, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, getAuthHeaders } from '@/config/api';
 
 interface Location {
   latitude: number;
@@ -47,12 +47,18 @@ export default function MatatuTracking({
     if (!mapRef.current) return;
 
     const loadGoogleMaps = () => {
+      const mapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!mapsApiKey) {
+        setError('Google Maps API key is not configured');
+        return;
+      }
+
       if (window.google && window.google.maps) {
         initMap();
       } else {
         // Load Google Maps script
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDemoKey'}`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsApiKey}`;
         script.async = true;
         script.defer = true;
         script.onload = initMap;
@@ -84,10 +90,15 @@ export default function MatatuTracking({
       try {
         setIsLoading(true);
         const response = await fetch(`${API_CONFIG.BASE_URL}/transport/tracking/${scheduleId}`, {
+          credentials: 'include',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            ...getAuthHeaders(),
           },
         });
+
+        if (response.status === 404) {
+          throw new Error('Live tracking not available yet');
+        }
 
         if (!response.ok) throw new Error('Failed to fetch location');
 

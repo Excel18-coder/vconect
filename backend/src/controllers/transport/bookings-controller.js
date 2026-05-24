@@ -14,7 +14,7 @@ const { eventTrackingService } = require('../../services/analytics/event-trackin
  */
 exports.createBooking = async (req, res) => {
   try {
-    const { schedule_id, seats_booked, payment_method, user_id, passenger_details } = req.body;
+    const { schedule_id, seats_booked, payment_method, passenger_details } = req.body;
 
     if (!schedule_id || !seats_booked || !Array.isArray(seats_booked) || seats_booked.length === 0) {
       return res.status(400).json({
@@ -23,13 +23,31 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    const userId = user_id || req.user?.id;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
       });
     }
+
+    const validPaymentMethods = ['mpesa', 'card', 'cash'];
+    if (payment_method && !validPaymentMethods.includes(payment_method)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment method',
+      });
+    }
+
+    const uniqueSeats = Array.from(new Set(seats_booked.map((seat) => parseInt(seat))));
+    if (uniqueSeats.some((seat) => Number.isNaN(seat) || seat <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid seat numbers',
+      });
+    }
+
+    await sql`BEGIN`;
 
     // Get schedule details
     const schedule = await sql`
@@ -38,6 +56,7 @@ exports.createBooking = async (req, res) => {
       JOIN matatu_routes mr ON s.route_id = mr.id
       JOIN matatu_operators mo ON mr.operator_id = mo.id
       WHERE s.id = ${schedule_id}
+      FOR UPDATE
     `;
 
     if (schedule.length === 0) {
@@ -56,9 +75,10 @@ exports.createBooking = async (req, res) => {
     `;
 
     const bookedSeatNumbers = bookedSeats.map((s) => s.seat_number);
-    const conflictingSeats = seats_booked.filter((seat) => bookedSeatNumbers.includes(seat));
+    const conflictingSeats = uniqueSeats.filter((seat) => bookedSeatNumbers.includes(seat));
 
     if (conflictingSeats.length > 0) {
+      await sql`ROLLBACK`;
       return res.status(409).json({
         success: false,
         message: `Seats ${conflictingSeats.join(', ')} are already booked`,
@@ -66,7 +86,7 @@ exports.createBooking = async (req, res) => {
     }
 
     // Calculate total price
-    const totalPrice = seats_booked.length * parseFloat(scheduleData.price_per_seat);
+    const totalPrice = uniqueSeats.length * parseFloat(scheduleData.price_per_seat);
 
     // Generate booking reference
     const bookingReference = `MBK${Date.now()}${Math.random().toString(36).substring(7).toUpperCase()}`;
@@ -79,7 +99,7 @@ exports.createBooking = async (req, res) => {
         status, booking_reference, payment_method, created_at
       ) VALUES (
         ${bookingId}, ${userId}, ${schedule_id}, 
-        ${JSON.stringify(seats_booked)}, ${totalPrice},
+        ${JSON.stringify(uniqueSeats)}, ${totalPrice},
         ${payment_method === 'cash' ? 'pending' : 'confirmed'}, 
         ${bookingReference}, ${payment_method}, NOW()
       )
@@ -87,7 +107,7 @@ exports.createBooking = async (req, res) => {
     `;
 
     // Mark seats as booked
-    for (const seatNumber of seats_booked) {
+    for (const seatNumber of uniqueSeats) {
       await sql`
         UPDATE matatu_seats 
         SET is_booked = true, booking_id = ${bookingId}
@@ -96,26 +116,36 @@ exports.createBooking = async (req, res) => {
     }
 
     // Update available seats count
-    const newAvailableSeats = parseInt(scheduleData.available_seats) - seats_booked.length;
+    const newAvailableSeats = parseInt(scheduleData.available_seats) - uniqueSeats.length;
+    if (newAvailableSeats < 0) {
+      await sql`ROLLBACK`;
+      return res.status(409).json({
+        success: false,
+        message: 'Not enough available seats',
+      });
+    }
+
     await sql`
       UPDATE matatu_schedules 
       SET available_seats = ${newAvailableSeats}
       WHERE id = ${schedule_id}
     `;
 
+    await sql`COMMIT`;
+
     logger.info(
       `Booking created: ${bookingReference} by user ${userId} for ${seats_booked.length} seats`
     );
 
     // Track event
-    EventTrackingService.trackEvent({
+    eventTrackingService.trackEvent({
       userId,
       eventType: 'matatu.booking.create',
       category: 'transport',
       details: {
         booking_reference: bookingReference,
         schedule_id,
-        seats_count: seats_booked.length,
+        seats_count: uniqueSeats.length,
         total_price: totalPrice,
         payment_method,
       },
@@ -129,12 +159,17 @@ exports.createBooking = async (req, res) => {
         operator_name: scheduleData.operator_name,
         route_name: scheduleData.route_name,
         departure_time: scheduleData.departure_time,
-        seats_booked: seats_booked,
+        seats_booked: uniqueSeats,
         total_price: totalPrice,
         status: booking[0].status,
       },
     });
   } catch (error) {
+    try {
+      await sql`ROLLBACK`;
+    } catch (rollbackError) {
+      logger.error('Booking rollback error:', rollbackError);
+    }
     logger.error('Create booking error:', error);
     return res.status(500).json({
       success: false,

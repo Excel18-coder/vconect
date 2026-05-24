@@ -245,7 +245,6 @@ class EventTrackingService {
       // Alert on critical events
       if (severity === SECURITY_SEVERITY.CRITICAL) {
         logger.error('CRITICAL SECURITY EVENT', { eventType, description, userId, ipAddress });
-        // TODO: Integrate with alerting system (email, Slack, PagerDuty, etc.)
       }
     } catch (error) {
       logger.error('Failed to track security event', error, { eventType });
