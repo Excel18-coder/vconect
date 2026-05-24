@@ -7,6 +7,8 @@ const { sql } = require('../../config/database');
 const logger = require('../../utils/logger');
 const { v4: uuidv4 } = require('uuid');
 const { eventTrackingService } = require('../../services/analytics/event-tracking-service');
+const mpesaService = require('../../services/payment/mpesa-service');
+const notificationService = require('../../services/notification-service');
 
 /**
  * POST /api/transport/bookings
@@ -115,6 +117,38 @@ exports.createBooking = async (req, res) => {
       `;
     }
 
+    // Handle M-Pesa STK Push if selected
+    let mpesaResponse = null;
+    if (payment_method === 'mpesa') {
+      const user = await sql`SELECT phone FROM users WHERE id = ${userId}`;
+      const userPhone = user[0]?.phone || passenger_details?.phone;
+
+      if (!userPhone) {
+        await sql`ROLLBACK`;
+        return res.status(400).json({
+          success: false,
+          message: 'Phone number is required for M-Pesa payment',
+        });
+      }
+
+      mpesaResponse = await mpesaService.stkPush(userPhone, totalPrice, bookingReference);
+
+      if (!mpesaResponse.success) {
+        await sql`ROLLBACK`;
+        return res.status(500).json({
+          success: false,
+          message: mpesaResponse.message || 'Failed to initiate M-Pesa payment',
+        });
+      }
+
+      // Store CheckoutRequestID in payment_id field for later verification
+      await sql`
+        UPDATE matatu_bookings 
+        SET payment_id = ${mpesaResponse.CheckoutRequestID}
+        WHERE id = ${bookingId}
+      `;
+    }
+
     // Update available seats count
     const newAvailableSeats = parseInt(scheduleData.available_seats) - uniqueSeats.length;
     if (newAvailableSeats < 0) {
@@ -148,8 +182,24 @@ exports.createBooking = async (req, res) => {
         seats_count: uniqueSeats.length,
         total_price: totalPrice,
         payment_method,
+        mpesa_checkout_id: mpesaResponse?.CheckoutRequestID,
       },
     });
+
+    // If cash or other instant payment, send notification
+    if (payment_method === 'cash') {
+      const user = await sql`SELECT email, phone, display_name FROM users WHERE id = ${userId}`;
+      if (user.length > 0) {
+        notificationService.notifyBookingConfirmation(user[0], {
+          booking_reference: bookingReference,
+          operator_name: scheduleData.operator_name,
+          route_name: scheduleData.route_name,
+          departure_time: scheduleData.departure_time,
+          seats_booked: uniqueSeats,
+          total_price: totalPrice
+        });
+      }
+    }
 
     return res.status(201).json({
       success: true,
@@ -347,7 +397,7 @@ exports.updateBooking = async (req, res) => {
       logger.info(`Booking ${bookingId} cancelled. Refund processed.`);
 
       // Track cancellation event
-      EventTrackingService.trackEvent({
+      eventTrackingService.trackEvent({
         userId: currentBooking.user_id,
         eventType: 'matatu.booking.cancel',
         category: 'transport',

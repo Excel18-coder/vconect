@@ -1,12 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,35 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/hooks/useAuth";
-import { messageAPI } from "@/services/api";
+import { useAuth } from "@/hooks/useAuth-optimized";
+import { messageAPI } from "@/services/api-client";
 import { API_CONFIG } from "@/config/api";
 import { productAPI } from "@/services/api-client";
 import {
-  DollarSign,
-  Eye,
-  Grid3X3,
-  Heart,
-  List,
   Mail,
-  MapPin,
   MessageCircle,
   Package,
   Phone,
-  Search,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import ProductCard from "./marketplace/ProductCard";
+import ProductFilters from "./marketplace/ProductFilters";
 
 interface Product {
   id: string | number;
@@ -97,31 +78,6 @@ const ProductBrowser = () => {
 
   const apiUrl = API_CONFIG.BASE_URL;
 
-  const getWhatsAppUrl = (phone: string | undefined, text: string) => {
-    if (!phone) return null;
-    let digits = phone.replace(/\D/g, "");
-    if (!digits) return null;
-
-    if (/^0+/.test(digits)) {
-      digits = "254" + digits.replace(/^0+/, "");
-    }
-
-    if (digits.length < 8) return null;
-    const encoded = encodeURIComponent(
-      text || "Hello, I am interested in your listing"
-    );
-    return `https://wa.me/${digits}?text=${encoded}`;
-  };
-
-  const categories = [
-    { value: "house", label: "Real Estate" },
-    { value: "transport", label: "Transportation" },
-    { value: "market", label: "Marketplace" },
-    { value: "entertainment", label: "Entertainment" },
-  ];
-
-  const locations = ["nairobi", "mombasa", "kisumu", "nakuru", "eldoret"];
-
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory, selectedLocation, sortBy]);
@@ -146,7 +102,6 @@ const ProductBrowser = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // API returns data in data.data.products structure
         setProducts(data.data?.products || data.products || []);
       } else {
         toast.error("Failed to fetch products");
@@ -230,340 +185,133 @@ const ProductBrowser = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Search & Filter Products
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              />
-            </div>
-            <Button onClick={handleSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
-          </div>
+      <ProductFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedLocation={selectedLocation}
+        setSelectedLocation={setSelectedLocation}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onSearch={handleSearch}
+        onClear={clearFilters}
+      />
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedLocation}
-              onValueChange={setSelectedLocation}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Locations" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((location) => (
-                  <SelectItem key={location} value={location}>
-                    {location.charAt(0).toUpperCase() + location.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex gap-2">
-              <Input
-                placeholder="Min Price"
-                type="number"
-                value={priceRange.min}
-                onChange={(e) =>
-                  setPriceRange((prev) => ({ ...prev, min: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Max Price"
-                type="number"
-                value={priceRange.max}
-                onChange={(e) =>
-                  setPriceRange((prev) => ({ ...prev, max: e.target.value }))
-                }
-              />
-            </div>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="price_low">Price: Low to High</SelectItem>
-                <SelectItem value="price_high">Price: High to Low</SelectItem>
-                <SelectItem value="popular">Most Popular</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={clearFilters}>
-              Clear Filters
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">View:</span>
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}>
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}>
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Results */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {products.length} Product{products.length !== 1 ? "s" : ""} Found
-        </h2>
+      {/* Results Header */}
+      <div className="flex items-center justify-between px-2">
+        <div>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 italic">
+            {loading ? "Searching..." : `${products.length} Items Found`}
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">
+            Browse through the latest high-quality listings in Kenya
+          </p>
+        </div>
       </div>
 
+      {/* Results List/Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center justify-center py-24 space-y-4 animate-pulse">
+          <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-blue-600 font-bold uppercase tracking-widest text-xs">Fetching Marketplace Data</p>
         </div>
       ) : products.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No products found</h3>
-            <p className="text-muted-foreground text-center">
-              Try adjusting your search criteria or browse all categories
+        <Card className="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-transparent">
+          <CardContent className="flex flex-col items-center justify-center py-24">
+            <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-full mb-6">
+              <Package className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2">No matches found</h3>
+            <p className="text-muted-foreground text-center max-w-sm">
+              We couldn't find any products matching your current filters. Try
+              expanding your search or clearing filters.
             </p>
+            <Button onClick={clearFilters} variant="outline" className="mt-8 rounded-xl font-bold">
+              Reset Filters
+            </Button>
           </CardContent>
         </Card>
       ) : (
         <div
           className={
             viewMode === "grid"
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "space-y-4"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              : "space-y-6"
           }>
           {products.map((product) => (
-            <Card
+            <ProductCard
               key={product.id}
-              className={viewMode === "list" ? "overflow-hidden" : ""}>
-              <div className={viewMode === "list" ? "flex" : ""}>
-                {product.images && product.images.length > 0 && (
-                  <div
-                    className={
-                      viewMode === "list"
-                        ? "w-48 flex-shrink-0"
-                        : "aspect-video"
-                    }>
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className={viewMode === "list" ? "flex-1" : ""}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg line-clamp-1">
-                          {product.title}
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-2 mt-1">
-                          <MapPin className="h-3 w-3" />
-                          {product.location?.charAt(0).toUpperCase() +
-                            product.location?.slice(1)}
-                          <span>•</span>
-                          <span>{product.category}</span>
-                        </CardDescription>
-                      </div>
-                      {user && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => addToFavorites(String(product.id))}>
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {product.description}
-                    </p>
-
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1 text-lg font-bold text-primary">
-                        <DollarSign className="h-4 w-4" />
-                        KSh {product.price.toLocaleString()}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Eye className="h-3 w-3" />
-                        {product.views}
-                      </div>
-                    </div>
-
-                    {product.tags && product.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {product.tags.slice(0, 3).map((tag, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {product.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{product.tags.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
-                        By{" "}
-                        {product.seller?.display_name ||
-                          product.seller_name ||
-                          "Seller"}
-                      </span>
-                      <span>
-                        {product.createdAt
-                          ? new Date(product.createdAt).toLocaleDateString()
-                          : product.created_at
-                          ? new Date(product.created_at).toLocaleDateString()
-                          : ""}
-                      </span>
-                    </div>
-
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleContactSeller(product)}>
-                        Contact Seller
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/product/${product.id}`)}>
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </div>
-              </div>
-            </Card>
+              product={product}
+              viewMode={viewMode}
+              user={user}
+              onContactSeller={handleContactSeller}
+              onAddToFavorites={addToFavorites}
+            />
           ))}
         </div>
       )}
 
       {/* Contact Seller Dialog */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Contact Seller</DialogTitle>
-            <DialogDescription>
-              Send a message to{" "}
-              {selectedProduct?.seller?.display_name ||
-                selectedProduct?.seller_name ||
-                "the seller"}
+        <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+          <DialogHeader className="p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+            <DialogTitle className="text-2xl font-black italic">Contact Seller</DialogTitle>
+            <DialogDescription className="text-base">
+              You are inquiring about: <span className="font-bold text-blue-600">"{selectedProduct?.title}"</span>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Seller Contact Info */}
-            {(selectedProduct?.seller?.email ||
-              selectedProduct?.seller?.phone_number) && (
-              <>
-                <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-                  {selectedProduct?.seller?.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={`mailto:${selectedProduct.seller.email}`}
-                        className="text-sm hover:underline">
-                        {selectedProduct.seller.email}
-                      </a>
-                    </div>
-                  )}
-                  {selectedProduct?.seller?.phone_number && (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a
-                          href={`tel:${selectedProduct.seller.phone_number}`}
-                          className="text-sm hover:underline">
-                          {selectedProduct.seller.phone_number}
-                        </a>
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                        onClick={() => {
-                          const phone =
-                            selectedProduct.seller.phone_number?.replace(
-                              /\D/g,
-                              ""
-                            );
-                          const message = encodeURIComponent(
-                            `Hi ${
-                              selectedProduct.seller.display_name || "seller"
-                            }, I'm interested in your product: ${
-                              selectedProduct.title
-                            }`
-                          );
-                          window.open(
-                            `https://wa.me/${phone}?text=${message}`,
-                            "_blank"
-                          );
-                        }}>
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        Contact via WhatsApp
-                      </Button>
-                    </>
-                  )}
-                </div>
-                <Separator />
-              </>
-            )}
+          <div className="p-8 space-y-6">
+            {/* Quick Contact Options */}
+            <div className="grid grid-cols-2 gap-4">
+              {selectedProduct?.seller?.phone_number && (
+                <Button
+                  variant="outline"
+                  className="h-20 flex-col gap-2 rounded-2xl border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:border-emerald-200 dark:hover:border-emerald-900 group transition-all"
+                  onClick={() => {
+                    const phone = selectedProduct.seller?.phone_number?.replace(/\D/g, "");
+                    const message = encodeURIComponent(`Hi, I'm interested in: ${selectedProduct.title}`);
+                    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+                  }}
+                >
+                  <MessageCircle className="h-6 w-6 text-emerald-600 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold uppercase tracking-widest">WhatsApp</span>
+                </Button>
+              )}
+              {selectedProduct?.seller?.phone_number && (
+                <Button
+                  variant="outline"
+                  className="h-20 flex-col gap-2 rounded-2xl border-slate-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-900 group transition-all"
+                  asChild
+                >
+                  <a href={`tel:${selectedProduct.seller.phone_number}`}>
+                    <Phone className="h-6 w-6 text-blue-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold uppercase tracking-widest">Call Now</span>
+                  </a>
+                </Button>
+              )}
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-100 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground">
+                <span className="bg-white dark:bg-slate-950 px-4">Or Send Message</span>
+              </div>
+            </div>
 
             {/* Message Form */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
+                <Label htmlFor="subject" className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Subject</Label>
                 <Input
                   id="subject"
                   value={messageForm.subject}
@@ -573,12 +321,12 @@ const ProductBrowser = () => {
                       subject: e.target.value,
                     }))
                   }
-                  placeholder="Enter subject"
+                  className="h-12 rounded-xl bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+                <Label htmlFor="message" className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Message</Label>
                 <Textarea
                   id="message"
                   value={messageForm.message}
@@ -588,25 +336,30 @@ const ProductBrowser = () => {
                       message: e.target.value,
                     }))
                   }
-                  placeholder="Write your message here..."
-                  rows={5}
+                  placeholder="Ask about availability, price, or location..."
+                  rows={4}
+                  className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 resize-none"
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter className="flex gap-2">
+          <DialogFooter className="p-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setShowContactDialog(false)}
-              disabled={sendingMessage}>
+              disabled={sendingMessage}
+              className="font-bold rounded-xl"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleSendMessage}
               disabled={
                 sendingMessage || !messageForm.subject || !messageForm.message
-              }>
+              }
+              className="bg-blue-600 hover:bg-blue-700 font-bold px-8 rounded-xl h-11"
+            >
               {sendingMessage ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -614,8 +367,8 @@ const ProductBrowser = () => {
                 </>
               ) : (
                 <>
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Send Message
+                  <Mail className="h-4 w-4 mr-2" />
+                  Inquire Now
                 </>
               )}
             </Button>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth-optimized';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { messageAPI } from '@/services/api';
-import { productAPI } from '@/services/api-client';
+import { messageAPI, productAPI } from '@/services/api-client';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Navigation from '@/components/Navigation';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,10 @@ import {
   MessageCircle,
   Eye,
   Star,
+  Sparkles,
+  ChevronRight,
+  TrendingUp,
+  ArrowRight,
 } from 'lucide-react';
 
 interface Product {
@@ -105,15 +111,11 @@ const ProductDetail = () => {
   });
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!apiUrl) {
-    throw new Error('VITE_API_BASE_URL is not configured');
-  }
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
 
-  // Set default message subject when product loads
   useEffect(() => {
     if (product) {
       setMessageForm(prev => ({
@@ -129,39 +131,27 @@ const ProductDetail = () => {
         setIsFavorite(false);
         return;
       }
-
       try {
         const result = await productAPI.getFavorites();
         const favorites = result.data?.favorites || [];
-        setIsFavorite(
-          favorites.some((item: { id?: number | string }) => String(item.id) === String(product.id))
-        );
+        setIsFavorite(favorites.some((item: any) => String(item.id) === String(product.id)));
       } catch (error) {
         setIsFavorite(false);
       }
     };
-
     loadFavorites();
   }, [user, product?.id]);
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/products/${id}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(`${apiUrl}/products/${id}`, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch product');
       const result = await response.json();
-      // Backend returns {success: true, data: {product: {...}}}
       const productData = result.data?.product || result.product || result;
-      
-      // Normalize images format - backend returns array of strings, frontend expects objects with url
       if (productData.images && Array.isArray(productData.images)) {
-        productData.images = productData.images.map((img: string | { url: string }) => 
-          typeof img === 'string' ? { url: img } : img
-        );
+        productData.images = productData.images.map((img: any) => typeof img === 'string' ? { url: img } : img);
       }
-      
       setProduct(productData);
     } catch (error) {
       toast.error('Failed to load product');
@@ -180,33 +170,22 @@ const ProductDetail = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!messageForm.subject || !messageForm.message) {
-      toast.error('Please fill in all fields');
+    if (!messageForm.message) {
+      toast.error('Please write a message');
       return;
     }
-
-    // Get seller ID with multiple fallbacks
     const sellerId = product?.user_id || product?.seller_id || product?.seller?.user_id || product?.seller?.id;
-
     if (!sellerId) {
       toast.error('Seller information not available');
       return;
     }
-
     try {
       setSendingMessage(true);
-      await messageAPI.sendMessage(
-        sellerId,
-        messageForm.subject,
-        messageForm.message
-      );
-      
+      await messageAPI.sendMessage(String(sellerId), messageForm.subject, messageForm.message);
+
       toast.success('Message sent successfully!');
       setShowContactDialog(false);
-      setMessageForm({
-        subject: `Inquiry about: ${product.title}`,
-        message: '',
-      });
+      setMessageForm(prev => ({ ...prev, message: '' }));
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     } finally {
@@ -220,19 +199,13 @@ const ProductDetail = () => {
       navigate('/auth');
       return;
     }
-
-    if (!product?.id) {
-      toast.error('Product not available');
-      return;
-    }
-
     try {
       if (isFavorite) {
-        await productAPI.unfavorite(String(product.id));
+        await productAPI.unfavorite(String(product!.id));
         setIsFavorite(false);
         toast.success('Removed from favorites');
       } else {
-        await productAPI.favorite(String(product.id));
+        await productAPI.favorite(String(product!.id));
         setIsFavorite(true);
         toast.success('Added to favorites');
       }
@@ -242,15 +215,9 @@ const ProductDetail = () => {
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: product?.title,
-      text: product?.description,
-      url: window.location.href,
-    };
-
     try {
       if (navigator.share) {
-        await navigator.share(shareData);
+        await navigator.share({ title: product?.title, url: window.location.href });
       } else {
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copied to clipboard');
@@ -260,362 +227,282 @@ const ProductDetail = () => {
     }
   };
 
-  const calculateFinalPrice = () => {
-    if (!product) return 0;
-    if (product.discount_percentage) {
-      return product.price * (1 - product.discount_percentage / 100);
-    }
-    return product.price;
-  };
-
-  // Format phone number for WhatsApp (basic cleaning + small Kenya-friendly heuristic)
-  const getWhatsAppUrl = (phone: string | undefined, text: string) => {
-    if (!phone) return null;
-    let digits = phone.replace(/\D/g, '');
-    if (!digits) return null;
-
-    // If number starts with 0, assume local Kenyan number and prefix 254
-    if (/^0+/.test(digits)) {
-      digits = '254' + digits.replace(/^0+/, '');
-    }
-
-    // If number had a leading + then digits already include country code
-    // Ensure it's not too short
-    if (digits.length < 8) return null;
-
-    const encoded = encodeURIComponent(text || 'Hello, I am interested in your listing');
-    return `https://wa.me/${digits}?text=${encoded}`;
-  };
-
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-96 bg-muted rounded-lg" />
-          <div className="h-8 bg-muted rounded w-3/4" />
-          <div className="h-4 bg-muted rounded w-1/2" />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <Header />
+        <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center space-y-4">
+          <div className="h-16 w-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Fetching Product Details</p>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Product not found</h2>
-        <Button onClick={() => navigate('/search')}>Browse Products</Button>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <Header />
+        <div className="container mx-auto px-4 py-32 text-center space-y-6">
+          <Package className="h-24 w-24 text-muted-foreground/20 mx-auto" />
+          <h2 className="text-4xl font-black italic">Listing Not Found</h2>
+          <p className="text-muted-foreground text-lg">This item may have been sold or removed by the seller.</p>
+          <Button onClick={() => navigate('/')} className="h-12 px-8 rounded-xl font-bold bg-blue-600">Explore Marketplace</Button>
+        </div>
+        <Footer />
       </div>
     );
   }
 
+  const finalPrice = product.discount_percentage
+    ? product.price * (1 - product.discount_percentage / 100)
+    : product.price;
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="mb-4"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back
-      </Button>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <Header />
+      <Navigation />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Image Gallery */}
-        <div className="space-y-4">
-          <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-            {product.images && product.images.length > 0 ? (
-              <img
-                src={
-                  typeof product.images[selectedImage] === 'string' 
-                    ? product.images[selectedImage] as string
-                    : (product.images[selectedImage] as { url: string })?.url
-                }
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <Package className="h-24 w-24 text-muted-foreground" />
-              </div>
-            )}
-            {product.discount_percentage && product.discount_percentage > 0 && (
-              <Badge className="absolute top-4 right-4 bg-red-500">
-                -{product.discount_percentage}% OFF
-              </Badge>
-            )}
-          </div>
-          
-          {product.images && product.images.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square rounded-md overflow-hidden border-2 ${
-                    selectedImage === index ? 'border-primary' : 'border-transparent'
-                  }`}
-                >
-                  <img
-                    src={typeof image === 'string' ? image : image.url}
-                    alt={`${product.title} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <main className="container mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto space-y-12">
+          {/* Breadcrumb / Back button */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="rounded-2xl h-12 px-6 group bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+              Back to Results
+            </Button>
 
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <div className="flex items-start justify-between mb-2">
-              <h1 className="text-3xl font-bold">{product.title}</h1>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleAddToFavorites}
-                >
-                  <Heart
-                    className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`}
-                  />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleShare}>
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-              <div className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                <span>{product.views || product.views_count || 0} views</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(product.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
-
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-3xl font-bold text-primary">
-                KES {calculateFinalPrice().toLocaleString()}
-              </span>
-              {product.discount_percentage && product.discount_percentage > 0 && (
-                <span className="text-lg text-muted-foreground line-through">
-                  KES {product.price.toLocaleString()}
-                </span>
-              )}
-            </div>
-
-            <div className="flex gap-2 flex-wrap mb-4">
-              <Badge variant="secondary">{product.category_name || product.category || 'General'}</Badge>
-              {product.subcategory && (
-                <Badge variant="outline">{product.subcategory}</Badge>
-              )}
-              <Badge variant="outline">{product.condition}</Badge>
-              <Badge
-                variant={product.status === 'active' ? 'default' : 'secondary'}
-                className={product.status === 'active' ? 'bg-green-500' : ''}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleAddToFavorites}
+                className={`h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm transition-all ${isFavorite ? 'text-red-500 bg-red-50' : 'hover:scale-105'}`}
               >
-                {product.status}
-              </Badge>
+                <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleShare}
+                className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm hover:scale-105 transition-all"
+              >
+                <Share2 className="h-5 w-5" />
+              </Button>
             </div>
           </div>
 
-          <Separator />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Gallery Section */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="relative aspect-[4/3] rounded-[3rem] overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl">
+                {product.images && product.images.length > 0 ? (
+                  <img
+                    src={typeof product.images[selectedImage] === 'string' ? product.images[selectedImage] as string : (product.images[selectedImage] as any).url}
+                    alt={product.title}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-20">
+                    <Package className="h-24 w-24 mb-4" />
+                    <span className="font-bold">No Image Available</span>
+                  </div>
+                )}
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span>{product.location}</span>
-            </div>
-            
-            {product.stock_quantity && (
-              <div className="flex items-center gap-2 text-sm">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span>{product.stock_quantity} units available</span>
+                {product.discount_percentage && (
+                  <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-2xl font-black italic text-sm tracking-widest uppercase">
+                    -{product.discount_percentage}% OFF
+                  </div>
+                )}
               </div>
-            )}
 
-            {product.weight && (
-              <div className="flex items-center gap-2 text-sm">
-                <Shield className="h-4 w-4 text-muted-foreground" />
-                <span>Weight: {product.weight} kg</span>
-              </div>
-            )}
-
-            {product.shipping_cost !== undefined && (
-              <div className="flex items-center gap-2 text-sm">
-                <Truck className="h-4 w-4 text-muted-foreground" />
-                <span>Shipping: KES {product.shipping_cost}</span>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {product.description}
-            </p>
-          </div>
-
-          {product.tags && product.tags.length > 0 && (
-            <>
-              <Separator />
-              <div>
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Tags
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline">
-                      {tag}
-                    </Badge>
+              {product.images && product.images.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all p-1 ${selectedImage === idx ? 'border-blue-600' : 'border-white dark:border-slate-900 grayscale opacity-50'}`}
+                    >
+                      <img
+                        src={typeof img === 'string' ? img : (img as any).url}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </button>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {/* Info Section */}
+            <div className="lg:col-span-5 space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-xs">
+                  <Sparkles className="h-4 w-4" />
+                  Premium Listing
+                </div>
+                <h1 className="text-4xl font-black italic tracking-tight leading-tight">
+                  {product.title}
+                </h1>
+                <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5 glass-p px-3 py-1.5 rounded-full">
+                    <Eye className="h-4 w-4" />
+                    <span className="font-bold">{product.views || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 glass-p px-3 py-1.5 rounded-full">
+                    <MapPin className="h-4 w-4" />
+                    <span className="font-bold">{product.location}</span>
+                  </div>
+                </div>
               </div>
-            </>
-          )}
 
-          <Separator />
-
-          {/* Seller Info */}
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-4">Seller Information</h3>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  {(product.seller.avatar_url || product.seller.avatar || product.seller.seller_avatar) ? (
-                    <img
-                      src={product.seller.avatar_url || product.seller.avatar || product.seller.seller_avatar}
-                      alt={product.seller.display_name || product.seller.name || product.seller.seller_name || 'Seller'}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-bold">
-                      {(product.seller.display_name || product.seller.name || product.seller.seller_name || 'S').charAt(0).toUpperCase()}
+              <div className="p-8 bg-blue-600 text-white rounded-[2.5rem] shadow-xl shadow-blue-600/20 space-y-2 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform duration-500">
+                  <TrendingUp className="h-24 w-24" />
+                </div>
+                <p className="text-blue-100 font-bold uppercase tracking-widest text-xs">Market Price</p>
+                <div className="flex items-baseline gap-3">
+                  <span className="text-5xl font-black italic">
+                    KSh {finalPrice.toLocaleString()}
+                  </span>
+                  {product.discount_percentage && (
+                    <span className="text-xl text-blue-200/50 line-through decoration-blue-200">
+                      {product.price.toLocaleString()}
                     </span>
                   )}
                 </div>
-                <div>
-                  <p className="font-semibold">{product.seller.display_name || product.seller.name || product.seller.seller_name || 'Seller'}</p>
-                  <p className="text-sm text-muted-foreground">{product.seller.location || product.seller.seller_location || 'Verified Seller'}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Condition</p>
+                  <p className="text-lg font-black italic capitalize text-blue-600">{product.condition}</p>
+                </div>
+                <div className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Category</p>
+                  <p className="text-lg font-black italic capitalize truncate">{product.category_name || product.category || 'Vconect Member'}</p>
                 </div>
               </div>
-              <Button className="w-full" onClick={handleContactSeller}>
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Contact Seller
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
 
-      {/* Contact Seller Dialog */}
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <ArrowRight className="h-4 w-4 text-blue-600" />
+                    Listing Details
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
+                    {product.description}
+                  </p>
+                </div>
+
+                {product.tags && product.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags.map((tag, idx) => (
+                      <Badge key={idx} variant="outline" className="px-4 py-1.5 rounded-xl border-slate-200 text-slate-500 font-bold">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Separator className="bg-slate-100 dark:bg-slate-800" />
+
+              {/* Seller Profile Card */}
+              <Card className="rounded-[2.5rem] border-0 shadow-2xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 overflow-hidden group">
+                <CardContent className="p-0">
+                  <div className="p-8 space-y-6">
+                    <div className="flex items-center gap-5">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-900 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-800 shadow-xl">
+                          {product.seller.avatar_url || product.seller.avatar ? (
+                            <img
+                              src={product.seller.avatar_url || product.seller.avatar}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl font-black italic text-blue-600">
+                              {(product.seller.display_name || 'V').charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white dark:border-slate-900" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Certified Seller</p>
+                        <p className="text-xl font-black italic tracking-tight">{product.seller.display_name || product.seller.name || 'Anonymous Partner'}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Button
+                        onClick={handleContactSeller}
+                        className="w-full h-16 rounded-[1.5rem] bg-slate-950 hover:bg-black text-white font-black italic text-lg tracking-tight shadow-xl transition-all hover:scale-[1.02] active:scale-100"
+                      >
+                        <MessageCircle className="h-6 w-6 mr-3 text-blue-400" />
+                        Contact This Seller
+                        <ChevronRight className="ml-auto h-5 w-5 opacity-20" />
+                      </Button>
+
+                      {(product.seller.phone_number || product.contact_phone) && (
+                        <Button
+                          variant="outline"
+                          className="w-full h-14 rounded-2xl border-slate-200 font-bold hover:bg-slate-50 transition-all"
+                          onClick={() => window.open(`https://wa.me/${(product.seller.phone_number || product.contact_phone)?.replace(/\D/g, '')}`, '_blank')}
+                        >
+                          <Phone className="h-4 w-4 mr-2 text-green-500" />
+                          Direct WhatsApp
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+
+      {/* Modernized Contact Dialog */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Contact Seller</DialogTitle>
-            <DialogDescription>
-              Send a message to {product.seller.display_name || product.seller.name || product.seller.seller_name || 'the seller'}
+        <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-3xl">
+          <DialogHeader className="p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+            <DialogTitle className="text-3xl font-black italic tracking-tight">Security-First Communication</DialogTitle>
+            <DialogDescription className="text-base font-medium">
+              You are inquiring about <span className="text-blue-600 font-bold">"{product.title}"</span>. Our system protects your identity until you choose to share it.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4">
-            {/* Seller Contact Info */}
-            <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <a
-                  href={`mailto:${product.seller.email || product.seller.seller_email}`}
-                  className="text-sm hover:underline"
-                >
-                  {product.seller.email || product.seller.seller_email}
-                </a>
-              </div>
-              {(product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone) && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={`tel:${product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone}`}
-                      className="text-sm hover:underline"
-                    >
-                      {product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone}
-                    </a>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                    onClick={() => {
-                      const phone = (product.seller.phone || product.seller.phone_number || product.seller.seller_phone || product.contact_phone || product.contactPhone)?.replace(/\D/g, '');
-                      const message = encodeURIComponent(`Hi, I'm interested in your product: ${product.title}`);
-                      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-                    }}
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Contact via WhatsApp
-                  </Button>
-                </>
-              )}
-            </div>
 
-            <Separator />
-
-            {/* Message Form */}
+          <div className="p-8 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  value={messageForm.subject}
-                  onChange={(e) => setMessageForm(prev => ({ ...prev, subject: e.target.value }))}
-                  placeholder="Enter subject"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Your Inquiry</Label>
                 <Textarea
-                  id="message"
                   value={messageForm.message}
                   onChange={(e) => setMessageForm(prev => ({ ...prev, message: e.target.value }))}
-                  placeholder="Write your message here..."
-                  rows={5}
+                  placeholder="Ask about availability, pricing, or viewing arrangements..."
+                  className="rounded-3xl bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800 italic"
+                  rows={6}
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowContactDialog(false)}
-              disabled={sendingMessage}
-            >
-              Cancel
-            </Button>
+          <DialogFooter className="p-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="ghost" onClick={() => setShowContactDialog(false)} className="rounded-2xl font-bold h-12">Discard</Button>
             <Button
               onClick={handleSendMessage}
-              disabled={sendingMessage || !messageForm.subject || !messageForm.message}
+              disabled={sendingMessage || !messageForm.message}
+              className="rounded-2xl bg-blue-600 hover:bg-blue-700 font-black italic h-14 px-8 shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
             >
-              {sendingMessage ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Send Message
-                </>
-              )}
+              {sendingMessage ? "Transmitting..." : "Send Secure Message"}
             </Button>
           </DialogFooter>
         </DialogContent>

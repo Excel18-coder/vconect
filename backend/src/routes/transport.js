@@ -11,6 +11,11 @@ const routesController = require('../controllers/transport/routes-controller');
 const bookingsController = require('../controllers/transport/bookings-controller');
 const trackingController = require('../controllers/transport/tracking-controller');
 const integrationController = require('../controllers/transport/integration-controller');
+const mpesaCallbackController = require('../controllers/transport/mpesa-callback-controller');
+
+// ==================== MPESA CALLBACK ====================
+// Public callback for M-Pesa STK Push results
+router.post('/mpesa/callback', mpesaCallbackController.handleStkCallback);
 
 // ==================== ROUTES ====================
 // Search available routes

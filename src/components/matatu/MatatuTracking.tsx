@@ -7,6 +7,8 @@ import { API_CONFIG, getAuthHeaders } from '@/config/api';
 interface Location {
   latitude: number;
   longitude: number;
+  speed?: number;
+  direction?: number;
   timestamp: string;
 }
 
@@ -239,21 +241,43 @@ export default function MatatuTracking({
 
       {/* Location Info */}
       {currentLocation && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-sm">Current Location</span>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 gap-4 grid grid-cols-1 md:grid-cols-2">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="font-bold text-sm">Live Position</span>
+            </div>
+            <div className="text-sm text-blue-900 dark:text-blue-100 flex flex-col gap-1">
+              <p className="flex justify-between">
+                <span>Lat:</span>
+                <code className="font-semibold">{currentLocation.latitude.toFixed(6)}</code>
+              </p>
+              <p className="flex justify-between">
+                <span>Lng:</span>
+                <code className="font-semibold">{currentLocation.longitude.toFixed(6)}</code>
+              </p>
+            </div>
           </div>
-          <div className="text-sm text-blue-900">
-            <p>
-              Latitude: <code className="bg-white px-2 py-1 rounded">{currentLocation.latitude.toFixed(6)}</code>
-            </p>
-            <p>
-              Longitude: <code className="bg-white px-2 py-1 rounded">{currentLocation.longitude.toFixed(6)}</code>
-            </p>
-            <p className="text-xs text-blue-700 mt-1">
-              Updated: {new Date(currentLocation.timestamp).toLocaleString()}
-            </p>
+
+          <div className="space-y-2 border-t md:border-t-0 md:border-l border-blue-200 dark:border-blue-800 pt-2 md:pt-0 md:pl-4">
+            <div className="flex items-center gap-2">
+              <Navigation className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="font-bold text-sm">Telemetry</span>
+            </div>
+            <div className="text-sm text-blue-900 dark:text-blue-100 flex flex-col gap-1">
+              <p className="flex justify-between">
+                <span>Speed:</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {currentLocation.speed ? `${Math.round(currentLocation.speed)} km/h` : '0 km/h'}
+                </span>
+              </p>
+              <p className="flex justify-between">
+                <span>ETA:</span>
+                <span className="font-bold">
+                  {status === 'en_route' ? 'Calculating...' : 'Scheduled'}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       )}

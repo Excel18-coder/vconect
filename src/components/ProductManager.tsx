@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth-optimized";
 import {
   DollarSign,
   Edit,

@@ -3,45 +3,46 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Car, Home, PlayCircle, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// Images are now loaded from public/images folder
-
 const categories = [
   {
     id: "housing",
-    title: "Housing",
-    description: "Find your perfect home. Rent or buy properties across Kenya.",
+    title: "Real Estate",
+    description: "Explore premium properties and rental listings across Kenya's key cities.",
     icon: Home,
     image: "/images/house.jpg",
-    color: "from-blue-500 to-blue-600",
-    features: ["Property Listings", "Virtual Tours", "Map Integration"],
+    color: "from-blue-600/20 to-blue-700/20",
+    iconColor: "text-blue-600",
+    features: ["Verified Listings", "Property Tours", "Expert Agents"],
   },
   {
     id: "transport",
     title: "Transport",
-    description: "Book tickets and track your journey in real-time.",
+    description: "Reliable transportation solutions, from logistics to private vehicle sales.",
     icon: Car,
     image: "/images/transport.jpg",
-    color: "from-green-500 to-green-600",
-    features: ["Bus Tickets", "GPS Tracking", "Real-time Updates"],
+    color: "from-emerald-600/20 to-emerald-700/20",
+    iconColor: "text-emerald-600",
+    features: ["Fleet Services", "Vehicle Sales", "Logistics Help"],
   },
   {
     id: "market",
-    title: "Market",
-    description: "Shop from thousands of vendors across multiple categories.",
+    title: "Marketplace",
+    description: "A diverse hub for high-quality electronics, fashion, and daily essentials.",
     icon: ShoppingBag,
     image: "/images/market2.jpg",
-    color: "from-red-500 to-red-600",
-    features: ["Multi-vendor", "Reviews & Ratings", "Secure Checkout"],
+    color: "from-indigo-600/20 to-indigo-700/20",
+    iconColor: "text-indigo-600",
+    features: ["Top Vendors", "Secure Payments", "Buyer Protection"],
   },
   {
     id: "entertainment",
     title: "Entertainment",
-    description:
-      "Create, share, and discover amazing content with the community.",
+    description: "Discover local events, ticket bookings, and vibrant community content.",
     icon: PlayCircle,
     image: "/images/entertainment.jpg",
-    color: "from-blue-700 to-blue-800",
-    features: ["Content Creation", "Live Streaming", "Monetization"],
+    color: "from-violet-600/20 to-violet-700/20",
+    iconColor: "text-violet-600",
+    features: ["Event Tickets", "Live Shows", "Creative Hub"],
   },
 ];
 
@@ -49,70 +50,62 @@ const CategoryGrid = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-24 bg-slate-50/50 dark:bg-slate-900/50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Explore Our <span className="text-blue-600">Marketplace</span>
+        <div className="text-center mb-16 space-y-4 animate-fade-in">
+          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+            Curated <span className="text-blue-600">Categories</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse categories and discover great deals from sellers.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Find exactly what you need with our specialized marketplace sectors tailored for the Kenyan market.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {categories.map((category, index) => (
             <Card
               key={category.id}
-              className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-gradient-to-br from-background to-muted/50">
+              className={`group overflow-hidden border-0 bg-white dark:bg-slate-950 shadow-elegant hover:shadow-hover transition-all duration-500 animate-slide-up`}
+              style={{ animationDelay: `${index * 100}ms` }}>
               <CardContent className="p-0">
-                <div className="relative">
-                  {category.image ? (
-                    <div className="relative h-48 overflow-hidden">
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-20`}></div>
-                      <img
-                        src={category.image}
-                        alt={category.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                <div className="relative h-56 overflow-hidden">
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-300`}></div>
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute top-4 left-4 z-20">
+                    <div className="p-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                      <category.icon className={`h-6 w-6 ${category.iconColor}`} />
                     </div>
-                  ) : (
-                    <div
-                      className={`h-48 bg-gradient-to-br ${category.color} flex items-center justify-center`}>
-                      <category.icon className="h-16 w-16 text-white" />
-                    </div>
-                  )}
-
-                  <div className="absolute top-4 left-4">
-                    <div className="p-2 bg-white/90 rounded-lg shadow-lg">
-                      <category.icon className="h-6 w-6 text-blue-600" />
-                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-4 z-20 text-white">
+                    <h3 className="text-xl font-bold">{category.title}</h3>
                   </div>
                 </div>
 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{category.title}</h3>
-                  <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                    {category.description}
+                <div className="p-8 space-y-6">
+                  <p className="text-sm text-muted-foreground leading-relaxed h-12 overflow-hidden italic">
+                    "{category.description}"
                   </p>
 
-                  <div className="space-y-2 mb-6">
-                    {category.features.map((feature, index) => (
+                  <div className="space-y-3">
+                    {category.features.map((feature, fIndex) => (
                       <div
-                        key={index}
-                        className="flex items-center text-sm text-muted-foreground">
-                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></div>
+                        key={fIndex}
+                        className="flex items-center text-sm font-medium">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-3"></div>
                         {feature}
                       </div>
                     ))}
                   </div>
 
                   <Button
-                    variant="ghost"
-                    className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors"
+                    variant="outline"
+                    className="w-full h-11 border-blue-100 dark:border-blue-900 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all rounded-xl font-semibold"
                     onClick={() => navigate(`/category/${category.id}`)}>
-                    Explore {category.title}
+                    Explore Section
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>

@@ -20,16 +20,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth-optimized";
+import { API_CONFIG } from "@/config/api";
 import {
   AlertCircle,
+  CloudUpload,
   DollarSign,
   ImagePlus,
   MapPin,
   Package,
+  PlusCircle,
   Tag,
   Upload,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
@@ -64,10 +68,7 @@ const PostAd = () => {
     shipping_cost: "0",
   });
 
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!apiUrl) {
-    throw new Error("VITE_API_BASE_URL is not configured");
-  }
+  const apiUrl = API_CONFIG.BASE_URL;
 
   const categories = [
     {
@@ -115,7 +116,6 @@ const PostAd = () => {
     "Kakamega",
   ];
 
-  // Redirect if not logged in
   if (!user) {
     toast.error("Please login to post an ad");
     navigate("/auth");
@@ -148,7 +148,6 @@ const PostAd = () => {
 
     setImageFiles((prev) => [...prev, ...validFiles]);
 
-    // Create previews
     validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -190,7 +189,6 @@ const PostAd = () => {
         ? customLocation.trim()
         : formData.location;
 
-    // Validation
     if (!formData.title.trim()) {
       toast.error("Please enter a product title");
       return;
@@ -211,21 +209,6 @@ const PostAd = () => {
       toast.error("Please select or type a location");
       return;
     }
-    if (formData.category === CUSTOM_OPTION_VALUE && !customCategory.trim()) {
-      toast.error("Please type your category");
-      return;
-    }
-    if (
-      formData.subcategory === CUSTOM_OPTION_VALUE &&
-      !customSubcategory.trim()
-    ) {
-      toast.error("Please type your subcategory");
-      return;
-    }
-    if (formData.location === CUSTOM_OPTION_VALUE && !customLocation.trim()) {
-      toast.error("Please type your location");
-      return;
-    }
     if (imageFiles.length === 0) {
       toast.error("Please upload at least one image");
       return;
@@ -234,30 +217,26 @@ const PostAd = () => {
     setLoading(true);
 
     try {
-      // Create FormData for multipart upload
       const formDataToSend = new FormData();
-
-      // Add text fields
-
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("price", formData.price);
+      formDataToSend.append("category", effectiveCategory);
+      formDataToSend.append("subcategory", effectiveSubcategory);
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("location", effectiveLocation);
       formDataToSend.append("stock_quantity", formData.stock_quantity);
-      formDataToSend.append(
-        "discount_percentage",
-        formData.discount_percentage
-      );
+      formDataToSend.append("discount_percentage", formData.discount_percentage);
 
       if (formData.weight) {
         formDataToSend.append("weight", formData.weight);
       }
       formDataToSend.append("shipping_cost", formData.shipping_cost);
 
-      // Add tags as comma-separated string
       if (tags.length > 0) {
         formDataToSend.append("tags", tags.join(","));
       }
 
-      // Add images
       imageFiles.forEach((file) => {
         formDataToSend.append("images", file);
       });
@@ -271,489 +250,277 @@ const PostAd = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Product posted successfully!");
-        navigate("/sell");
+        toast.success("Listing published successfully!");
+        navigate("/market");
       } else {
-        toast.error(data.message || "Failed to post product");
+        toast.error(data.message || "Failed to publish listing");
       }
     } catch (error) {
       console.error("Error posting product:", error);
-      toast.error("Failed to post product. Please try again.");
+      toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedCategory = categories.find(
-    (cat) => cat.value === formData.category
-  );
-
-  const selectedCategorySubcategories = selectedCategory?.subcategories || [];
-  const subcategoryOptions = selectedCategorySubcategories.includes("Other")
-    ? selectedCategorySubcategories
-    : [...selectedCategorySubcategories, "Other"];
+  const selectedCat = categories.find((cat) => cat.value === formData.category);
+  const subcategoryOptions = selectedCat?.subcategories || [];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Header />
       <Navigation />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Post Your Ad</h1>
-            <p className="text-muted-foreground">
-              Fill in the details below to list your product on Vconect
+      <main className="container mx-auto px-4 py-16">
+        <div className="max-w-5xl mx-auto space-y-12">
+          {/* Header Section */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-800">
+              Seller Studio
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tight italic">
+              Publish Your <span className="text-blue-600">Listings</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Ready to reach thousands of potential buyers? Fill in the details
+              to get your items noticed today.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>Tell us about your product</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Product Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g., iPhone 14 Pro Max 256GB"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
-                    maxLength={255}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formData.title.length}/255 characters
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your product in detail..."
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    rows={6}
-                    maxLength={5000}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formData.description.length}/5000 characters
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="category">Category *</Label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => {
-                        handleInputChange("category", value);
-                        handleInputChange("subcategory", "");
-                        setCustomSubcategory("");
-                        setCustomCategory("");
-                      }}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value={CUSTOM_OPTION_VALUE}>
-                          Other (Type your own)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {formData.category === CUSTOM_OPTION_VALUE && (
-                      <div className="mt-2">
-                        <Input
-                          value={customCategory}
-                          onChange={(e) => setCustomCategory(e.target.value)}
-                          placeholder="Type your category (e.g., Farm Produce, Services, Tools)"
-                          maxLength={100}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          This will be saved as a new category.
-                        </p>
-                      </div>
-                    )}
+          <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-12">
+            {/* Left Column: Form Details */}
+            <div className="lg:col-span-2 space-y-10">
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg">
+                    <PlusCircle className="h-5 w-5" />
                   </div>
+                  <h2 className="text-2xl font-bold italic">Item Specifications</h2>
+                </div>
 
-                  {selectedCategory &&
-                    selectedCategory.subcategories.length > 0 && (
-                      <div>
-                        <Label htmlFor="subcategory">Subcategory</Label>
-                        <Select
-                          value={formData.subcategory}
-                          onValueChange={(value) =>
-                            handleInputChange("subcategory", value)
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select subcategory" />
+                <Card className="border-0 shadow-elegant rounded-3xl overflow-hidden p-2">
+                  <CardContent className="p-8 space-y-8">
+                    <div className="space-y-3">
+                      <Label htmlFor="title" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Title *</Label>
+                      <Input
+                        id="title"
+                        placeholder="What are you selling?"
+                        className="h-14 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 font-medium"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange("title", e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="description" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Description *</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Provide all essential details about your item..."
+                        className="rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 resize-none italic"
+                        rows={8}
+                        value={formData.description}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Category *</Label>
+                        <Select value={formData.category} onValueChange={(val) => handleInputChange("category", val)}>
+                          <SelectTrigger className="h-14 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-medium">
+                            <SelectValue placeholder="Select Category" />
                           </SelectTrigger>
-                          <SelectContent>
-                            {subcategoryOptions.map((sub) => {
-                              if (sub === "Other") {
-                                return (
-                                  <SelectItem
-                                    key={sub}
-                                    value={CUSTOM_OPTION_VALUE}>
-                                    Other (Type your own)
-                                  </SelectItem>
-                                );
-                              }
-
-                              return (
-                                <SelectItem key={sub} value={sub.toLowerCase()}>
-                                  {sub}
-                                </SelectItem>
-                              );
-                            })}
+                          <SelectContent className="rounded-2xl">
+                            {categories.map((cat) => (
+                              <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                            ))}
+                            <SelectItem value={CUSTOM_OPTION_VALUE}>Other Category</SelectItem>
                           </SelectContent>
                         </Select>
-
-                        {formData.subcategory === CUSTOM_OPTION_VALUE && (
-                          <div className="mt-2">
-                            <Input
-                              value={customSubcategory}
-                              onChange={(e) =>
-                                setCustomSubcategory(e.target.value)
-                              }
-                              placeholder="Type your subcategory"
-                              maxLength={100}
-                            />
-                          </div>
-                        )}
                       </div>
-                    )}
-                </div>
 
-                <div>
-                  <Label htmlFor="condition">Condition *</Label>
-                  <Select
-                    value={formData.condition}
-                    onValueChange={(value) =>
-                      handleInputChange("condition", value)
-                    }>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {conditions.map((cond) => (
-                        <SelectItem key={cond.value} value={cond.value}>
-                          {cond.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Pricing & Stock */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Pricing & Stock
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="price">Price (KSh) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.price}
-                      onChange={(e) =>
-                        handleInputChange("price", e.target.value)
-                      }
-                      min="0.01"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
-                    <Input
-                      id="stock_quantity"
-                      type="number"
-                      placeholder="1"
-                      value={formData.stock_quantity}
-                      onChange={(e) =>
-                        handleInputChange("stock_quantity", e.target.value)
-                      }
-                      min="0"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="discount_percentage">Discount %</Label>
-                    <Input
-                      id="discount_percentage"
-                      type="number"
-                      placeholder="0"
-                      value={formData.discount_percentage}
-                      onChange={(e) =>
-                        handleInputChange("discount_percentage", e.target.value)
-                      }
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="shipping_cost">Shipping Cost (KSh)</Label>
-                    <Input
-                      id="shipping_cost"
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.shipping_cost}
-                      onChange={(e) =>
-                        handleInputChange("shipping_cost", e.target.value)
-                      }
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-
-                {formData.discount_percentage &&
-                  parseFloat(formData.discount_percentage) > 0 && (
-                    <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                      <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                        Final Price: KSh{" "}
-                        {(
-                          parseFloat(formData.price || "0") *
-                          (1 -
-                            parseFloat(formData.discount_percentage || "0") /
-                              100)
-                        ).toFixed(2)}
-                      </p>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Location *</Label>
+                        <Select value={formData.location} onValueChange={(val) => handleInputChange("location", val)}>
+                          <SelectTrigger className="h-14 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-medium">
+                            <SelectValue placeholder="Select Town" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl">
+                            {locations.map((loc) => (
+                              <SelectItem key={loc.toLowerCase()} value={loc.toLowerCase()}>{loc}</SelectItem>
+                            ))}
+                            <SelectItem value={CUSTOM_OPTION_VALUE}>Other Location</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </section>
 
-            {/* Location & Shipping */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Location & Shipping
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="location">Location *</Label>
-                    <Select
-                      value={formData.location}
-                      onValueChange={(value) =>
-                        handleInputChange("location", value)
-                      }>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {locations.map((loc) => (
-                          <SelectItem key={loc} value={loc.toLowerCase()}>
-                            {loc}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value={CUSTOM_OPTION_VALUE}>
-                          Other (Type your own)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
+                  <h2 className="text-2xl font-bold italic">Pricing & Inventory</h2>
+                </div>
+                <Card className="border-0 shadow-elegant rounded-3xl overflow-hidden p-2">
+                  <CardContent className="p-8 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <Label htmlFor="price" className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Price (KSh) *</Label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">KES</span>
+                          <Input
+                            id="price"
+                            type="number"
+                            className="h-14 pl-14 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-black text-lg font-mono"
+                            placeholder="0"
+                            value={formData.price}
+                            onChange={(e) => handleInputChange("price", e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
 
-                    {formData.location === CUSTOM_OPTION_VALUE && (
-                      <div className="mt-2">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Condition *</Label>
+                        <Select value={formData.condition} onValueChange={(val) => handleInputChange("condition", val)}>
+                          <SelectTrigger className="h-14 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-medium">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl">
+                            {conditions.map((cond) => (
+                              <SelectItem key={cond.value} value={cond.value}>{cond.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Quantity</Label>
                         <Input
-                          value={customLocation}
-                          onChange={(e) => setCustomLocation(e.target.value)}
-                          placeholder="Type your location (e.g., Nairobi, Westlands)"
-                          maxLength={255}
+                          type="number"
+                          className="h-12 rounded-xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                          value={formData.stock_quantity}
+                          onChange={(e) => handleInputChange("stock_quantity", e.target.value)}
                         />
                       </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="weight">Weight (kg) - Optional</Label>
-                    <Input
-                      id="weight"
-                      type="number"
-                      placeholder="0.0"
-                      value={formData.weight}
-                      onChange={(e) =>
-                        handleInputChange("weight", e.target.value)
-                      }
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Images */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImagePlus className="h-5 w-5" />
-                  Product Images *
-                </CardTitle>
-                <CardDescription>
-                  Upload up to 10 images. First image will be the main photo.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8">
-                  <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                  <Label htmlFor="images" className="cursor-pointer">
-                    <Button type="button" variant="outline" asChild>
-                      <span>Choose Images</span>
-                    </Button>
-                    <Input
-                      id="images"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageSelect}
-                      className="hidden"
-                    />
-                  </Label>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {imageFiles.length}/10 images uploaded
-                  </p>
-                </div>
-
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Shipping (KSh)</Label>
+                        <Input
+                          type="number"
+                          className="h-12 rounded-xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                          value={formData.shipping_cost}
+                          onChange={(e) => handleInputChange("shipping_cost", e.target.value)}
                         />
-                        {index === 0 && (
-                          <Badge className="absolute top-2 left-2">Main</Badge>
-                        )}
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeImage(index)}>
-                          <X className="h-4 w-4" />
-                        </Button>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Tags */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  Tags
-                </CardTitle>
-                <CardDescription>
-                  Add tags to help buyers find your product
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="e.g., smartphone, 5G, camera"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddTag();
-                      }
-                    }}
-                  />
-                  <Button type="button" onClick={handleAddTag}>
-                    Add Tag
-                  </Button>
-                </div>
-
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => removeTag(tag)}>
-                        {tag}
-                        <X className="h-3 w-3 ml-1" />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Submit Button */}
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/sell")}
-                disabled={loading}
-                className="flex-1">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? (
-                  <>
-                    <span className="animate-spin mr-2">⏳</span>
-                    Posting...
-                  </>
-                ) : (
-                  <>
-                    <Package className="h-4 w-4 mr-2" />
-                    Post Product
-                  </>
-                )}
-              </Button>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Discount %</Label>
+                        <Input
+                          type="number"
+                          className="h-12 rounded-xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                          value={formData.discount_percentage}
+                          onChange={(e) => handleInputChange("discount_percentage", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
             </div>
 
-            {/* Info Alert */}
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800 dark:text-blue-200">
-                  <p className="font-medium mb-1">Before you post:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>Ensure all information is accurate</li>
-                    <li>Upload clear, high-quality images</li>
-                    <li>Set a competitive price</li>
-                    <li>Be responsive to buyer inquiries</li>
-                  </ul>
+            {/* Right Column: Media & Actions */}
+            <div className="space-y-10">
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-violet-600 flex items-center justify-center text-white shadow-lg">
+                    <ImagePlus className="h-5 w-5" />
+                  </div>
+                  <h2 className="text-2xl font-bold italic">Visual Assets</h2>
                 </div>
-              </div>
+                <Card className="border-0 shadow-elegant rounded-3xl overflow-hidden p-6 bg-white dark:bg-slate-950">
+                  <div
+                    className="group relative flex flex-col items-center justify-center h-56 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] hover:border-blue-500 hover:bg-blue-50/10 transition-all cursor-pointer overflow-hidden"
+                    onClick={() => document.getElementById("images-input")?.click()}
+                  >
+                    <div className="p-4 bg-slate-100 dark:bg-slate-900 rounded-2xl group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                      <CloudUpload className="h-8 w-8 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+                    </div>
+                    <span className="mt-4 font-bold text-sm">Drop images or click to browse</span>
+                    <span className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP (Max 5MB)</span>
+                    <input
+                      id="images-input"
+                      type="file"
+                      hidden
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                    />
+                  </div>
+
+                  {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3 mt-6">
+                      {imagePreviews.map((prev, index) => (
+                        <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <img src={prev} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 hover:scale-110 group-hover:opacity-100 transition-all"
+                            onClick={(e) => { e.stopPropagation(); removeImage(index); }}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </section>
+
+              <section className="space-y-6 sticky top-24">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
+                    <Tag className="h-5 w-5" />
+                  </div>
+                  <h2 className="text-2xl font-bold italic">Finalize</h2>
+                </div>
+                <Card className="border-0 shadow-elegant rounded-3xl overflow-hidden bg-white dark:bg-slate-950 p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Listing Guard
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">
+                      Your listing will be verified by our safety team. Ensure all details are accurate
+                      to avoid delays in publishing.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-xl shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-95"
+                    >
+                      {loading ? "Publishing..." : "Launch Listing"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => navigate("/market")}
+                      className="w-full h-14 rounded-2xl font-bold text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-all"
+                    >
+                      Cancel & Discard
+                    </Button>
+                  </div>
+                </Card>
+              </section>
             </div>
           </form>
         </div>

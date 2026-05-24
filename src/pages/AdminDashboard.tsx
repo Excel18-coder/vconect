@@ -15,7 +15,7 @@ import {
 import Header from '@/components/Header';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth-optimized';
 import SEO from '@/shared/components/seo/SEO';
 import {
   Activity,

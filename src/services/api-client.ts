@@ -318,10 +318,20 @@ export const productAPI = {
 };
 
 export const messageAPI = {
+  // Primary method (new signature)
   send: async (receiverId: string, productId: string, content: string): Promise<any> => {
     const response = await authFetch('/buyers/messages', {
       method: 'POST',
       body: JSON.stringify({ receiverId, productId, content }),
+    });
+    return handleResponse(response);
+  },
+
+  // Backward-compatible alias used by ProductDetail and CategoryPage
+  sendMessage: async (receiverId: string, subject: string, message: string): Promise<any> => {
+    const response = await authFetch('/buyers/messages', {
+      method: 'POST',
+      body: JSON.stringify({ receiver_id: receiverId, subject, message }),
     });
     return handleResponse(response);
   },
@@ -336,13 +346,34 @@ export const messageAPI = {
     return handleResponse(response);
   },
 
+  // Backward-compatible alias used by MessagesView
+  getMessages: async (conversationWith: string | null = null, page: number = 1, limit: number = 20): Promise<any> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(conversationWith && { conversation_with: conversationWith }),
+    });
+    const response = await authFetch(`/buyers/messages?${params}`);
+    return handleResponse(response);
+  },
+
   markAsRead: async (messageId: string): Promise<any> => {
     const response = await authFetch(`/buyers/messages/${messageId}/read`, {
       method: 'PATCH',
     });
     return handleResponse(response);
   },
+
+  // Reply to a message
+  replyToMessage: async (messageId: string, messageBody: string): Promise<any> => {
+    const response = await authFetch(`/buyers/messages/${messageId}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ message_body: messageBody }),
+    });
+    return handleResponse(response);
+  },
 };
+
 
 export const adminAPI = {
   getDashboardStats: async (): Promise<any> => {

@@ -10,4 +10,4 @@ export { AnalyticsDashboard } from './AnalyticsDashboard';
 export { CategoryManagement } from './CategoryManagement';
 export { MessageManagement } from './MessageManagement';
 export { ProductManagement } from './ProductManagement';
-export { UserManagement } from './UserManagement';
+export { default as UserManagement } from './AdminUserManagement';

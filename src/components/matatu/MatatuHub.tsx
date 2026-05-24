@@ -55,11 +55,11 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
     try {
       const url = `${API_CONFIG.BASE_URL}/transport/routes?from=${encodeURIComponent(criteria.from)}&to=${encodeURIComponent(criteria.to)}&date=${criteria.date}&passengers=${criteria.passengers}`;
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       setResults(data.schedules || []);
       setStep('results');
@@ -86,7 +86,7 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}/transport/bookings`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders(),
         },
@@ -114,6 +114,12 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getLoadingMessage = () => {
+    if (step === 'checkout' && isLoading) return "Initiating M-Pesa STK Push... Please check your phone.";
+    if (isLoading) return "Processing your request...";
+    return null;
   };
 
   return (
@@ -153,6 +159,13 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
         <Card className="p-6">
           <h2 className="text-2xl font-bold mb-6">Book Your Matatu</h2>
           <MatatuSearch onSearch={handleSearch} isLoading={isLoading} />
+
+          {isLoading && (
+            <div className="mt-4 flex items-center justify-center p-4 bg-muted rounded-lg animate-pulse">
+              <Loader className="h-4 w-4 mr-2 animate-spin" />
+              <span className="text-sm font-medium">{getLoadingMessage()}</span>
+            </div>
+          )}
 
           {/* Quick Link to My Bookings */}
           {userId && (
@@ -251,8 +264,8 @@ const MatatuHub = ({ userId }: { userId?: string }) => {
               Book New
             </Button>
           </div>
-          <MyBookings 
-            userId={userId} 
+          <MyBookings
+            userId={userId}
             onTrackBooking={(bookingId) => {
               setTrackingData({ bookingId });
               setStep('tracking');

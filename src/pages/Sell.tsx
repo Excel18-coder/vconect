@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth-optimized";
 import { Navigate, useNavigate } from "react-router-dom";
 
 const Sell = () => {

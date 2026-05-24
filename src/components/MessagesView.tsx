@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { messageAPI } from '@/services/api';
+import { messageAPI } from '@/services/api-client';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -143,9 +144,8 @@ const MessagesView = () => {
           return (
             <Card
               key={message.id}
-              className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                selectedMessage?.id === message.id ? 'border-primary bg-muted/50' : ''
-              } ${!message.read ? 'border-l-4 border-l-primary' : ''}`}
+              className={`cursor-pointer transition-colors hover:bg-muted/50 ${selectedMessage?.id === message.id ? 'border-primary bg-muted/50' : ''
+                } ${!message.read ? 'border-l-4 border-l-primary' : ''}`}
               onClick={() => handleSelectMessage(message)}
             >
               <CardContent className="p-4">

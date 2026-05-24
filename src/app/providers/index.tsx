@@ -6,7 +6,7 @@
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider } from '@/hooks/useAuth';
+import { AuthProvider } from '@/hooks/useAuth-optimized';
 import ErrorBoundary from '@/shared/components/feedback/ErrorBoundary';
 import { ToastProvider } from '@/shared/components/ui/Toast';
 import { PERFORMANCE } from '@/shared/constants/app-constants';
