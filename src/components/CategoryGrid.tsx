@@ -56,10 +56,10 @@ const CategoryGrid = () => {
           <div className="space-y-4">
             <div className="h-1 w-20 bg-accent rounded-full"></div>
             <h2 className="text-5xl lg:text-6xl font-black tracking-tighter text-primary dark:text-white uppercase italic">
-              Strategic <span className="text-accent underline decoration-4 underline-offset-8 decoration-accent/20">Sectors</span>
+              Browse <span className="text-accent underline decoration-4 underline-offset-8 decoration-accent/20">Categories</span>
             </h2>
             <p className="text-lg text-slate-500 max-w-xl font-medium leading-relaxed">
-              Targeted marketplace domains engineered for high-performance transactions and premium asset discovery.
+              Explore houses, transport, products, and entertainment in a layout designed for quick browsing and clear decisions.
             </p>
           </div>
           <Button

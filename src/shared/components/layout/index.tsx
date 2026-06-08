@@ -120,14 +120,14 @@ export function PageHeader({
         className
       )}>
       <Container>
-        <div className="flex flex-col gap-4 py-6">
+        <div className="flex flex-col gap-4 py-5 sm:py-6">
           {backButton && <div>{backButton}</div>}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
               {description && (
-                <p className="mt-2 text-muted-foreground">{description}</p>
+                <p className="mt-2 text-sm sm:text-base text-muted-foreground">{description}</p>
               )}
             </div>
 
@@ -307,15 +307,15 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, title, description }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8 sm:py-12">
+      <div className="w-full max-w-sm sm:max-w-md">
         {(title || description) && (
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 sm:mb-8">
             {title && (
-              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
             )}
             {description && (
-              <p className="mt-2 text-muted-foreground">{description}</p>
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground">{description}</p>
             )}
           </div>
         )}

@@ -265,11 +265,11 @@ const ProductManager = () => {
       : "";
     const confirmed = window.confirm(
       `Are you sure you want to delete "${productTitle}"?\n\n` +
-        `This will:\n` +
-        `• Remove the product from your listings\n` +
-        `• Hide it from all buyers\n` +
-        `• Delete all product images from Cloudinary${imageText}\n\n` +
-        `This action cannot be undone.`
+      `This will:\n` +
+      `• Remove the product from your listings\n` +
+      `• Hide it from all buyers\n` +
+      `• Delete all product images from Cloudinary${imageText}\n\n` +
+      `This action cannot be undone.`
     );
 
     if (!confirmed) return;
@@ -659,8 +659,8 @@ const ProductManager = () => {
                             product.status === "active"
                               ? "default"
                               : product.status === "sold"
-                              ? "secondary"
-                              : "outline"
+                                ? "secondary"
+                                : "outline"
                           }>
                           {product.status}
                         </Badge>

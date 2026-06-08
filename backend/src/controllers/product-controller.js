@@ -357,8 +357,8 @@ const getSellerProducts = asyncHandler(async (req, res) => {
         images: Array.isArray(product.images)
           ? product.images
           : product.images
-          ? [product.images]
-          : [],
+            ? [product.images]
+            : [],
         tags: product.tags || [],
         status: product.status,
         views: product.views || 0,
@@ -448,8 +448,8 @@ const getProduct = asyncHandler(async (req, res) => {
       images: Array.isArray(product.images)
         ? product.images
         : product.images
-        ? [product.images]
-        : [],
+          ? [product.images]
+          : [],
       contactPhone: product.contact_phone || null,
       seller: {
         id: product.user_id,
@@ -537,9 +537,9 @@ const updateProduct = asyncHandler(async (req, res) => {
     parsedTags =
       typeof tags === 'string'
         ? tags
-            .split(',')
-            .map(t => t.trim())
-            .filter(Boolean)
+          .split(',')
+          .map(t => t.trim())
+          .filter(Boolean)
         : tags;
   }
 
@@ -566,12 +566,10 @@ const updateProduct = asyncHandler(async (req, res) => {
       tags = COALESCE(${parsedTags}, tags),
       status = COALESCE(${status}, status),
       images = ${imageUrls},
-      discount_percentage = COALESCE(${
-        discount_percentage ? parseFloat(discount_percentage) : null
-      }, discount_percentage),
-      stock_quantity = COALESCE(${
-        stock_quantity ? parseInt(stock_quantity) : null
-      }, stock_quantity),
+      discount_percentage = COALESCE(${discount_percentage ? parseFloat(discount_percentage) : null
+    }, discount_percentage),
+      stock_quantity = COALESCE(${stock_quantity ? parseInt(stock_quantity) : null
+    }, stock_quantity),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
@@ -897,8 +895,8 @@ const browseProducts = asyncHandler(async (req, res) => {
       images: Array.isArray(product.images)
         ? product.images
         : product.images
-        ? [product.images]
-        : [],
+          ? [product.images]
+          : [],
       seller_name: product.seller_name || 'Seller',
       contactPhone: product.contact_phone || null,
       seller: {

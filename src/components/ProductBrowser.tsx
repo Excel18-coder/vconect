@@ -205,12 +205,12 @@ const ProductBrowser = () => {
       />
 
       {/* Results Header */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col gap-2 px-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 italic">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 italic">
             {loading ? "Searching..." : `${products.length} Items Found`}
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">
+          <p className="text-sm font-medium text-muted-foreground mt-1">
             Browse through the latest high-quality listings in Kenya
           </p>
         </div>
@@ -220,16 +220,16 @@ const ProductBrowser = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 space-y-4 animate-pulse">
           <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-blue-600 font-bold uppercase tracking-widest text-xs">Fetching Marketplace Data</p>
+          <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-blue-600">Fetching Marketplace Data</p>
         </div>
       ) : products.length === 0 ? (
-        <Card className="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-transparent">
-          <CardContent className="flex flex-col items-center justify-center py-24">
+            <Card className="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-transparent">
+          <CardContent className="flex flex-col items-center justify-center py-16 sm:py-24 px-4">
             <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-full mb-6">
               <Package className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">No matches found</h3>
-            <p className="text-muted-foreground text-center max-w-sm">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center">No matches found</h3>
+            <p className="text-sm sm:text-base text-muted-foreground text-center max-w-sm">
               We couldn't find any products matching your current filters. Try
               expanding your search or clearing filters.
             </p>

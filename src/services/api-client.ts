@@ -118,6 +118,7 @@ const refreshAccessToken = async (): Promise<void> => {
 
 export const authFetch = async (url: string, options: RequestOptions = {}): Promise<Response> => {
   const method = options.method || 'GET';
+  const normalizedUrl = url.split('?')[0];
 
   if (method === 'GET' && !options.skipCache) {
     const cacheKey = apiCache.generateKey(url, options);
@@ -143,7 +144,7 @@ export const authFetch = async (url: string, options: RequestOptions = {}): Prom
         } as HeadersInit,
       });
 
-      if (response.status === 401 && retryCount === 0) {
+      if (response.status === 401 && retryCount === 0 && !normalizedUrl.startsWith('/auth/')) {
         await refreshAccessToken();
         return fetchRequest(1);
       }

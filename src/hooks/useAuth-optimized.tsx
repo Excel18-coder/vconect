@@ -118,8 +118,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Fetch profile after registration
           try {
             const profileData = await profileAPI.getProfile();
-            setProfile(profileData.data.profile);
+            setProfile(profileData.data?.profile ?? null);
           } catch (profileError) {
+            setProfile(null);
           }
         }
 
@@ -158,7 +159,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (response.data?.user) {
           setUser(response.data.user);
-          setProfile(response.data.profile);
+
+          try {
+            const profileData = await profileAPI.getProfile();
+            setProfile(profileData.data?.profile ?? null);
+          } catch {
+            setProfile(null);
+          }
         }
 
         toast({

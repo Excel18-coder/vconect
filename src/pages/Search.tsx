@@ -167,9 +167,9 @@ const Search = () => {
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto space-y-16">
           {/* Search Header */}
-          <div className="relative p-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="relative p-6 sm:p-10 lg:p-16 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-5">
-              <SearchIcon className="h-64 w-64 rotate-6 text-primary" />
+              <SearchIcon className="h-40 w-40 sm:h-64 sm:w-64 rotate-6 text-primary" />
             </div>
 
             <div className="relative z-10 space-y-10">
@@ -178,10 +178,10 @@ const Search = () => {
                   <Sparkles className="h-4 w-4" />
                   Terminal Search Protocol
                 </div>
-                <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-[0.9]">
+                <h1 className="text-3xl sm:text-4xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-[0.95]">
                   {searchQuery ? `Protocol: "${searchQuery}"` : "Access Global Marketplace"}
                 </h1>
-                <p className="text-slate-500 text-lg max-w-2xl font-medium">
+                <p className="text-sm sm:text-base lg:text-lg text-slate-500 max-w-2xl font-medium">
                   Search Kenya's elite portfolio of properties, logistics, and premium assets
                   with real-time verification and secure data encryption.
                 </p>
@@ -189,17 +189,17 @@ const Search = () => {
 
               <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1 group">
-                  <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5 group-focus-within:text-primary transition-colors" />
+                  <SearchIcon className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5 group-focus-within:text-primary transition-colors" />
                   <Input
                     placeholder="Enter asset signature or category..."
-                    className="h-16 pl-16 pr-8 text-lg rounded-sm border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-primary/20 focus:ring-0 transition-all font-bold placeholder:text-slate-300"
+                    className="h-14 sm:h-16 pl-12 sm:pl-16 pr-6 sm:pr-8 text-base sm:text-lg rounded-sm border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:border-primary/20 focus:ring-0 transition-all font-bold placeholder:text-slate-300"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-16 px-12 rounded-sm bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-sm transition-transform active:scale-95"
+                  className="h-14 sm:h-16 px-8 sm:px-12 rounded-sm bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-sm transition-transform active:scale-95"
                 >
                   Initiate Search
                   <ArrowRight className="ml-3 h-4 w-4" />
@@ -215,7 +215,7 @@ const Search = () => {
                 <div className="flex items-center gap-4 overflow-x-auto pb-2 lg:pb-0 w-full lg:w-auto no-scrollbar">
                   <Badge
                     variant={selectedCategory === "all" ? "default" : "outline"}
-                    className={`cursor-pointer h-10 px-8 rounded-sm font-black uppercase tracking-widest text-[10px] transition-all ${selectedCategory === "all" ? "bg-primary text-white" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
+                    className={`cursor-pointer h-9 sm:h-10 px-5 sm:px-8 rounded-sm font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all ${selectedCategory === "all" ? "bg-primary text-white" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
                     onClick={() => setSelectedCategory("all")}>
                     All Sectors
                   </Badge>
@@ -223,7 +223,7 @@ const Search = () => {
                     <Badge
                       key={cat}
                       variant={selectedCategory === cat ? "default" : "outline"}
-                      className={`cursor-pointer h-10 px-8 rounded-sm font-black uppercase tracking-widest text-[10px] transition-all capitalize ${selectedCategory === cat ? "bg-accent text-white border-accent" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
+                      className={`cursor-pointer h-9 sm:h-10 px-5 sm:px-8 rounded-sm font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all capitalize ${selectedCategory === cat ? "bg-accent text-white border-accent" : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200"}`}
                       onClick={() => setSelectedCategory(cat)}>
                       {cat}
                     </Badge>
@@ -271,9 +271,9 @@ const Search = () => {
               ) : results.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-100 dark:border-slate-800">
                   <Package className="h-20 w-20 text-slate-200 mb-8" />
-                  <h2 className="text-4xl font-black italic uppercase tracking-tighter text-primary dark:text-white">Zero Convergence</h2>
-                  <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2 mb-10">Your parameters did not yield matching assets.</p>
-                  <Button variant="outline" onClick={() => navigate("/")} className="h-12 px-10 rounded-sm border-2 font-black uppercase tracking-widest text-[10px]">
+                  <h2 className="text-2xl sm:text-4xl font-black italic uppercase tracking-tighter text-primary dark:text-white text-center sm:text-left">Zero Convergence</h2>
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] mt-2 mb-10 text-center sm:text-left">Your parameters did not yield matching assets.</p>
+                  <Button variant="outline" onClick={() => navigate("/")} className="h-11 sm:h-12 px-8 sm:px-10 rounded-sm border-2 font-black uppercase tracking-widest text-[9px] sm:text-[10px]">
                     Reset Navigation
                   </Button>
                 </div>
@@ -296,18 +296,18 @@ const Search = () => {
 
           {!searchQuery && (
             <div className="flex flex-col items-center justify-center py-40 space-y-12">
-              <div className="p-10 bg-slate-950 text-white rounded-full scale-110">
-                <SearchIcon className="h-16 w-16" />
+              <div className="p-8 sm:p-10 bg-slate-950 text-white rounded-full scale-100 sm:scale-110">
+                <SearchIcon className="h-12 w-12 sm:h-16 sm:w-16" />
               </div>
               <div className="text-center space-y-6 max-w-lg">
-                <h2 className="text-3xl font-black italic tracking-tight">Ready to Find Something?</h2>
-                <p className="text-muted-foreground text-lg">
+                <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight">Ready to Find Something?</h2>
+                <p className="text-muted-foreground text-sm sm:text-lg">
                   Enter keywords above to start exploring products, houses, and services across Kenya.
                 </p>
               </div>
               <Button
                 onClick={() => navigate("/")}
-                className="h-14 px-10 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:scale-105 transition-transform"
+                className="h-12 sm:h-14 px-8 sm:px-10 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:scale-105 transition-transform text-sm sm:text-base"
               >
                 Explore Categories
               </Button>
@@ -321,14 +321,14 @@ const Search = () => {
       {/* Contact Seller Dialog */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
         <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
-          <DialogHeader className="p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-            <DialogTitle className="text-2xl font-black italic">Contact Seller</DialogTitle>
-            <DialogDescription className="text-base">
+          <DialogHeader className="p-6 sm:p-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+            <DialogTitle className="text-xl sm:text-2xl font-black italic">Contact Seller</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Item: <span className="font-bold text-blue-600">"{selectedProduct?.title}"</span>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-8 space-y-6">
+          <div className="p-6 sm:p-8 space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Message Body</Label>

@@ -1,8 +1,3 @@
-/**
- * Admin Dashboard Page
- * Comprehensive admin panel for managing the entire system
- */
-
 import {
   ActivityLog,
   AdminProfileSettings,
@@ -12,137 +7,71 @@ import {
   ProductManagement,
   UserManagement,
 } from '@/components/admin';
-import Header from '@/components/Header';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth-optimized';
-import SEO from '@/shared/components/seo/SEO';
-import {
-  Activity,
-  BarChart3,
-  FolderOpen,
-  MessageSquare,
-  Package,
-  Settings,
-  Users,
-} from 'lucide-react';
+import { Container, MainLayout, PageHeader, Section } from '@/shared/components/layout';
 import { Navigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />;
   }
 
-  // Redirect if not admin
-  if (!user || profile?.userType !== 'admin') {
-    return <Navigate to="/" replace />;
+  if (!loading && !isAdmin) {
+    return <Navigate to="/account" replace />;
   }
 
   return (
-    <>
-      <SEO
-        title="Admin Dashboard | VCONECT"
-        description="Administrative panel for managing users, products, and system operations"
-        url="https://vconect.com/admin"
+    <MainLayout showNavigation={false}>
+      <PageHeader
+        title="Admin Dashboard"
+        description="Manage users, products, categories, and platform analytics."
       />
-      <div className="min-h-screen bg-background">
-        <Header />
 
-        <main className="container mx-auto px-4 py-6">
-          <div className="space-y-6">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Admin Dashboard
-                </h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">
-                  Manage and monitor your marketplace
-                </p>
-              </div>
-              <Badge variant="destructive" className="text-lg px-4 py-2">
-                Admin Access
-              </Badge>
-            </div>
+      <Section>
+        <Container>
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="flex w-full flex-wrap justify-start gap-2 h-auto p-2">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="categories">Categories</TabsTrigger>
+              <TabsTrigger value="messages">Messages</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+            </TabsList>
 
-            {/* Tabs Navigation */}
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-auto">
-                <TabsTrigger value="overview" className="gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
-                </TabsTrigger>
-                <TabsTrigger value="users" className="gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Users</span>
-                </TabsTrigger>
-                <TabsTrigger value="products" className="gap-2">
-                  <Package className="h-4 w-4" />
-                  <span className="hidden sm:inline">Products</span>
-                </TabsTrigger>
-                <TabsTrigger value="messages" className="gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="hidden sm:inline">Messages</span>
-                </TabsTrigger>
-                <TabsTrigger value="categories" className="gap-2">
-                  <FolderOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">Categories</span>
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="gap-2">
-                  <Activity className="h-4 w-4" />
-                  <span className="hidden sm:inline">Activity</span>
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span className="hidden sm:inline">Settings</span>
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                <AnalyticsDashboard />
-              </TabsContent>
-
-              {/* Users Tab */}
-              <TabsContent value="users">
-                <UserManagement />
-              </TabsContent>
-
-              {/* Products Tab */}
-              <TabsContent value="products">
-                <ProductManagement />
-              </TabsContent>
-
-              {/* Messages Tab */}
-              <TabsContent value="messages">
-                <MessageManagement />
-              </TabsContent>
-
-              {/* Categories Tab */}
-              <TabsContent value="categories">
-                <CategoryManagement />
-              </TabsContent>
-
-              {/* Activity Tab */}
-              <TabsContent value="activity">
-                <ActivityLog />
-              </TabsContent>
-
-              {/* Settings Tab */}
-              <TabsContent value="settings">
-                <AdminProfileSettings />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </main>
-      </div>
-    </>
+            <TabsContent value="overview">
+              <AnalyticsDashboard />
+            </TabsContent>
+            <TabsContent value="analytics">
+              <AnalyticsDashboard />
+            </TabsContent>
+            <TabsContent value="users">
+              <UserManagement />
+            </TabsContent>
+            <TabsContent value="products">
+              <ProductManagement />
+            </TabsContent>
+            <TabsContent value="categories">
+              <CategoryManagement />
+            </TabsContent>
+            <TabsContent value="messages">
+              <MessageManagement />
+            </TabsContent>
+            <TabsContent value="activity">
+              <ActivityLog />
+            </TabsContent>
+            <TabsContent value="profile">
+              <AdminProfileSettings />
+            </TabsContent>
+          </Tabs>
+        </Container>
+      </Section>
+    </MainLayout>
   );
 };
 

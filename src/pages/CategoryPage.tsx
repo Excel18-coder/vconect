@@ -156,20 +156,20 @@ const CategoryPage = () => {
       <div className="min-h-screen bg-white dark:bg-slate-950">
         <Header />
         <Navigation />
-        <div className="container mx-auto px-4 py-20 pb-32">
-          <div className="mb-16 text-center space-y-6">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-sm group mb-8 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
+        <div className="container mx-auto px-4 py-16 sm:py-20 pb-24 sm:pb-32">
+          <div className="mb-12 sm:mb-16 text-center space-y-5 sm:space-y-6">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-sm group mb-6 sm:mb-8 text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-100 dark:border-slate-800">
               <ArrowLeft className="h-3 w-3 mr-3 group-hover:-translate-x-1 transition-transform" />
               Return to Catalog
             </Button>
-            <h1 className="text-6xl font-black italic tracking-tighter uppercase text-primary dark:text-white leading-none">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black italic tracking-tighter uppercase text-primary dark:text-white leading-none">
               Strategic <span className="text-accent underline underline-offset-8 decoration-8 decoration-accent/20">Transport</span>
             </h1>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
+            <p className="text-sm sm:text-base lg:text-lg text-slate-500 max-w-2xl mx-auto font-medium">
               High-velocity logistics and enterprise-grade seat allocation for the Kenyan transport corridor.
             </p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="bg-slate-50 dark:bg-slate-900 p-4 sm:p-8 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
             <MatatuHub userId={user?.id} />
           </div>
         </div>
@@ -192,26 +192,26 @@ const CategoryPage = () => {
       <main className="container mx-auto px-4 py-20 pb-40">
         <div className="max-w-7xl mx-auto space-y-16">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 pb-12 border-b-2 border-slate-50 dark:border-slate-900">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 sm:gap-12 pb-10 sm:pb-12 border-b-2 border-slate-50 dark:border-slate-900">
             <div className="space-y-6">
               <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[10px]">
                 <Sparkles className="h-4 w-4" />
                 Verified Sector Inventory
               </div>
-              <h1 className="text-5xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-none">
+              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black italic tracking-tighter text-primary dark:text-white uppercase leading-none">
                 {categoryTitles[category || ""] || "Specialty Assets"}
               </h1>
-              <p className="text-slate-500 text-lg max-w-2xl font-medium">
+              <p className="text-sm sm:text-base lg:text-lg text-slate-500 max-w-2xl font-medium">
                 {categoryDescriptions[category || ""] || "Access our highly curated portfolio of premium marketplace assets."}
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 min-w-[350px]">
+            <div className="flex flex-col gap-4 min-w-0 md:min-w-[350px] w-full md:w-auto">
               <div className="relative group">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 group-focus-within:text-primary transition-colors" />
                 <Input
                   placeholder="Filter strategic inventory..."
-                  className="h-14 pl-12 rounded-sm border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 focus:border-primary/20 focus:ring-0 transition-all font-bold uppercase text-[10px] tracking-widest"
+                  className="h-12 sm:h-14 pl-12 rounded-sm border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 focus:border-primary/20 focus:ring-0 transition-all font-bold uppercase text-[9px] sm:text-[10px] tracking-widest"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

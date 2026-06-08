@@ -12,40 +12,40 @@ const Hero = () => {
       <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[800px] h-[800px] bg-accent/5 dark:bg-emerald-900/5 rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-20 items-center">
           {/* Content */}
-          <div className="space-y-12 animate-slide-up">
-            <div className="space-y-8">
+          <div className="space-y-10 sm:space-y-12 animate-slide-up">
+            <div className="space-y-6 sm:space-y-8">
               <div className="inline-flex items-center px-4 py-1.5 rounded-sm bg-slate-950 text-white dark:bg-white dark:text-slate-950 text-[10px] font-black uppercase tracking-[0.3em]">
-                Elite Marketplace Protocol
+                Kenya's Marketplace
               </div>
 
-              <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-[0.9] text-primary dark:text-white uppercase italic">
-                Acquire. <br />
-                Liquidate. <br />
-                <span className="text-accent underline decoration-8 decoration-accent/20">Dominate.</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-8xl font-black tracking-tighter leading-[0.92] text-primary dark:text-white uppercase italic">
+                Find. <br />
+                List. <br />
+                <span className="text-accent underline decoration-8 decoration-accent/20">Buy.</span>
               </h1>
 
-              <p className="text-lg text-slate-500 max-w-lg leading-relaxed font-medium">
-                The definitive platform for high-value transactions. Experience unparalleled
-                efficiency in real estate, logistics, and premium assets across the region.
+              <p className="text-sm sm:text-base lg:text-lg text-slate-500 max-w-lg leading-relaxed font-medium">
+                Discover houses, electronics, furniture, vehicles, and everyday products in one
+                simple marketplace built for mobile users across Kenya.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <Button
                 size="lg"
-                className="h-14 px-10 bg-primary hover:bg-primary/90 text-white shadow-premium rounded-sm font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95"
+                className="h-12 sm:h-14 px-8 sm:px-10 bg-primary hover:bg-primary/90 text-white shadow-premium rounded-sm font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all hover:scale-105 active:scale-95"
                 onClick={() => navigate("/search")}>
-                Browse Portfolio
+                Browse Listings
                 <ArrowRight className="ml-3 h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="h-14 px-10 border-2 border-slate-200 dark:border-slate-800 rounded-sm font-black uppercase tracking-widest text-xs transition-all hover:bg-slate-50 dark:hover:bg-slate-900"
+                className="h-12 sm:h-14 px-8 sm:px-10 border-2 border-slate-200 dark:border-slate-800 rounded-sm font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all hover:bg-slate-50 dark:hover:bg-slate-900"
                 onClick={() => navigate("/sell")}>
-                Partner Access
+                Post an Ad
               </Button>
             </div>
 
@@ -103,7 +103,6 @@ const Hero = () => {
 
               <div className="mt-8 flex justify-between items-end">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Vault Value</p>
                   <p className="text-3xl font-black tracking-tighter text-primary dark:text-white italic leading-none">KES 1.2B+</p>
                 </div>
                 <div className="flex -space-x-4">
