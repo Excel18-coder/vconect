@@ -289,7 +289,7 @@ const CategoryPage = () => {
           <DialogHeader className="p-8 bg-slate-950 text-white">
             <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[8px] mb-2">
               <MessageCircle className="h-3 w-3" />
-              Secure Inquiry Protocol
+              Messaging
             </div>
             <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter">Initiate Inquiry</DialogTitle>
             <DialogDescription className="text-slate-400 text-xs font-bold uppercase tracking-widest">
@@ -300,7 +300,7 @@ const CategoryPage = () => {
           <div className="p-8 space-y-6">
             <div className="space-y-4">
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Transaction Message</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Message</Label>
                 <Textarea
                   value={messageForm.message}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, message: e.target.value }))}

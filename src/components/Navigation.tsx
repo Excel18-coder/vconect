@@ -40,7 +40,7 @@ const Navigation = () => {
             <Button size="sm" asChild className="rounded-full px-4">
               <Link to="/post-ad" className="flex items-center gap-2">
                 <PlusCircle className="h-4 w-4" />
-                Post Ad
+                Post Product
               </Link>
             </Button>
           </div>

@@ -233,7 +233,7 @@ const ProductDetail = () => {
         <Header />
         <div className="container mx-auto px-4 py-40 flex flex-col items-center justify-center space-y-8">
           <div className="h-16 w-16 border-4 border-slate-100 border-t-accent rounded-full animate-spin"></div>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 animate-pulse">Retrieving Asset Intelligence...</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 animate-pulse">Retrieving Information...</p>
         </div>
         <Footer />
       </div>
@@ -246,8 +246,8 @@ const ProductDetail = () => {
         <Header />
         <div className="container mx-auto px-4 py-40 text-center space-y-8">
           <Package className="h-24 w-24 text-slate-100 mx-auto" />
-          <h2 className="text-5xl font-black italic uppercase tracking-tighter text-primary dark:text-white">Asset Terminated</h2>
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">This registry entry has been sold or purged from the marketplace.</p>
+          <h2 className="text-5xl font-black italic uppercase tracking-tighter text-primary dark:text-white">Item deleted</h2>
+          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">This Item is not available.</p>
           <Button onClick={() => navigate('/')} className="h-12 px-10 rounded-sm font-black uppercase tracking-widest text-[10px] bg-primary text-white">Return to Directory</Button>
         </div>
         <Footer />
@@ -454,7 +454,7 @@ const ProductDetail = () => {
                         className="h-16 px-12 rounded-sm bg-primary hover:bg-black text-white font-black uppercase tracking-widest text-xs shadow-sm transition-all active:scale-95"
                       >
                         <MessageCircle className="h-4 w-4 mr-3" />
-                        Initiate Secure Inquiry
+                        Inquire
                       </Button>
 
                       {(product.seller.phone_number || product.contact_phone) && (
@@ -484,9 +484,9 @@ const ProductDetail = () => {
           <DialogHeader className="p-10 bg-slate-950 text-white">
             <div className="flex items-center gap-3 text-accent font-black uppercase tracking-[0.3em] text-[8px] mb-2">
               <Shield className="h-3 w-3" />
-              Secure Communication Protocol
+              Send Message
             </div>
-            <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">Initiate Inquiry</DialogTitle>
+            <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">Message</DialogTitle>
             <DialogDescription className="text-slate-400 text-xs font-bold uppercase tracking-widest">
               Asset: <span className="text-white">{product.title}</span>
             </DialogDescription>
