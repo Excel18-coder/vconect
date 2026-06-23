@@ -53,7 +53,7 @@ const Hero = () => {
             <div className="flex flex-wrap items-center gap-10 pt-12 border-t border-slate-100 dark:border-slate-900 opacity-50">
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-accent" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Secured Node</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Secure</span>
               </div>
               <div className="flex items-center gap-2">
                 <Smartphone className="h-5 w-5 text-accent" />
@@ -61,7 +61,7 @@ const Hero = () => {
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-accent" />
-                <span className="text-[10px] font-black uppercase tracking-widest">High Velocity</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Market Fiendly</span>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ const Hero = () => {
                     <TrendingUp className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Market Activity</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Market Trends</p>
                     <p className="text-xl font-black italic tracking-tight text-primary dark:text-white uppercase">+24.8% Today</p>
                   </div>
                 </div>
@@ -103,7 +103,6 @@ const Hero = () => {
 
               <div className="mt-8 flex justify-between items-end">
                 <div>
-                  <p className="text-3xl font-black tracking-tighter text-primary dark:text-white italic leading-none">KES 1.2B+</p>
                 </div>
                 <div className="flex -space-x-4">
                   {[1, 2, 3, 4].map(i => (
